@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>錄音中…</title>
+<style>
+  :root {
+    --primary-color: #4A90E2;
+    --secondary-color: #67C8FF;
+    --bg-color: #E6F4F1;
+    --text-color: #2D3748;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI','Microsoft JhengHei',sans-serif; }
+  body {
+    background:#F0F9FF;
+    background-image: radial-gradient(#4A90E2 1px, transparent 1px), radial-gradient(#67C8FF 1px, transparent 1px);
+    background-size:40px 40px; background-position:0 0,20px 20px;
+    min-height:100vh; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; padding:20px; gap:18px;
+  }
+  .card {
+    background:var(--bg-color); border-radius:20px; padding:25px;
+    box-shadow:0 10px 30px rgba(74,144,226,.2), 0 0 0 10px #BBDEFB;
+    width:100%; max-width:340px; text-align:center;
+  }
+  h1 { font-size:20px; color:var(--primary-color); margin-bottom:4px; }
+  .sub { font-size:13px; color:var(--secondary-color); font-weight:bold; margin-bottom:18px; }
+  .time {
+    background:white; border:3px solid #A1C4FD; border-radius:20px;
+    padding:8px; font-size:26px; font-weight:bold; color:var(--primary-color);
+    font-family:'Courier New',monospace; letter-spacing:2px; margin-bottom:12px;
+  }
+  .wave {
+    background:white; border-radius:15px; height:30px;
+    display:flex; align-items:center; justify-content:center; margin-bottom:18px;
+  }
+  .bar { width:4px; height:5px; background:var(--secondary-color); border-radius:2px; margin:0 2px; }
+  .btn {
+    width:100%; padding:14px; border:none; border-radius:20px;
+    font-size:17px; font-weight:bold; color:white; cursor:pointer;
+    transition:all .2s; margin-top:8px;
+  }
+  .btn:active { transform:translateY(2px); }
+  .btn:disabled { opacity:.5; cursor:not-allowed; }
+  .btn-rec { background:#FF5252; }
+  .btn-done { background:var(--primary-color); }
+  .status { font-size:14px; color:var(--text-color); min-height:20px; margin-top:10px; }
+  .err { color:#D32F2F; font-size:14px; line-height:1.6; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>🎤 錄音小視窗</h1>
+  <div class="sub">錄完後按「完成」即可回到主畫面</div>
+  <div class="time" id="time">00:00</div>
+  <div class="wave" id="wave"></div>
+  <button class="btn btn-rec" id="btn-rec">開始錄音</button>
+  <button class="btn btn-done" id="btn-done" disabled>完成並回傳</button>
+  <div class="status" id="status"></div>
+</div>
+
+<script>
+// 主畫面（GAS）會用 ?origin=... 告訴我們要回傳給誰
+var params = new URLSearchParams(location.search);
+var TARGET_ORIGIN = params.get('origin') || '';
+
+var btnRec = document.getElementById('btn-rec');
+var btnDone = document.getElementById('btn-done');
+var timeEl = document.getElementById('time');
+var waveEl = document.getElementById('wave');
+var statusEl = document.getElementById('status');
+
+var mediaRecorder, chunks = [], stream = null, blob = null;
+var isRecording = false, startTime, timerId, rafId, analyser;
+
+// 波形
+for (var i = 0; i < 20; i++) {
+  var b = document.createElement('div');
+  b.className = 'bar';
+  waveEl.appendChild(b);
+}
+var bars = document.querySelectorAll('.bar');
+function resetBars() { for (var i = 0; i < bars.length; i++) bars[i].style.height = '5px'; }
+
+function tick() {
+  var e = Math.floor((new Date() - startTime) / 1000);
+  timeEl.textContent = String(Math.floor(e / 60)).padStart(2, '0') + ':' + String(e % 60).padStart(2, '0');
+}
+
+function setupAnalyser(s) {
+  var ctx = new (window.AudioContext || window.webkitAudioContext)();
+  analyser = ctx.createAnalyser();
+  analyser.fftSize = 128;
+  ctx.createMediaStreamSource(s).connect(analyser);
+  var data = new Uint8Array(analyser.frequencyBinCount);
+  (function loop() {
+    if (!isRecording) return;
+    rafId = requestAnimationFrame(loop);
+    analyser.getByteFrequencyData(data);
+    for (var i = 0; i < bars.length; i++) {
+      var idx = Math.floor(i * data.length / bars.length);
+      bars[i].style.height = Math.min(data[idx] / 4, 22) + 'px';
+    }
+  })();
+}
+
+btnRec.addEventListener('click', function () {
+  if (isRecording) { stopRec(); return; }
+  navigator.mediaDevices.getUserMedia({ audio: true }).then(function (s) {
+    stream = s;
+    chunks = [];
+    mediaRecorder = new MediaRecorder(stream);
+    mediaRecorder.ondataavailable = function (e) { chunks.push(e.data); };
+    mediaRecorder.onstop = function () {
+      blob = new Blob(chunks, { type: mediaRecorder.mimeType || 'audio/webm' });
+      btnDone.disabled = false;
+      statusEl.textContent = '錄好了！按「完成並回傳」';
+    };
+    mediaRecorder.start();
+    isRecording = true;
+    btnRec.textContent = '停止錄音';
+    statusEl.textContent = '錄音中…';
+    startTime = new Date();
+    timerId = setInterval(tick, 1000);
+    setupAnalyser(stream);
+  }).catch(function (err) {
+    statusEl.innerHTML = '<span class="err">無法取得麥克風<br>' + err.name + '<br>請點網址列左側鎖頭允許麥克風</span>';
+  });
+});
+
+function stopRec() {
+  if (!mediaRecorder || !isRecording) return;
+  mediaRecorder.stop();
+  isRecording = false;
+  btnRec.textContent = '重新錄音';
+  clearInterval(timerId);
+  cancelAnimationFrame(rafId);
+  if (stream) stream.getTracks().forEach(function (t) { t.stop(); });
+  resetBars();
+}
+
+btnDone.addEventListener('click', function () {
+  if (!blob) return;
+  if (!TARGET_ORIGIN) { statusEl.innerHTML = '<span class="err">缺少 origin 參數,無法回傳</span>'; return; }
+  if (!window.opener) { statusEl.innerHTML = '<span class="err">找不到主畫面視窗</span>'; return; }
+  btnDone.disabled = true;
+  statusEl.textContent = '回傳中…';
+  var reader = new FileReader();
+  reader.onloadend = function () {
+    window.opener.postMessage({
+      type: 'recording',
+      data: reader.result.split(',')[1],
+      mime: blob.type
+    }, TARGET_ORIGIN);
+    statusEl.textContent = '完成！視窗即將關閉';
+    setTimeout(function () { window.close(); }, 600);
+  };
+  reader.readAsDataURL(blob);
+});
+</script>
+</body>
+</html>
