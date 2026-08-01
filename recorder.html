@@ -3,95 +3,259 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>錄音中…</title>
+<title>淡藍色系錄音機</title>
+<script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
 <style>
   :root {
-    --primary-color: #4A90E2;
-    --secondary-color: #67C8FF;
-    --bg-color: #E6F4F1;
-    --text-color: #2D3748;
+    --primary-color: #4A90E2; --secondary-color: #67C8FF; --accent-color: #56CCF2;
+    --bg-color: #E6F4F1; --text-color: #2D3748;
+    --shadow-color: rgba(74,144,226,.2); --border-radius: 20px;
   }
-  * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI','Microsoft JhengHei',sans-serif; }
+  * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI','Microsoft JhengHei',Arial,sans-serif; }
   body {
-    background:#F0F9FF;
+    display:flex; justify-content:center; align-items:center; min-height:100vh;
+    background-color:#F0F9FF;
     background-image: radial-gradient(#4A90E2 1px, transparent 1px), radial-gradient(#67C8FF 1px, transparent 1px);
     background-size:40px 40px; background-position:0 0,20px 20px;
-    min-height:100vh; display:flex; flex-direction:column;
-    align-items:center; justify-content:center; padding:20px; gap:18px;
+    padding:20px; overflow-x:hidden;
   }
-  .card {
-    background:var(--bg-color); border-radius:20px; padding:25px;
-    box-shadow:0 10px 30px rgba(74,144,226,.2), 0 0 0 10px #BBDEFB;
-    width:100%; max-width:340px; text-align:center;
+  .recorder-container {
+    width:100%; max-width:500px; background:var(--bg-color); border-radius:var(--border-radius);
+    box-shadow:0 10px 30px var(--shadow-color), 0 0 0 15px #BBDEFB;
+    position:relative; padding:20px; display:flex; flex-direction:column; gap:15px;
   }
-  h1 { font-size:20px; color:var(--primary-color); margin-bottom:4px; }
-  .sub { font-size:13px; color:var(--secondary-color); font-weight:bold; margin-bottom:18px; }
-  .time {
-    background:white; border:3px solid #A1C4FD; border-radius:20px;
-    padding:8px; font-size:26px; font-weight:bold; color:var(--primary-color);
-    font-family:'Courier New',monospace; letter-spacing:2px; margin-bottom:12px;
-  }
-  .wave {
-    background:white; border-radius:15px; height:30px;
-    display:flex; align-items:center; justify-content:center; margin-bottom:18px;
-  }
-  .bar { width:4px; height:5px; background:var(--secondary-color); border-radius:2px; margin:0 2px; }
-  .btn {
-    width:100%; padding:14px; border:none; border-radius:20px;
-    font-size:17px; font-weight:bold; color:white; cursor:pointer;
-    transition:all .2s; margin-top:8px;
-  }
-  .btn:active { transform:translateY(2px); }
-  .btn:disabled { opacity:.5; cursor:not-allowed; }
-  .btn-rec { background:#FF5252; }
-  .btn-done { background:var(--primary-color); }
-  .status { font-size:14px; color:var(--text-color); min-height:20px; margin-top:10px; }
-  .err { color:#D32F2F; font-size:14px; line-height:1.6; }
+  .recorder-header { text-align:center; margin-bottom:10px; position:relative; }
+  .recorder-title { font-size:28px; color:var(--primary-color); margin-bottom:5px; text-shadow:2px 2px 0 #BBDEFB; letter-spacing:1px; }
+  .recorder-subtitle { font-size:14px; color:var(--secondary-color); font-weight:bold; }
+  .character { position:absolute; width:80px; height:80px; background:#56CCF2; border-radius:50%; top:-5px; left:-10px; box-shadow:0 5px 10px rgba(0,0,0,.1); overflow:hidden; border:4px solid white; }
+  .character::before { content:''; position:absolute; width:30px; height:30px; background:#56CCF2; border-radius:50%; top:-10px; left:10px; transform:rotate(-45deg); border:4px solid white; border-bottom:none; border-right:none; }
+  .character::after { content:''; position:absolute; width:30px; height:30px; background:#56CCF2; border-radius:50%; top:-10px; right:10px; transform:rotate(45deg); border:4px solid white; border-bottom:none; border-left:none; }
+  .face { position:absolute; top:25px; left:50%; transform:translateX(-50%); }
+  .eyes { display:flex; justify-content:space-between; width:40px; }
+  .eye { width:10px; height:15px; background:var(--text-color); border-radius:50%; transition:height .1s; }
+  .mouth { width:20px; height:10px; background:var(--text-color); border-radius:0 0 10px 10px; margin:5px auto 0; }
+  .mouth.happy { border-radius:0 0 10px 10px; height:10px; }
+  .mouth.surprised { border-radius:50%; height:15px; }
+  .tape-character { position:absolute; right:-10px; top:-5px; width:80px; height:80px; background:#67C8FF; border-radius:50%; box-shadow:0 5px 10px rgba(0,0,0,.1); border:4px solid white; overflow:hidden; }
+  .tape-character::before { content:''; position:absolute; width:25px; height:25px; background:#67C8FF; border-radius:50% 50% 0 50%; top:5px; left:5px; transform:rotate(-45deg); border:4px solid white; border-bottom:none; border-right:none; }
+  .tape-character::after { content:''; position:absolute; width:25px; height:25px; background:#67C8FF; border-radius:50% 50% 50% 0; top:5px; right:5px; transform:rotate(45deg); border:4px solid white; border-bottom:none; border-left:none; }
+  .tape-face { position:absolute; top:30px; left:50%; transform:translateX(-50%); }
+  .recorder-main { background:#BBDEFB; border-radius:var(--border-radius); padding:20px; position:relative; margin-top:20px; box-shadow:inset 0 0 10px rgba(0,0,0,.1); }
+  .cassette { width:100%; height:120px; background:#A1C4FD; border-radius:15px; position:relative; display:flex; justify-content:center; align-items:center; border:3px dashed white; box-shadow:0 5px 15px rgba(0,0,0,.1); }
+  .cassette::before { content:''; position:absolute; width:70px; height:70px; border-radius:50%; background:#E6F4F1; border:5px dotted white; top:50%; left:25%; transform:translateY(-50%); }
+  .cassette::after { content:''; position:absolute; width:70px; height:70px; border-radius:50%; background:#E6F4F1; border:5px dotted white; top:50%; right:25%; transform:translateY(-50%); }
+  .label { position:absolute; width:58%; height:40px; background:white; border-radius:15px; top:50%; left:50%; transform:translate(-50%,-50%); display:flex; justify-content:center; align-items:center; z-index:10; font-size:16px; color:var(--primary-color); font-weight:bold; box-shadow:0 5px 15px rgba(0,0,0,.1); border:3px solid #A1C4FD; }
+  .time-display { width:80%; background:white; border-radius:20px; padding:10px; text-align:center; margin:15px auto; box-shadow:inset 0 0 10px rgba(0,0,0,.1); border:3px solid #A1C4FD; }
+  .time-text { font-size:24px; font-weight:bold; color:var(--primary-color); font-family:'Courier New',monospace; letter-spacing:2px; }
+  .time-text::before { content:'🕒'; margin-right:5px; font-size:20px; }
+  .visual-indicator { width:100%; height:30px; background:white; border-radius:15px; margin-top:10px; overflow:hidden; }
+  .sound-wave { width:100%; height:100%; display:flex; align-items:center; justify-content:center; padding:0 10px; }
+  .wave-bar { width:4px; height:5px; background:var(--secondary-color); border-radius:2px; margin:0 2px; }
+  .controls { display:flex; justify-content:center; gap:15px; margin-top:15px; padding:15px; background:#E6F4F1; border-radius:var(--border-radius); }
+  .control-button { width:70px; height:70px; border-radius:50%; border:none; font-size:0; cursor:pointer; box-shadow:0 5px 10px rgba(0,0,0,.1), 0 0 0 5px white; transition:all .3s; display:flex; justify-content:center; align-items:center; }
+  .control-button:active { transform:translateY(3px); }
+  .record-button { background:#FF5252; }
+  .record-button::before { content:''; width:30px; height:30px; background:white; border-radius:50%; }
+  .record-button.recording::before { border-radius:4px; width:26px; height:26px; }
+  .play-button { background:var(--primary-color); }
+  .play-button::before { content:''; width:0; height:0; border-style:solid; border-width:15px 0 15px 25px; border-color:transparent transparent transparent white; }
+  .play-button.playing::before { width:10px; height:30px; border:none; background:white; border-radius:2px; box-shadow:15px 0 0 white; }
+  .stop-button { background:#64B5F6; }
+  .stop-button::before { content:''; width:25px; height:25px; background:white; border-radius:3px; }
+  .download-panel { display:flex; justify-content:center; gap:15px; padding:10px; }
+  .download-button { background:white; border:3px solid; border-radius:20px; padding:10px 20px; font-size:16px; font-weight:bold; cursor:pointer; transition:all .3s; }
+  .download-button:hover:not(:disabled) { transform:translateY(-3px); box-shadow:0 5px 10px rgba(0,0,0,.1); }
+  .download-mp3 { border-color:var(--primary-color); color:var(--primary-color); }
+  .download-wav { border-color:var(--secondary-color); color:var(--secondary-color); }
+  .download-button:disabled { opacity:.5; cursor:not-allowed; }
+  .made-by { text-align:center; font-size:13px; color:var(--text-color); padding-top:5px; }
+  .made-by a { color:var(--primary-color); text-decoration:none; font-weight:bold; }
+  .filename-dialog { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,.5); z-index:1000; justify-content:center; align-items:center; }
+  .filename-dialog-content { background:var(--bg-color); width:400px; max-width:90vw; padding:20px; border-radius:var(--border-radius); box-shadow:0 10px 30px var(--shadow-color); border:5px solid #BBDEFB; text-align:center; position:relative; }
+  .filename-dialog-title { font-size:20px; color:var(--primary-color); margin-bottom:15px; font-weight:bold; }
+  .filename-input { width:100%; padding:10px; border:3px solid #A1C4FD; border-radius:10px; font-size:16px; margin-bottom:15px; background:white; }
+  .filename-dialog-buttons { display:flex; justify-content:space-around; gap:10px; }
+  .filename-dialog-button { color:white; border:none; padding:8px 20px; border-radius:20px; cursor:pointer; font-weight:bold; transition:all .2s; }
+  .filename-dialog-button:hover { transform:translateY(-3px); }
+  .filename-dialog-button.cancel { background:#ccc; }
+  .filename-dialog-button.download { background:var(--primary-color); }
+  .filename-dialog-button.local { background:var(--accent-color); }
+  .dialog-decoration { position:absolute; width:40px; height:40px; border-radius:50%; border:3px solid white; }
+  .dialog-decoration.top-left { top:-20px; left:-20px; background:var(--accent-color); }
+  .dialog-decoration.top-right { top:-20px; right:-20px; background:var(--primary-color); }
+  .dialog-decoration.bottom-left { bottom:-20px; left:-20px; background:var(--secondary-color); }
+  .dialog-decoration.bottom-right { bottom:-20px; right:-20px; background:var(--accent-color); }
+  .upload-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,.5); z-index:2000; justify-content:center; align-items:center; flex-direction:column; color:white; font-size:22px; text-align:center; padding:20px; }
+  .spinner { margin-top:20px; width:50px; height:50px; border:5px solid rgba(255,255,255,.3); border-top:5px solid white; border-radius:50%; animation:spin 1s linear infinite; }
+  @keyframes spin { to { transform:rotate(360deg); } }
 </style>
 </head>
 <body>
-<div class="card">
-  <h1>🎤 錄音小視窗</h1>
-  <div class="sub">錄完後按「完成」即可回到主畫面</div>
-  <div class="time" id="time">00:00</div>
-  <div class="wave" id="wave"></div>
-  <button class="btn btn-rec" id="btn-rec">開始錄音</button>
-  <button class="btn btn-done" id="btn-done" disabled>完成並回傳</button>
-  <div class="status" id="status"></div>
+<div class="recorder-container">
+  <div class="recorder-header">
+    <div class="character"><div class="face"><div class="eyes"><div class="eye"></div><div class="eye"></div></div><div class="mouth happy"></div></div></div>
+    <h1 class="recorder-title">趣味錄音機</h1>
+    <div class="recorder-subtitle">錄下你的聲音吧！</div>
+    <div class="tape-character"><div class="tape-face"><div class="eyes"><div class="eye"></div><div class="eye"></div></div><div class="mouth happy"></div></div></div>
+  </div>
+
+  <div class="recorder-main">
+    <div class="cassette"><div class="label" id="status-label">準備錄音</div></div>
+    <div class="time-display"><div class="time-text" id="time-display">00:00</div></div>
+    <div class="visual-indicator"><div class="sound-wave" id="sound-wave"></div></div>
+  </div>
+
+  <div class="controls">
+    <button class="control-button record-button" id="record-button" title="錄音">錄音</button>
+    <button class="control-button play-button" id="play-button" title="播放">播放</button>
+    <button class="control-button stop-button" id="stop-button" title="停止">停止</button>
+  </div>
+
+  <div class="download-panel">
+    <button class="download-button download-mp3" id="download-mp3" disabled>上傳 MP3 🎵</button>
+    <button class="download-button download-wav" id="download-wav" disabled>上傳 WAV 🎶</button>
+  </div>
+
+  <div class="made-by">Made by <a href="https://kentxchang.blogspot.tw" target="_blank">阿剛老師</a></div>
+</div>
+
+<div class="filename-dialog" id="filename-dialog">
+  <div class="filename-dialog-content">
+    <div class="dialog-decoration top-left"></div>
+    <div class="dialog-decoration top-right"></div>
+    <div class="dialog-decoration bottom-left"></div>
+    <div class="dialog-decoration bottom-right"></div>
+    <div class="filename-dialog-title">請輸入檔案名稱</div>
+    <input type="text" class="filename-input" id="filename-input" placeholder="我的錄音">
+    <div class="filename-dialog-buttons">
+      <button class="filename-dialog-button cancel" id="cancel-download">取消</button>
+      <button class="filename-dialog-button download" id="confirm-download">儲存</button>
+      <button class="filename-dialog-button local" id="local-download">本地下載</button>
+    </div>
+  </div>
+</div>
+
+<div class="upload-overlay" id="upload-overlay">
+  <div id="upload-message">處理中…</div>
+  <div class="spinner" id="spinner"></div>
+  <button id="close-upload" style="margin-top:20px;display:none;padding:8px 20px;border:none;border-radius:5px;background:#4A90E2;color:white;cursor:pointer;font-size:16px">關閉</button>
 </div>
 
 <script>
-// 主畫面（GAS）會用 ?origin=... 告訴我們要回傳給誰
-var params = new URLSearchParams(location.search);
-var TARGET_ORIGIN = params.get('origin') || '';
+/* =================================================================
+   ★★★ 需要修改的兩個地方 ★★★
+================================================================= */
+// ① 你的 GAS 網頁應用程式網址（部署時「誰可以存取」必須設為「任何人」）
+var GAS_URL = 'https://script.google.com/macros/s/AKfycbzDv5C_KIeVs3sII8qleOk9dIl5_cYgKirqyWd07j9hBIHxRDIw94bjuclHsid78N3-CQ/exec';
 
-var btnRec = document.getElementById('btn-rec');
-var btnDone = document.getElementById('btn-done');
-var timeEl = document.getElementById('time');
-var waveEl = document.getElementById('wave');
-var statusEl = document.getElementById('status');
+// ② 上傳驗證字串，必須與 Code.gs 裡的 UPLOAD_TOKEN 完全一致
+var UPLOAD_TOKEN = 'gses-recorder-2026';
 
-var mediaRecorder, chunks = [], stream = null, blob = null;
-var isRecording = false, startTime, timerId, rafId, analyser;
+// ③ 錄音長度上限（秒），時間到自動停止；設為 0 表示不限制
+var MAX_SECONDS = 120;
+/* ================================================================= */
 
-// 波形
-for (var i = 0; i < 20; i++) {
-  var b = document.createElement('div');
-  b.className = 'bar';
-  waveEl.appendChild(b);
+var recordButton = document.getElementById('record-button');
+var playButton = document.getElementById('play-button');
+var stopButton = document.getElementById('stop-button');
+var mp3Btn = document.getElementById('download-mp3');
+var wavBtn = document.getElementById('download-wav');
+var timeDisplay = document.getElementById('time-display');
+var soundWave = document.getElementById('sound-wave');
+var statusLabel = document.getElementById('status-label');
+var mouthA = document.querySelector('.character .mouth');
+var mouthB = document.querySelector('.tape-character .mouth');
+var dialog = document.getElementById('filename-dialog');
+var filenameInput = document.getElementById('filename-input');
+var overlay = document.getElementById('upload-overlay');
+var overlayMsg = document.getElementById('upload-message');
+var spinner = document.getElementById('spinner');
+var closeUpload = document.getElementById('close-upload');
+
+var mediaRecorder, chunks = [], stream = null, rawBlob = null;
+var audioUrl = null, audioElement = new Audio();
+var isRecording = false, isPlaying = false, currentFormat = '';
+var startTime, timerId, rafId;
+
+for (var i = 0; i < 25; i++) {
+  var bar = document.createElement('div');
+  bar.className = 'wave-bar';
+  soundWave.appendChild(bar);
 }
-var bars = document.querySelectorAll('.bar');
-function resetBars() { for (var i = 0; i < bars.length; i++) bars[i].style.height = '5px'; }
+var bars = document.querySelectorAll('.wave-bar');
+function resetWave() { for (var i = 0; i < bars.length; i++) bars[i].style.height = '5px'; }
+function mood(m) { mouthA.className = 'mouth ' + m; mouthB.className = 'mouth ' + m; }
+function pad(x) { return ('0' + x).slice(-2); }
+function showOverlay(msg) {
+  overlayMsg.textContent = msg; spinner.style.display = 'block';
+  closeUpload.style.display = 'none'; overlay.style.display = 'flex';
+}
+function showResult(msg) {
+  overlayMsg.textContent = msg; spinner.style.display = 'none'; closeUpload.style.display = 'block';
+}
+closeUpload.addEventListener('click', function () { overlay.style.display = 'none'; });
 
 function tick() {
   var e = Math.floor((new Date() - startTime) / 1000);
-  timeEl.textContent = String(Math.floor(e / 60)).padStart(2, '0') + ':' + String(e % 60).padStart(2, '0');
+  timeDisplay.textContent = pad(Math.floor(e / 60)) + ':' + pad(e % 60);
+  if (isRecording && MAX_SECONDS > 0 && e >= MAX_SECONDS) {
+    stopRecording();
+    statusLabel.textContent = '已達時間上限';
+  }
+}
+
+/* ---------- 錄音 ---------- */
+recordButton.addEventListener('click', function () {
+  if (isRecording) { stopRecording(); return; }
+  navigator.mediaDevices.getUserMedia({ audio: true }).then(function (s) {
+    stream = s;
+    chunks = [];
+    mediaRecorder = new MediaRecorder(stream);
+    mediaRecorder.ondataavailable = function (e) { chunks.push(e.data); };
+    mediaRecorder.onstop = function () {
+      rawBlob = new Blob(chunks, { type: mediaRecorder.mimeType || 'audio/webm' });
+      if (audioUrl) URL.revokeObjectURL(audioUrl);
+      audioUrl = URL.createObjectURL(rawBlob);
+      audioElement.src = audioUrl;
+      mp3Btn.disabled = false;
+      wavBtn.disabled = false;
+      if (statusLabel.textContent !== '已達時間上限') statusLabel.textContent = '錄音完成！';
+      mood('happy');
+    };
+    mediaRecorder.start();
+    isRecording = true;
+    recordButton.classList.add('recording');
+    statusLabel.textContent = '正在錄音...';
+    mood('surprised');
+    startTime = new Date();
+    timerId = setInterval(tick, 500);
+    setupAnalyser(stream);
+  }).catch(function (err) {
+    console.error(err.name, err.message);
+    var hint = '無法取得麥克風權限。';
+    if (err.name === 'NotAllowedError') hint += '\n請點網址列左側的鎖頭圖示，允許使用麥克風。';
+    if (err.name === 'NotFoundError') hint += '\n找不到麥克風裝置。';
+    alert(hint);
+    statusLabel.textContent = '錄音失敗 😢';
+  });
+});
+
+function stopRecording() {
+  if (!mediaRecorder || !isRecording) return;
+  mediaRecorder.stop();
+  isRecording = false;
+  recordButton.classList.remove('recording');
+  clearInterval(timerId);
+  cancelAnimationFrame(rafId);
+  if (stream) stream.getTracks().forEach(function (t) { t.stop(); });
+  resetWave();
+  timeDisplay.textContent = '00:00';
 }
 
 function setupAnalyser(s) {
   var ctx = new (window.AudioContext || window.webkitAudioContext)();
-  analyser = ctx.createAnalyser();
-  analyser.fftSize = 128;
+  var analyser = ctx.createAnalyser();
+  analyser.fftSize = 256;
   ctx.createMediaStreamSource(s).connect(analyser);
   var data = new Uint8Array(analyser.frequencyBinCount);
   (function loop() {
@@ -100,64 +264,179 @@ function setupAnalyser(s) {
     analyser.getByteFrequencyData(data);
     for (var i = 0; i < bars.length; i++) {
       var idx = Math.floor(i * data.length / bars.length);
-      bars[i].style.height = Math.min(data[idx] / 4, 22) + 'px';
+      bars[i].style.height = Math.min(data[idx] / 4, 20) + 'px';
     }
   })();
 }
 
-btnRec.addEventListener('click', function () {
-  if (isRecording) { stopRec(); return; }
-  navigator.mediaDevices.getUserMedia({ audio: true }).then(function (s) {
-    stream = s;
-    chunks = [];
-    mediaRecorder = new MediaRecorder(stream);
-    mediaRecorder.ondataavailable = function (e) { chunks.push(e.data); };
-    mediaRecorder.onstop = function () {
-      blob = new Blob(chunks, { type: mediaRecorder.mimeType || 'audio/webm' });
-      btnDone.disabled = false;
-      statusEl.textContent = '錄好了！按「完成並回傳」';
-    };
-    mediaRecorder.start();
-    isRecording = true;
-    btnRec.textContent = '停止錄音';
-    statusEl.textContent = '錄音中…';
-    startTime = new Date();
-    timerId = setInterval(tick, 1000);
-    setupAnalyser(stream);
-  }).catch(function (err) {
-    statusEl.innerHTML = '<span class="err">無法取得麥克風<br>' + err.name + '<br>請點網址列左側鎖頭允許麥克風</span>';
+/* ---------- 轉檔成真正的 WAV / MP3 ---------- */
+function decodeToBuffer(blob) {
+  return blob.arrayBuffer().then(function (ab) {
+    var ctx = new (window.AudioContext || window.webkitAudioContext)();
+    return ctx.decodeAudioData(ab);
   });
-});
-
-function stopRec() {
-  if (!mediaRecorder || !isRecording) return;
-  mediaRecorder.stop();
-  isRecording = false;
-  btnRec.textContent = '重新錄音';
-  clearInterval(timerId);
-  cancelAnimationFrame(rafId);
-  if (stream) stream.getTracks().forEach(function (t) { t.stop(); });
-  resetBars();
+}
+function toInt16(f32) {
+  var out = new Int16Array(f32.length);
+  for (var i = 0; i < f32.length; i++) {
+    var s = Math.max(-1, Math.min(1, f32[i]));
+    out[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+  }
+  return out;
+}
+function encodeWav(ab) {
+  var pcm = toInt16(ab.getChannelData(0)), rate = ab.sampleRate;
+  var buf = new ArrayBuffer(44 + pcm.length * 2), v = new DataView(buf);
+  function str(o, s) { for (var i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); }
+  str(0, 'RIFF'); v.setUint32(4, 36 + pcm.length * 2, true); str(8, 'WAVE');
+  str(12, 'fmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, rate, true); v.setUint32(28, rate * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+  str(36, 'data'); v.setUint32(40, pcm.length * 2, true);
+  for (var i = 0; i < pcm.length; i++) v.setInt16(44 + i * 2, pcm[i], true);
+  return new Blob([v], { type: 'audio/wav' });
+}
+function encodeMp3(ab) {
+  if (!window.lamejs) throw new Error('MP3 編碼器未載入');
+  var pcm = toInt16(ab.getChannelData(0));
+  var enc = new lamejs.Mp3Encoder(1, ab.sampleRate, 128), parts = [];
+  for (var i = 0; i < pcm.length; i += 1152) {
+    var b = enc.encodeBuffer(pcm.subarray(i, i + 1152));
+    if (b.length > 0) parts.push(new Int8Array(b));
+  }
+  var end = enc.flush();
+  if (end.length > 0) parts.push(new Int8Array(end));
+  return new Blob(parts, { type: 'audio/mpeg' });
+}
+function convert(format) {
+  return decodeToBuffer(rawBlob).then(function (ab) {
+    if (format === 'mp3') {
+      try { return { blob: encodeMp3(ab), format: 'mp3' }; }
+      catch (e) { console.warn('MP3 編碼失敗，改用 WAV', e); return { blob: encodeWav(ab), format: 'wav' }; }
+    }
+    return { blob: encodeWav(ab), format: 'wav' };
+  });
 }
 
-btnDone.addEventListener('click', function () {
-  if (!blob) return;
-  if (!TARGET_ORIGIN) { statusEl.innerHTML = '<span class="err">缺少 origin 參數,無法回傳</span>'; return; }
-  if (!window.opener) { statusEl.innerHTML = '<span class="err">找不到主畫面視窗</span>'; return; }
-  btnDone.disabled = true;
-  statusEl.textContent = '回傳中…';
-  var reader = new FileReader();
-  reader.onloadend = function () {
-    window.opener.postMessage({
-      type: 'recording',
-      data: reader.result.split(',')[1],
-      mime: blob.type
-    }, TARGET_ORIGIN);
-    statusEl.textContent = '完成！視窗即將關閉';
-    setTimeout(function () { window.close(); }, 600);
+/* ---------- 檔名 / 上傳 / 下載 ---------- */
+function makeFilename(ext) {
+  var name = filenameInput.value.trim() || '我的錄音';
+  var n = new Date();
+  return name + '_' + n.getFullYear() + pad(n.getMonth() + 1) + pad(n.getDate()) + '_' +
+         pad(n.getHours()) + pad(n.getMinutes()) + pad(n.getSeconds()) + '.' + ext;
+}
+function openDialog(f) { currentFormat = f; dialog.style.display = 'flex'; filenameInput.value = ''; filenameInput.focus(); }
+function closeDialog() { dialog.style.display = 'none'; }
+
+function confirmUpload() {
+  if (!rawBlob) return;
+  closeDialog();
+  showOverlay('轉檔中…');
+
+  convert(currentFormat).then(function (r) {
+    var filename = makeFilename(r.format);
+    showOverlay('上傳中…');
+    return new Promise(function (resolve, reject) {
+      var reader = new FileReader();
+      reader.onloadend = function () {
+        // 不加自訂 header，避免觸發 CORS preflight（GAS 不支援 OPTIONS）
+        fetch(GAS_URL, {
+          method: 'POST',
+          body: JSON.stringify({
+            token: UPLOAD_TOKEN,
+            data: reader.result.split(',')[1],
+            filename: filename,
+            format: r.format
+          })
+        })
+        .then(function (res) { return res.json(); })
+        .then(resolve)
+        .catch(reject);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(r.blob);
+    });
+  })
+  .then(function (res) {
+    if (res && res.ok) { showResult('上傳成功！🎉'); mood('happy'); }
+    else { showResult('上傳失敗：' + ((res && res.message) || '未知錯誤')); }
+  })
+  .catch(function (err) {
+    console.error(err);
+    showResult('上傳失敗：' + err.message);
+  });
+}
+
+function localDownload() {
+  if (!rawBlob) return;
+  closeDialog();
+  showOverlay('轉檔中…');
+  convert(currentFormat).then(function (r) {
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(r.blob);
+    a.download = makeFilename(r.format);
+    a.click();
+    URL.revokeObjectURL(a.href);
+    showResult('已下載到你的電腦 💾');
+  }).catch(function (e) { showResult('轉檔失敗：' + e.message); });
+}
+
+/* ---------- 播放 / 停止 ---------- */
+playButton.addEventListener('click', function () {
+  if (!audioUrl) { statusLabel.textContent = '請先錄音 🎤'; return; }
+  if (isPlaying) {
+    audioElement.pause(); isPlaying = false;
+    playButton.classList.remove('playing');
+    statusLabel.textContent = '暫停播放';
+    clearInterval(timerId); cancelAnimationFrame(rafId); resetWave();
+    return;
+  }
+  audioElement.play();
+  isPlaying = true;
+  playButton.classList.add('playing');
+  statusLabel.textContent = '正在播放...';
+  mood('surprised');
+  startTime = new Date(new Date() - audioElement.currentTime * 1000);
+  timerId = setInterval(tick, 500);
+  (function anim() {
+    if (!isPlaying) { resetWave(); return; }
+    for (var i = 0; i < bars.length; i++) bars[i].style.height = (Math.random() * 15 + 5) + 'px';
+    rafId = requestAnimationFrame(anim);
+  })();
+  audioElement.onended = function () {
+    isPlaying = false;
+    playButton.classList.remove('playing');
+    clearInterval(timerId); cancelAnimationFrame(rafId);
+    timeDisplay.textContent = '00:00';
+    statusLabel.textContent = '播放完成！';
+    mood('happy'); resetWave();
   };
-  reader.readAsDataURL(blob);
 });
+
+stopButton.addEventListener('click', function () {
+  if (isRecording) { stopRecording(); statusLabel.textContent = '已停止錄音'; return; }
+  if (isPlaying) {
+    audioElement.pause(); audioElement.currentTime = 0; isPlaying = false;
+    playButton.classList.remove('playing');
+    clearInterval(timerId); cancelAnimationFrame(rafId); resetWave();
+  }
+  timeDisplay.textContent = '00:00';
+  statusLabel.textContent = '準備錄音';
+  mood('happy');
+});
+
+mp3Btn.addEventListener('click', function () { if (rawBlob) openDialog('mp3'); });
+wavBtn.addEventListener('click', function () { if (rawBlob) openDialog('wav'); });
+document.getElementById('cancel-download').addEventListener('click', closeDialog);
+document.getElementById('confirm-download').addEventListener('click', confirmUpload);
+document.getElementById('local-download').addEventListener('click', localDownload);
+filenameInput.addEventListener('keyup', function (e) { if (e.key === 'Enter') confirmUpload(); });
+
+setInterval(function () {
+  var eyes = document.querySelectorAll('.eye');
+  for (var i = 0; i < eyes.length; i++) {
+    (function (el) { el.style.height = '1px'; setTimeout(function () { el.style.height = '15px'; }, 200); })(eyes[i]);
+  }
+}, 5000);
 </script>
 </body>
 </html>
