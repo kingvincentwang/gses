@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>關西國小校訂課程：序篇 - 建築傳說與食帶力量</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        hakka: {
+                            blue: '#1b365d',
+                            red: '#8b263e',
+                            gold: '#c99700',
+                            green: '#2d5a27',
+                            paper: '#fcf8f2'
+                        }
+                    },
+                    fontFamily: {
+                        serif: ['Noto Serif TC', 'serif'],
+                        sans: ['Noto Sans TC', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;600;700&family=Noto+Serif+TC:wght@500;700;900&display=swap');
+
+        /* 開場片頭動畫樣式 */
+        #intro-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #0d131a;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #ffffff;
+            transition: opacity 1.2s ease-in-out, visibility 1.2s;
+            overflow: hidden;
+        }
+
+        .anim-text {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 1s forwards;
+        }
+
+        .delay-1 { animation-delay: 0.5s; }
+        .delay-2 { animation-delay: 1.5s; }
+        .delay-3 { animation-delay: 2.8s; }
+        .delay-4 { animation-delay: 4.0s; }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .glow-effect {
+            text-shadow: 0 0 20px rgba(212, 175, 55, 0.6), 0 0 40px rgba(212, 175, 55, 0.3);
+        }
+
+        /* 粒子背景燈光 */
+        .ambient-light {
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(201,151,0,0.15) 0%, rgba(0,0,0,0) 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: pulse 6s infinite alternate;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.8); opacity: 0.5; }
+            100% { transform: scale(1.2); opacity: 0.9; }
+        }
+
+        .card-hover {
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+        .card-hover:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.15);
+        }
+    </style>
+</head>
+<body class="bg-[#f7f5f0] text-gray-800 font-sans min-h-screen flex flex-col justify-between selection:bg-hakka-gold selection:text-white">
+
+    <!-- 片頭動畫 Overlay -->
+    <div id="intro-overlay">
+        <div class="ambient-light"></div>
+        <div class="text-center px-6 max-w-3xl z-10">
+            <!-- 閃耀校徽展示 -->
+            <div class="anim-text delay-1 mb-4 flex justify-center">
+                <img src="gses03.png" alt="關西國小校徽" class="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border-2 border-hakka-gold/70 shadow-lg glow-effect" />
+            </div>
+            <p class="anim-text delay-1 text-hakka-gold tracking-[0.3em] text-lg sm:text-xl font-light mb-2">
+                新竹縣關西國民小學 ‧ 校訂課程
+            </p>
+            <h2 class="anim-text delay-2 text-2xl sm:text-4xl font-serif text-gray-300 font-normal mb-6">
+                百年石店尾 ‧ 風土與歲月的交響曲
+            </h2>
+            <div class="anim-text delay-3 my-6">
+                <h1 class="text-4xl sm:text-5xl font-serif font-black text-white tracking-wider glow-effect mb-3">
+                    【序篇】食帶與建築的交織
+                </h1>
+                <p class="text-gray-400 text-sm sm:text-base font-light max-w-lg mx-auto">
+                    踏尋古蹟歲月，品嚐風土滋味，培育具在地情懷永續視野的關西小公民。
+                </p>
+            </div>
+            <button id="skip-btn" onclick="closeIntro()" class="anim-text delay-4 mt-8 px-8 py-3 bg-hakka-gold/20 hover:bg-hakka-gold text-white font-medium border border-hakka-gold/50 rounded-full transition duration-300 transform hover:scale-105 flex items-center gap-2 mx-auto">
+                <span>進入課程序篇</span>
+                <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- 主要網頁內容 -->
+    <div>
+        <!-- 頂部 Header -->
+        <header class="bg-hakka-blue text-white shadow-lg sticky top-0 z-40">
+            <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+                <div class="flex items-center space-x-3">
+                    <!-- 替換為關西國小校徽 -->
+                    <div class="w-11 h-11 rounded-full bg-white p-0.5 shadow-md flex items-center justify-center border border-amber-300/60 overflow-hidden flex-shrink-0">
+                        <img src="gses05.png" alt="關西國小校徽" class="w-full h-full rounded-full object-cover" />
+                    </div>
+                    <div>
+                        <h1 class="font-serif font-bold text-lg sm:text-xl leading-tight">關西國小校訂課程</h1>
+                        <p class="text-xs text-blue-200">School-based Curriculum Prologue</p>
+                    </div>
+                </div>
+                <div class="hidden sm:flex items-center space-x-4 text-sm">
+                    <a href="#intro" class="hover:text-hakka-gold transition">序篇導言</a>
+                    <a href="#links" class="hover:text-hakka-gold transition">雙軸連結</a>
+                    <a href="#architecture" class="hover:text-hakka-gold transition">建築傳說</a>
+                    <a href="#food" class="hover:text-hakka-gold transition">食帶力量</a>
+                </div>
+            </div>
+        </header>
+
+        <!-- Hero 區域 -->
+        <section id="intro" class="relative bg-gradient-to-b from-hakka-blue to-slate-800 text-white py-16 px-4 overflow-hidden">
+            <div class="max-w-4xl mx-auto text-center relative z-10">
+                <span class="bg-hakka-gold/20 text-hakka-gold border border-hakka-gold/30 text-xs px-3 py-1 rounded-full uppercase tracking-wider mb-4 inline-block">
+                    百年歷史 ‧ 在地扎根
+                </span>
+                <h2 class="text-3xl sm:text-5xl font-serif font-bold mb-6 leading-tight">
+                    穿越歲月牆垣，品味大地饋贈
+                </h2>
+                <p class="text-slate-300 text-base sm:text-lg font-light leading-relaxed mb-8 max-w-3xl mx-auto">
+                    關西鎮擁有深厚的客家人文底蘊，從古老的伯公廟、石造東安橋，到飄香百年的仙草與紅茶。關西國小校訂課程以**「建築傳說」**與**「食帶力量」**雙主軸交織，引導孩子從探究走讀中建構在地認同，走向世界。
+                </p>
+                <div class="flex flex-wrap justify-center gap-4">
+                    <a href="#links" class="bg-hakka-gold hover:bg-yellow-600 text-slate-950 font-bold px-6 py-3 rounded-lg shadow-md transition flex items-center gap-2">
+                        <i data-lucide="compass" class="w-5 h-5"></i>
+                        探索課程雙主軸入口
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- 雙入口圖片卡片區 (全版圖片呈現) -->
+        <section id="links" class="max-w-6xl mx-auto px-4 -mt-10 relative z-20 mb-16">
+            <div class="grid md:grid-cols-2 gap-8">
+                
+                <!-- 卡片 1: 食帶力量 -->
+                <div class="card-hover group bg-white rounded-2xl shadow-xl overflow-hidden border border-amber-100 flex flex-col justify-between">
+                    <div>
+                        <!-- 全版圖片區塊：food01.png -->
+                        <div class="relative w-full h-64 sm:h-72 overflow-hidden bg-emerald-950">
+                            <img src="food01.png" alt="食帶力量全版背景" class="w-full h-full object-cover object-center group-hover:scale-105 transition duration-500" />
+                            <!-- 底部漸層確保標題閱讀清晰 -->
+                            <div class="absolute inset-0 bg-gradient-to-t from-emerald-950/90 via-emerald-950/30 to-transparent p-6 flex flex-col justify-end">
+                                <div class="absolute top-4 right-4 bg-emerald-900/60 backdrop-blur-md p-2.5 rounded-full border border-white/20">
+                                    <i data-lucide="utensils" class="w-6 h-6 text-amber-300"></i>
+                                </div>
+                                <span class="text-amber-300 text-xs tracking-widest font-semibold uppercase">主題一 ‧ 風土美食</span>
+                                <h3 class="text-3xl font-serif font-bold text-white mt-1 drop-shadow-md">食帶力量</h3>
+                            </div>
+                        </div>
+                        <div class="p-6">
+                            <p class="text-gray-600 text-sm leading-relaxed mb-4">
+                                以「舌尖上的關西」為引，結合低年級的蕃茄、仙草，到中高年級的茶文化、豆腐、醬油與鹹菜。讓學生從食材源頭了解農藝、風土文化與健康膳食。
+                            </p>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <span class="bg-green-50 text-green-700 text-xs px-2.5 py-1 rounded font-medium">番茄新花樣</span>
+                                <span class="bg-green-50 text-green-700 text-xs px-2.5 py-1 rounded font-medium">仙草甜蜜蜜</span>
+                                <span class="bg-green-50 text-green-700 text-xs px-2.5 py-1 rounded font-medium">茶顏觀色</span>
+                                <span class="bg-green-50 text-green-700 text-xs px-2.5 py-1 rounded font-medium">醬香蔭油</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="px-6 pb-6 pt-2 border-t border-gray-100">
+                        <a href="https://school-based-d74a2.web.app/" target="_blank" rel="noopener noreferrer" 
+                           class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-medium py-3 px-4 rounded-xl transition flex items-center justify-center gap-2 shadow-sm">
+                            <span>進入「食帶力量」課程平台</span>
+                            <i data-lucide="external-link" class="w-4 h-4"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- 卡片 2: 建築傳說 -->
+                <div class="card-hover group bg-white rounded-2xl shadow-xl overflow-hidden border border-red-100 flex flex-col justify-between">
+                    <div>
+                        <!-- 全版圖片區塊：arch01.png -->
+                        <div class="relative w-full h-64 sm:h-72 overflow-hidden bg-rose-950">
+                            <img src="arch01.png" alt="建築傳說全版背景" class="w-full h-full object-cover object-center group-hover:scale-105 transition duration-500" />
+                            <!-- 底部漸層確保標題閱讀清晰 -->
+                            <div class="absolute inset-0 bg-gradient-to-t from-rose-950/90 via-rose-950/30 to-transparent p-6 flex flex-col justify-end">
+                                <div class="absolute top-4 right-4 bg-rose-900/60 backdrop-blur-md p-2.5 rounded-full border border-white/20">
+                                    <i data-lucide="building-2" class="w-6 h-6 text-amber-300"></i>
+                                </div>
+                                <span class="text-amber-300 text-xs tracking-widest font-semibold uppercase">主題二 ‧ 歷史空間</span>
+                                <h3 class="text-3xl font-serif font-bold text-white mt-1 drop-shadow-md">建築傳說</h3>
+                            </div>
+                        </div>
+                        <div class="p-6">
+                            <p class="text-gray-600 text-sm leading-relaxed mb-4">
+                                從校園旁的土地公信仰踏查出發，穿梭太和宮、關西分駐所、羅屋書院至東安古橋。讓磚瓦會說話，帶領學生閱讀聚落構造與經典人文故事。
+                            </p>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <span class="bg-red-50 text-red-700 text-xs px-2.5 py-1 rounded font-medium">土地守護神</span>
+                                <span class="bg-red-50 text-red-700 text-xs px-2.5 py-1 rounded font-medium">太和宮傳奇</span>
+                                <span class="bg-red-50 text-red-700 text-xs px-2.5 py-1 rounded font-medium">關西分駐所</span>
+                                <span class="bg-red-50 text-red-700 text-xs px-2.5 py-1 rounded font-medium">戀戀牛欄河</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="px-6 pb-6 pt-2 border-t border-gray-100">
+                        <a href="https://school-based-d74a2.web.app/" target="_blank" rel="noopener noreferrer" 
+                           class="w-full bg-hakka-red hover:bg-red-900 text-white font-medium py-3 px-4 rounded-xl transition flex items-center justify-center gap-2 shadow-sm">
+                            <span>進入「建築傳說」課程平台</span>
+                            <i data-lucide="external-link" class="w-4 h-4"></i>
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- 課程架構細節 -->
+        <main class="max-w-6xl mx-auto px-4 pb-16 space-y-16">
+
+            <!-- 序篇導論內文 -->
+            <section class="bg-white p-8 sm:p-10 rounded-2xl shadow-sm border border-stone-200">
+                <div class="max-w-3xl mx-auto">
+                    <div class="text-center mb-8">
+                        <h2 class="text-2xl sm:text-3xl font-serif font-bold text-hakka-blue">閱讀關西，扎根客莊</h2>
+                        <div class="w-16 h-1 bg-hakka-gold mx-auto mt-3 rounded-full"></div>
+                    </div>
+                    <div class="prose prose-stone max-w-none text-gray-700 space-y-4 leading-relaxed">
+                        <p>
+                            關西國小的校訂課程以客家聚落文化為沃土，透過跨領域的專題學習（PBL），引導學童從最貼近生活經驗的「飲食」與「建築空間」開始觀察。
+                        </p>
+                        <p>
+                            兩套課程計畫緊密融合**國語文閱讀**、**客語母語教學**與**在地文化踏查**，從低年級感官體驗、中年級專題探索，到高年級文創設計與走讀導覽，建立孩子對家鄉濃厚的自信與認同感。
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 建築傳說 總覽 -->
+            <section id="architecture" class="space-y-6">
+                <div class="flex items-center space-x-3">
+                    <div class="p-2 bg-hakka-red text-white rounded-lg">
+                        <i data-lucide="castle" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-serif font-bold text-gray-900">建築傳說 ‧ 學習脈絡表</h3>
+                        <p class="text-sm text-gray-500">以古蹟與建築為線索，訴說歲月的故事</p>
+                    </div>
+                </div>
+
+                <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div class="bg-white p-5 rounded-xl border border-stone-200 shadow-sm">
+                        <div class="text-xs font-bold text-hakka-red mb-1">一年級 / 二年級</div>
+                        <h4 class="font-bold text-lg text-gray-800 mb-2">校園與土地守護神</h4>
+                        <p class="text-xs text-gray-600">透過地圖尋找伯公廟、歌謠唱跳《伯公伯婆》，學習客語禮儀與敬拜文化。</p>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl border border-stone-200 shadow-sm">
+                        <div class="text-xs font-bold text-hakka-red mb-1">二年級</div>
+                        <h4 class="font-bold text-lg text-gray-800 mb-2">太和宮傳奇</h4>
+                        <p class="text-xs text-gray-600">探尋太和宮歷史發展、風水傳說與入廟禮儀，感受社區信仰中心凝聚力。</p>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl border border-stone-200 shadow-sm">
+                        <div class="text-xs font-bold text-hakka-red mb-1">三年級</div>
+                        <h4 class="font-bold text-lg text-gray-800 mb-2">守護與守戶：關西分駐所</h4>
+                        <p class="text-xs text-gray-600">走讀分駐所與石店尾老街，製作旅遊手冊，擔任浪漫台三線小小觀光大使。</p>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl border border-stone-200 shadow-sm">
+                        <div class="text-xs font-bold text-hakka-red mb-1">四年級</div>
+                        <h4 class="font-bold text-lg text-gray-800 mb-2">羅屋築蹟：書院足跡</h4>
+                        <p class="text-xs text-gray-600">探討豫章堂堂號由來、一堂四橫客家建築美學與木雕民間故事。</p>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl border border-stone-200 shadow-sm">
+                        <div class="text-xs font-bold text-hakka-red mb-1">五年級</div>
+                        <h4 class="font-bold text-lg text-gray-800 mb-2">戀戀牛欄河</h4>
+                        <p class="text-xs text-gray-600">實地踏查東安古橋與親水公園，賞析仿哥德式橋墩結構與歷史變遷。</p>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl border border-stone-200 shadow-sm">
+                        <div class="text-xs font-bold text-hakka-red mb-1">六年級</div>
+                        <h4 class="font-bold text-lg text-gray-800 mb-2">天主堂新詩與走讀</h4>
+                        <p class="text-xs text-gray-600">跨文化建築賞析，融合客語與新詩創作，記錄在地建築人文風貌。</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 食帶力量 總覽 -->
+            <section id="food" class="space-y-6">
+                <div class="flex items-center space-x-3">
+                    <div class="p-2 bg-emerald-700 text-white rounded-lg">
+                        <i data-lucide="apple" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-serif font-bold text-gray-900">食帶力量 ‧ 學習脈絡表</h3>
+                        <p class="text-sm text-gray-500">品嚐關西風土，傳承客家好滋味</p>
+                    </div>
+                </div>
+
+                <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div class="bg-white p-5 rounded-xl border border-stone-200 shadow-sm">
+                        <div class="text-xs font-bold text-emerald-700 mb-1">一年級上學期</div>
+                        <h4 class="font-bold text-lg text-gray-800 mb-2">「蕃」新花樣</h4>
+                        <p class="text-xs text-gray-600">認識關西蕃茄品種、品嚐與觀察，學習蕃茄主題客語淺易對話。</p>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl border border-stone-200 shadow-sm">
+                        <div class="text-xs font-bold text-emerald-700 mb-1">二年級上學期</div>
+                        <h4 class="font-bold text-lg text-gray-800 mb-2">仙草甜蜜蜜</h4>
+                        <p class="text-xs text-gray-600">探訪仙草故鄉，自製仙草蜜 DIY，並運用文字寫下仙草觀察日記。</p>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl border border-stone-200 shadow-sm">
+                        <div class="text-xs font-bold text-emerald-700 mb-1">三年級上學期</div>
+                        <h4 class="font-bold text-lg text-gray-800 mb-2">「茶」顏觀色</h4>
+                        <p class="text-xs text-gray-600">踏查台灣紅茶公司，體驗揉茶製茶工藝，深入瞭解關西茶業歷史。</p>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl border border-stone-200 shadow-sm">
+                        <div class="text-xs font-bold text-emerald-700 mb-1">四年級上學期</div>
+                        <h4 class="font-bold text-lg text-gray-800 mb-2">腐腐生豐</h4>
+                        <p class="text-xs text-gray-600">體驗豆腐文化，設計幸福豆腐餐，探討慢食文化與在地產業。</p>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl border border-stone-200 shadow-sm">
+                        <div class="text-xs font-bold text-emerald-700 mb-1">五年級上學期</div>
+                        <h4 class="font-bold text-lg text-gray-800 mb-2">醬香蔭油</h4>
+                        <p class="text-xs text-gray-600">實地參訪醬油廠，進行客家文創包裝設計，運用客語介紹醬香料理。</p>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl border border-stone-200 shadow-sm">
+                        <div class="text-xs font-bold text-emerald-700 mb-1">六年級上學期</div>
+                        <h4 class="font-bold text-lg text-gray-800 mb-2">鹹菜甕前世今生</h4>
+                        <p class="text-xs text-gray-600">探索關西舊名「鹹菜甕」之由來，體驗芥菜醃漬，學習客家惜食智慧。</p>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- 頁尾 Footer -->
+    <footer class="bg-slate-900 text-slate-400 py-8 border-t border-slate-800 text-center text-sm">
+        <div class="max-w-6xl mx-auto px-4 space-y-3">
+            <div class="flex justify-center items-center gap-2">
+                <img src="gses05.png" alt="關西國小校徽" class="w-6 h-6 rounded-full object-cover border border-amber-400/50" />
+                <p class="font-serif text-slate-300">新竹縣關西國民小學校訂課程--設計者：Vincent Wang Powered by Gemini.</p>
+            </div>
+            <p class="text-xs text-slate-500">© Guansi Elementary School. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // 初始化 Lucide 圖標
+        lucide.createIcons();
+
+        // 關閉動畫淡出
+        function closeIntro() {
+            const overlay = document.getElementById('intro-overlay');
+            overlay.style.opacity = '0';
+            overlay.style.visibility = 'hidden';
+            setTimeout(() => {
+                overlay.style.display = 'none';
+            }, 1200);
+        }
+
+        // 5.5 秒後自動點擊關閉動畫（如果使用者沒按）
+        setTimeout(() => {
+            const overlay = document.getElementById('intro-overlay');
+            if (overlay && overlay.style.opacity !== '0') {
+                closeIntro();
+            }
+        }, 6000);
+    </script>
+</body>
+</html>
