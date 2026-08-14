@@ -1,0 +1,3666 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>行政減量—行政數位化｜教務處</title>
+    <!-- 01. 全站主題、版面與響應式樣式 -->
+    <style>
+      :root {
+        --bg: #061124;
+        --glass: rgba(13, 35, 69, 0.73);
+        --line: rgba(147, 197, 253, 0.2);
+        --text: #edf6ff;
+        --muted: #a9bdd5;
+        --cyan: #4ee0ff;
+        --blue: #788cff;
+        --yellow: #ffd66b;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        margin: 0;
+        color: var(--text);
+        font-family:
+          "Noto Sans TC", "Microsoft JhengHei", system-ui, sans-serif;
+        background:
+          radial-gradient(circle at 10% 5%, #164479 0, transparent 30%),
+          radial-gradient(circle at 90% 18%, #30358c 0, transparent 25%),
+          linear-gradient(145deg, #040b18, #071a35 55%, #071327);
+        line-height: 1.75;
+        min-height: 100vh;
+      }
+      body:before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background-image:
+          linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+          linear-gradient(
+            90deg,
+            rgba(255, 255, 255, 0.025) 1px,
+            transparent 1px
+          );
+        background-size: 36px 36px;
+      }
+      a {
+        color: inherit;
+      }
+      .layout {
+        display: grid;
+        grid-template-columns: 265px minmax(0, 1fr);
+        max-width: 1500px;
+        margin: auto;
+      }
+      .side {
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        padding: 28px 20px;
+        border-right: 1px solid var(--line);
+        background: rgba(3, 12, 28, 0.65);
+        backdrop-filter: blur(18px);
+        z-index: 5;
+      }
+      .brand {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        margin-bottom: 28px;
+      }
+      .logo {
+        width: 48px;
+        height: 48px;
+        display: grid;
+        place-items: center;
+        border-radius: 15px;
+        background: linear-gradient(135deg, var(--cyan), var(--blue));
+        font-size: 25px;
+      }
+      .brand b {
+        display: block;
+      }
+      .brand small,
+      .muted {
+        color: var(--muted);
+      }
+      nav a {
+        display: block;
+        text-decoration: none;
+        padding: 10px 12px;
+        margin: 4px 0;
+        border-radius: 11px;
+        color: var(--muted);
+        transition: 0.2s;
+      }
+      nav a:hover,
+      nav a.active {
+        color: #fff;
+        background: rgba(78, 224, 255, 0.1);
+        transform: translateX(3px);
+      }
+      .source {
+        position: absolute;
+        left: 22px;
+        right: 22px;
+        bottom: 22px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      main {
+        min-width: 0;
+        padding: 30px 6vw 80px;
+      }
+      .actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+      }
+      .btn {
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.06);
+        color: #fff;
+        border-radius: 12px;
+        padding: 9px 14px;
+        cursor: pointer;
+        font-weight: 700;
+      }
+      .hero {
+        min-height: 68vh;
+        display: grid;
+        align-content: center;
+      }
+      .eyebrow {
+        color: var(--cyan);
+        font-weight: 800;
+        letter-spacing: 0.15em;
+      }
+      .hero h1 {
+        font-size: clamp(42px, 6vw, 82px);
+        line-height: 1.08;
+        margin: 14px 0 18px;
+        letter-spacing: -0.04em;
+      }
+      .gradient {
+        background: linear-gradient(90deg, #fff, var(--cyan), #aab6ff);
+        -webkit-background-clip: text;
+        color: transparent;
+      }
+      .lead {
+        font-size: clamp(18px, 2vw, 24px);
+        max-width: 850px;
+        color: #c7d8ec;
+      }
+      .flow {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+        margin-top: 34px;
+      }
+      .flow span {
+        padding: 11px 17px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.06);
+        font-weight: 800;
+      }
+      .flow i {
+        color: var(--cyan);
+        font-style: normal;
+      }
+      section {
+        scroll-margin-top: 25px;
+        margin: 36px 0 80px;
+      }
+      .head small {
+        color: var(--cyan);
+        font-weight: 800;
+        letter-spacing: 0.12em;
+      }
+      .head h2 {
+        font-size: clamp(29px, 4vw, 48px);
+        line-height: 1.2;
+        margin: 8px 0;
+      }
+      .head p {
+        color: var(--muted);
+        max-width: 850px;
+      }
+      .glass {
+        background: linear-gradient(
+          145deg,
+          rgba(18, 44, 83, 0.8),
+          rgba(9, 24, 50, 0.64)
+        );
+        border: 1px solid var(--line);
+        border-radius: 23px;
+        box-shadow: 0 24px 70px rgba(0, 0, 0, 0.26);
+        backdrop-filter: blur(20px);
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 18px;
+      }
+      .card {
+        padding: 24px;
+        position: relative;
+        overflow: hidden;
+      }
+      .card .icon {
+        font-size: 30px;
+      }
+      .card h3 {
+        margin: 9px 0 5px;
+      }
+      .card p {
+        color: var(--muted);
+        margin: 0;
+      }
+      .step:after {
+        content: attr(data-step);
+        position: absolute;
+        right: 13px;
+        top: -28px;
+        font-size: 95px;
+        font-weight: 900;
+        color: rgba(255, 255, 255, 0.045);
+      }
+      .callout {
+        padding: 24px 28px;
+        border-left: 4px solid var(--yellow);
+        margin-top: 18px;
+      }
+      .callout strong {
+        color: var(--yellow);
+      }
+      .two {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+      }
+      .two h3 {
+        color: var(--cyan);
+      }
+      .systems {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .system {
+        display: flex;
+        gap: 18px;
+        padding: 23px;
+        text-decoration: none;
+        transition: 0.25s;
+      }
+      .system:hover {
+        transform: translateY(-5px);
+        border-color: rgba(78, 224, 255, 0.5);
+      }
+      .sysicon {
+        flex: 0 0 54px;
+        height: 54px;
+        display: grid;
+        place-items: center;
+        border-radius: 17px;
+        background: linear-gradient(
+          135deg,
+          rgba(78, 224, 255, 0.2),
+          rgba(120, 140, 255, 0.25)
+        );
+        font-size: 26px;
+      }
+      .system p {
+        margin: 4px 0;
+        color: var(--muted);
+      }
+      .go {
+        color: var(--cyan);
+        font-weight: 800;
+        font-size: 13px;
+      }
+      .search {
+        width: min(520px, 100%);
+        padding: 13px 16px;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: rgba(0, 0, 0, 0.18);
+        color: #fff;
+        font-size: 16px;
+      }
+      .prompt {
+        padding: 26px;
+        margin: 14px 0;
+        position: relative;
+      }
+      .prompt pre {
+        white-space: pre-wrap;
+        font-family: inherit;
+        margin: 0;
+        padding-right: 70px;
+        color: #dceaff;
+      }
+      .copy {
+        position: absolute;
+        right: 15px;
+        top: 15px;
+      }
+      .acc {
+        margin: 12px 0;
+        overflow: hidden;
+      }
+      .acc > button {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        padding: 20px 22px;
+        border: 0;
+        background: transparent;
+        color: #fff;
+        font-size: 18px;
+        font-weight: 800;
+        text-align: left;
+      }
+      .acc .body {
+        display: none;
+        padding: 0 22px 22px;
+        color: var(--muted);
+      }
+      .acc.open .body {
+        display: block;
+      }
+      .hide {
+        display: none !important;
+      }
+      footer {
+        text-align: center;
+        color: var(--muted);
+        border-top: 1px solid var(--line);
+        padding-top: 25px;
+      }
+      .menu {
+        display: none;
+      }
+      @media (max-width: 900px) {
+        .layout {
+          display: block;
+        }
+        .side {
+          display: none;
+          position: fixed;
+          width: 280px;
+        }
+        .side.show {
+          display: block;
+        }
+        main {
+          padding: 22px;
+        }
+        .menu {
+          display: block;
+          margin-right: auto;
+        }
+        .grid,
+        .systems,
+        .two {
+          grid-template-columns: 1fr;
+        }
+        .hero {
+          min-height: 72vh;
+        }
+      }
+      @media print {
+        html,
+        body {
+          height: auto !important;
+          min-height: 0 !important;
+          overflow: visible !important;
+        }
+        body {
+          background: #fff;
+          color: #123;
+        }
+        /* body:before 是 position:fixed 的滿版格線背景，
+           列印時固定定位元素常讓 Chrome 多算出一張空白首頁，
+           把真正內容往後推一頁，這裡直接關閉即可。 */
+        body:before {
+          display: none !important;
+          content: none !important;
+        }
+        .side,
+        .actions,
+        .copy {
+          display: none;
+        }
+        .layout {
+          display: block;
+        }
+        main {
+          padding: 0;
+        }
+        .glass {
+          background: #fff;
+          box-shadow: none;
+          border: 1px solid #ccd6e2;
+        }
+        .muted,
+        .card p,
+        .system p,
+        .head p,
+        .acc .body {
+          color: #456;
+        }
+        .acc .body {
+          display: block;
+        }
+        .hero {
+          min-height: auto;
+        }
+        .gradient {
+          color: #123;
+        }
+        section {
+          margin: 28px 0;
+        }
+      }
+    </style>
+    <!-- 02. 程式碼展示與分頁導覽元件 -->
+    <style>
+      .code-library {
+        margin-top: 38px;
+      }
+      .code-case {
+        margin: 16px 0;
+        overflow: hidden;
+      }
+      .code-case summary {
+        cursor: pointer;
+        padding: 20px 22px;
+        font-weight: 900;
+        font-size: 18px;
+        list-style: none;
+      }
+      .code-case summary::-webkit-details-marker {
+        display: none;
+      }
+      .code-case summary:after {
+        content: "＋";
+        float: right;
+        color: var(--cyan);
+      }
+      .code-case[open] summary:after {
+        content: "－";
+      }
+      .code-wrap {
+        padding: 0 20px 22px;
+      }
+      .code-meta {
+        color: var(--muted);
+        margin: 0 0 15px;
+      }
+      .tabs {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 10px;
+      }
+      .tab {
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--muted);
+        padding: 8px 13px;
+        border-radius: 9px;
+        cursor: pointer;
+        font-weight: 800;
+      }
+      .tab.active {
+        background: rgba(78, 224, 255, 0.14);
+        color: #fff;
+        border-color: var(--cyan);
+      }
+      .codebox {
+        position: relative;
+        background: #030914;
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        border-radius: 14px;
+        overflow: hidden;
+      }
+      .code-block {
+        display: none;
+      }
+      .code-block.active {
+        display: block;
+      }
+      .code-block .print-label {
+        display: none;
+      }
+      .codebox pre {
+        margin: 0;
+        padding: 50px 18px 20px;
+        max-height: 560px;
+        overflow: auto;
+        white-space: pre;
+        color: #d9e8ff;
+        font:
+          13px/1.6 Consolas,
+          Monaco,
+          monospace;
+      }
+      .code-copy {
+        position: absolute;
+        right: 12px;
+        top: 10px;
+        z-index: 1;
+      }
+      .setup-list {
+        margin: 15px 0 0;
+        color: var(--muted);
+      }
+      .page-panel[hidden] {
+        display: none !important;
+      }
+      .page-panel.page-enter {
+        animation: pageIn 0.28s ease both;
+      }
+      @keyframes pageIn {
+        from {
+          opacity: 0;
+          transform: translateY(12px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      nav a[aria-current="page"] {
+        color: #fff;
+        background: linear-gradient(
+          90deg,
+          rgba(78, 224, 255, 0.16),
+          rgba(120, 140, 255, 0.12)
+        );
+        box-shadow:
+          inset 3px 0 var(--cyan),
+          0 8px 25px rgba(0, 0, 0, 0.14);
+      }
+      @media print {
+        .page-panel[hidden] {
+          display: block !important;
+        }
+        .page-panel {
+          animation: none !important;
+        }
+        /* 手風琴（<details>）預設是收合的，列印時強制展開，
+           否則沒點開過的案例程式碼區塊會整段印不出來。 */
+        .code-case {
+          break-inside: avoid-page;
+        }
+        .code-case:not([open]) .code-wrap {
+          display: block !important;
+        }
+        .code-case summary:after {
+          content: "" !important;
+        }
+        /* Code.gs／index.html 兩個分頁在列印時都要顯示，
+           不能只印目前畫面上選到的那一個。 */
+        .tabs,
+        .code-copy {
+          display: none !important;
+        }
+        .code-block {
+          display: block !important;
+          margin-bottom: 14px;
+          break-inside: avoid;
+        }
+        .code-block .print-label {
+          display: block !important;
+          color: #123;
+          font-weight: 800;
+          margin: 0 0 6px;
+        }
+        /* 程式碼框原本有固定高度＋捲軸，列印時取消限制、
+           並改用自動換行，避免內容被裁掉或超出紙張寬度。 */
+        .codebox {
+          overflow: visible !important;
+        }
+        .codebox pre {
+          max-height: none !important;
+          overflow: visible !important;
+          white-space: pre-wrap !important;
+          word-break: break-word !important;
+          padding: 12px !important;
+          background: #f4f7fb !important;
+          color: #12233d !important;
+          border: 1px solid #ccd6e2;
+          border-radius: 8px;
+          font-size: 11px !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- 03. 應用程式外框：左側導覽＋右側分頁內容 -->
+    <div class="layout">
+      <aside class="side" id="side">
+        <div class="brand">
+          <div class="logo">🏫</div>
+          <div><b>行政數位化</b><small>教學處研習手冊</small></div>
+        </div>
+        <nav>
+          <a href="#home">首頁</a>
+			 <a href="#path">學習路徑</a>
+			 <a href="#why">為何使用 GAS</a>
+			 <a href="#tools">工具入門</a>
+			 <a href="#cases">案例程式碼</a>
+			 <a href="#ai">AI 提示詞</a>
+			 <a href="#deploy">部署提醒</a>
+			 <a href="#office">更多應用案例</a>
+        </nav>
+        <div class="source">
+          作者：Vincent Wang<br><b>
+		  新竹縣關西國小資訊組</b>
+        </div>
+      </aside>
+      <main>
+        <div class="actions">
+          <button class="btn menu" onclick="side.classList.toggle('show')">
+            ☰ 目錄</button>
+			<button class="btn" onclick="print()">🖨️ 列印／存成 PDF</button>
+        </div>
+        <header class="hero" id="home">
+          <div class="eyebrow">TEACHING AFFAIRS × DIGITAL WORKFLOW</div>
+          <h1>
+            行政減量<br /><span class="gradient">從試算表走向自動化</span>
+          </h1>
+          <p class="lead">
+            善用 Google Sheets 收集資料、GAS 自動處理、HTML 建立友善介面，再讓
+            Gemini 協助撰寫與除錯，逐步打造教務處行政數位網。
+          </p>
+          <div class="flow">
+            <span>Google Sheets</span><i>→</i><span>GAS 自動化</span><i>→</i
+            ><span>HTML 網頁</span><i>→</i><span>完整資料應用</span>
+          </div>
+        </header>
+        <section id="path">
+          <div class="head">
+            <small>01 · ROADMAP</small>
+            <h2>三階段學習路徑</h2>
+            <p>
+              先解決自己的工作，再把成果變成大家都能使用的系統。小步快跑，比一次蓋好數位行政帝國可靠得多。
+            </p>
+          </div>
+          <div class="grid">
+            <article class="glass card step" data-step="1">
+              <div class="icon">📊</div>
+              <h3>熟悉試算表</h3>
+              <p>先掌握欄列、公式、篩選、統計與正確的資料結構。</p>
+            </article>
+            <article class="glass card step" data-step="2">
+              <div class="icon">⚙️</div>
+              <h3>導入 GAS</h3>
+              <p>將重複操作程式化，加入選單、批次處理、通知與定時執行。</p>
+            </article>
+            <article class="glass card step" data-step="3">
+              <div class="icon">🖥️</div>
+              <h3>建立 HTML 介面</h3>
+              <p>部署成網頁，讓教師可填報、查詢與操作，不必直接碰試算表。</p>
+            </article>
+          </div>
+        </section>
+        <section id="why">
+          <div class="head">
+            <small>02 · WHY GAS</small>
+            <h2>為何導入 Google Apps Script？</h2>
+          </div>
+          <div class="grid">
+            <article class="glass card">
+              <div class="icon">🆓</div>
+              <h3>成本低</h3>
+              <p>在 Google 生態系內即可開發部署，適合校內小型工具快速起步。</p>
+            </article>
+            <article class="glass card">
+              <div class="icon">🤖</div>
+              <h3>自動化</h3>
+              <p>把整理、統計、通知、產表等例行工作交給程式。</p>
+            </article>
+            <article class="glass card">
+              <div class="icon">🔗</div>
+              <h3>整合容易</h3>
+              <p>可串接 Sheets、Drive、Gmail、Calendar 與外部 API。</p>
+            </article>
+          </div>
+          <div class="glass callout">
+            <strong>重要觀念：</strong>GAS
+            很實用，但不是萬能。需留意執行時間、每日配額、帳號授權、資料權限與個資安全。
+          </div>
+        </section>
+        <section id="tools">
+          <div class="head">
+            <small>03 · TOOLKIT</small>
+            <h2>三項核心工具</h2>
+          </div>
+          <div class="two">
+            <article class="glass card">
+              <h3>Google Sheets｜資料層</h3>
+              <ul>
+                <li>收集與儲存行政資料</li>
+                <li>查詢、搜尋、分類與統計</li>
+                <li>可作為網頁後端資料來源</li>
+              </ul>
+            </article>
+            <article class="glass card">
+              <h3>HTML＋CSS＋JavaScript｜介面層</h3>
+              <ul>
+                <li>HTML 定義內容與結構</li>
+                <li>CSS 負責版面與視覺</li>
+                <li>JavaScript 處理互動與資料傳送</li>
+              </ul>
+            </article>
+          </div>
+          <article class="glass card" style="margin-top: 18px">
+            <h3>GAS｜自動化與服務層</h3>
+            <p>
+              常用服務有
+              SpreadsheetApp、DriveApp、MailApp、UrlFetchApp、Utilities 與
+              HtmlService。新手可依「讀寫試算表 → 自動通知 → 串接服務 →
+              網頁部署」學習。
+            </p>
+          </article>
+        </section>
+        <section id="cases">
+          <div class="head">
+            <small>04 · CODE EXAMPLES</small>
+            <h2>案例程式碼展示區</h2>
+            <p>
+              保留六個教學組行政案例的完整實作。每個案例均可切換
+              <b>Code.gs</b> 與 <b>index.html</b>，並可一鍵複製程式碼。
+            </p>
+          </div>
+          <div class="code-library"><div id="caseCodes"></div></div>
+        </section>
+        <section id="ai">
+          <div class="head">
+            <small>05 · AI PROMPTS</small>
+            <h2>讓 AI 成為程式協作助手</h2>
+            <p>
+              以下六張提示詞卡片分別對應六個行政案例。可先複製提示詞交給
+              Gemini，再依學校實際欄位、權限與流程逐步修正。
+            </p>
+          </div>
+          <div class="glass prompt">
+            <button class="btn copy" onclick="copyText(this)">複製</button>
+            <h3>① 研習時數統計</h3>
+            <pre>
+你現在是一位精通 Google Apps Script (GAS) 與前端網頁設計的工程師。我有一個 Google 試算表，用來記錄「教師研習時數」。請幫我撰寫完整的 GAS 程式碼與 HTML/CSS/JS 網頁程式碼，需包含以下功能：
+
+一、GAS 試算表端功能 (Code.gs)
+1. 自訂選單：開啟試算表時，在工具列產生一個「🛠️ 自訂工具」選單。
+2. 隱藏姓名中間字：選單包含一個功能，能讀取 B 欄的「教師姓名」，將兩個字的名字第二個字變成 O（如王明變成王O），三個字以上的中間字都變成 O（如施凱成變成施O成），並寫回原欄位。
+3. 統計研習時數：選單包含另一個功能，能讀取 B 欄（姓名）與 I 欄（研習時數），加總每位教師的總時數後，將結果輸出到一個名為「教師總研習時數」的新工作表。
+4. Web App 部署：建立 doGet(e) 函式載入 Index.html，並撰寫一個 getSpreadsheetData() 函式，回傳試算表的明細資料與加總過後的統計資料給前端使用。
+
+二、Web App 網頁端功能 (Index.html)
+1. UI/UX 設計：使用深藍色系、具有科技感與玻璃擬物化 (Glassmorphism) 風格的介面。包含漸層背景、毛玻璃卡片效果 (backdrop-filter) 與發光邊框。
+2. 版面配置：頂部有系統標題。有一個全域搜尋框，輸入關鍵字即可即時篩選下方表格資料。
+3. 提供兩個頁籤按鈕：「📜 研習時數明細」與「📊 個別教師統計」，點擊可切換顯示不同的表格。
+4. 資料互動：開啟網頁時需顯示 Loading 動畫，透過 google.script.run 獲取資料後渲染表格。
+5. 搜尋功能需使用 JavaScript 即時過濾行資料（包含明細與統計表格）。
+				</pre            >
+          </div>
+          <div class="glass prompt">
+            <button class="btn copy" onclick="copyText(this)">複製</button>
+            <h3>② 試卷上傳通知</h3>
+            <pre>
+請使用 Google Apps Script＋HTML＋Google Sheets＋Google Drive＋Google Chat Webhook 建立「試卷上傳通知系統」：
+1. 欄位包含學期、年級、科目、評量類型、上傳者、備註與試卷檔案。
+2. 只接受 PDF、DOCX、JPG、PNG，單檔上限 20MB。
+3. 檔案存入指定 Drive 資料夾，資料寫入「試卷上傳」工作表。
+4. 上傳成功後傳送 Google Chat 通知，Webhook 請存於 Script Properties，不可寫在前端。
+5. 加入欄位驗證、錯誤處理、重複送出防護及上傳進度提示。
+6. 請提供完整 Code.gs、index.html、設定資料夾 ID、Webhook 與部署步驟。</pre
+            >
+          </div>
+          <div class="glass prompt">
+            <button class="btn copy" onclick="copyText(this)">複製</button>
+            <h3>③ 前五名與進步獎填寫</h3>
+            <pre>
+請使用 Google Apps Script＋HTML＋Google Sheets 建立「前五名與進步獎填寫系統」：
+1. 提供班級與填報教師欄位。
+2. 前五名提供 5 個正式姓名欄位及 3 個備用欄位。
+3. 進步獎提供 3 個正式姓名欄位及 2 個備用欄位。
+4. 必須檢查正式名額是否填滿，同一學生不可重複。
+5. 每位學生各寫成一列，記錄時間、班級、獎項、順位、姓名及填報教師。
+6. 資料成功寫入後，自動傳送 Google Chat 通知，通知內容包含班級、填報教師、前五名、進步獎與備用名單。
+7. Google Chat Webhook URL 必須存放在 Apps Script 的「指令碼屬性」，屬性名稱使用 CHAT_WEBHOOK，不可寫在 Code.gs 或前端 HTML。
+8. 若資料已寫入但 Chat 通知失敗，需回傳「資料已儲存、通知失敗」的警告，不可讓使用者誤以為資料未送出。
+9. 請提供完整 Code.gs、index.html、setup()、CHAT_WEBHOOK 設定方式與網頁應用程式部署步驟。</pre
+            >
+          </div>
+          <div class="glass prompt">
+            <button class="btn copy" onclick="copyText(this)">複製</button>
+            <h3>④ 唐詩宋詞檢核系統</h3>
+            <pre>
+你現在是一位精通 Google Apps Script (GAS) 與前端網頁開發（Bootstrap 5 + JavaScript）的全端工程師。請幫我開發一個「唐詩宋詞檢核系統」的 GAS Web App。
+
+【專案結構與資料庫需求】
+此系統基於 Google Sheets 作為資料庫，包含以下工作表：
+1. 「檢核記錄」：欄位依序為 [時間, 週次, 年級, 班級, 座號, 檢核詩詞, 結果]。
+2. 「一上」至「六下」共12個工作表（作為詩詞題庫）：欄位依序為 [詩名, 作者, 詩文內容]。
+
+【後端功能需求 (Code.gs)】
+1. doGet(e)：回傳 index.html。
+2. initPoemSheets()：自動初始化並建立「一上」到「六下」的資料表。
+3. getAllPoems()：抓取「一上」到「六下」所有的詩詞資料，以 JSON 物件回傳。需防呆處理空資料表。
+4. drawWeeklyNumbers(seat)：依傳入的「座號」，自動產生全校名單（1~6年級，各年級包含甲、乙、丙班，指定同一個座號）。
+5. submitResult(recordData)：將單筆檢核紀錄（週次, 年級, 班級, 座號, 詩詞, 結果）寫入「檢核記錄」工作表。
+6. searchByWeek(week)：依「週次」查詢「檢核記錄」工作表的數據，並依年級、班級排序後回傳。
+7. sendReportToChat(week)：統計該週次的檢核人數、通過人數、未通過人數與詳細名單，透過 Webhook URL 傳送訊息至 Google Chat。Webhook URL 必須存放於指令碼屬性 CHAT_WEBHOOK，不可直接寫在程式碼中。
+
+【前端功能需求 (index.html)】
+1. 採用 Bootstrap 5 進行 UI 設計，設計需現代化、簡潔，並具備響應式設計（RWD）。
+2. 將畫面分為三個頁籤 (Tabs)：
+   - [📝 本週檢核]：輸入週次與座號，點擊產生名單。名單以「卡片 (Card)」方式呈現（顯示班級、座號），卡片內必須包含一個「詩詞下拉選單（從 getAllPoems 自動載入並以 optgroup 依學期分類）」以及「通過／未通過」按鈕。點擊按鈕後切換為 Loading 狀態並呼叫後端寫入，完成後卡片變色並顯示結果。
+   - [🔍 結果查詢]：輸入週次查詢，以表格 (Table) 呈現該週所有紀錄。提供一個「傳送至 Chat」按鈕，可呼叫後端發送報表。
+   - [📚 詩詞題庫]：讀取並顯示所有學期的詩詞清單，需附帶「搜尋關鍵字過濾」功能，即時隱藏不符合的表格列。
+3. 【重要】前端必須包裝一個 runGAS 的 Promise 函式，用於相容實際的 google.script.run 與「本地 Mock 資料」，確保在無 GAS 環境下也能測試 UI 邏輯。需針對陣列長度讀取 (length) 做好防呆（例如 undefined 檢查）。
+
+Google Sheets 範例分享連結：
+https://docs.google.com/spreadsheets/d/1JKZb7N0ofUS_AEUJ516ZRdp6KtnKBDRqda1TU38a-sU/edit?usp=sharing</pre>
+            <p>
+              <a
+                href="https://docs.google.com/spreadsheets/d/1JKZb7N0ofUS_AEUJ516ZRdp6KtnKBDRqda1TU38a-sU/edit?usp=sharing"
+                target="_blank"
+                rel="noopener"
+                class="go"
+                >開啟 Google Sheets 範例 ↗</a>
+            </p>
+          </div>
+          <div class="glass prompt">
+            <button class="btn copy" onclick="copyText(this)">複製</button>
+            <h3>⑤ 校內投稿系統</h3>
+            <pre>
+請使用 Google Apps Script＋HTML＋Google Sheets＋Google Drive 建立「校內投稿系統」：
+1. 欄位包含投稿日期、班級、作者、文章標題、投稿類別、文章內容、指導教師及附件。
+2. 附件為選填，接受 PDF、DOCX、JPG、PNG，存入指定 Drive 資料夾。
+3. 投稿資料寫入「投稿資料」工作表，初始狀態為「待審核」。
+4. 產生唯一投稿編號，避免重複送出，並提供成功訊息。
+5. 檔案權限保持受限制，不要公開學生作品或個資。
+6. 請提供完整 Code.gs、index.html、setup()、資料夾設定與部署步驟。</pre
+            >
+          </div>
+          <div class="glass prompt">
+            <button class="btn copy" onclick="copyText(this)">複製</button>
+            <h3>⑥ 教科書費用統計</h3>
+            <pre>
+【角色設定】
+你現在是一位資深的 Google Apps Script (GAS) 全端工程師與 UI/UX 網頁設計師。請幫我開發一個綁定在 Google 試算表上的「教科書費用統計查詢系統」，包含後端 code.gs 與前端 index.html。
+
+【資料來源說明】
+我的試算表內有三個原始資料工作表，請根據這些資料進行計算：
+
+1. 「各年級人數」：包含欄位為「年級、總人數、原住民人數、身障學生人數、身障子女人數、無力繳交人數、學校用書申請數」等。（註：發問時請視情況貼上一兩行假資料讓 AI 參考）
+2. 「選用版本」：記錄各科目在各年級選用的出版社（康軒、翰林、南一）。
+3. 「各版本價格」：記錄各科目、各年級、課本／習作在各出版社的單價。
+
+【後端功能需求 (code.gs)】
+
+1. 自訂選單 (onOpen)：在試算表上方建立「📋 教科書工具」選單，包含三個按鈕：「1. 生成年級費用總表」、「2. 生成各版本分類報表」、「3. 生成學校用書專屬報表」。
+2. 報表生成邏輯：
+   - 讀取上述三個工作表的資料，並建立對應的映射表 (Map) 以利比對價格與版本。
+   - 點擊選單後，自動計算並生成（或覆寫）5 個新的工作表：「年級費用統計」、「學校用書統計」、「康軒統計」、「翰林統計」、「南一統計」。
+   - 金額計算公式：數量 × 該年級／科目／版本的單價。並需特別計算「弱勢總人次（原住民＋身障）」的合計費用。
+3. 試算表美化：寫入資料後，請自動套用背景顏色（例如表頭用綠色／藍色底、合計列用黃色底），並設定粗體與自動調整欄寬。
+4. Web App 串接：
+   - 建立 doGet() 來渲染 index.html。
+   - 建立 getWebAppData() 函式，抓取那 5 張統計報表的所有範圍資料 (getValues)，打包成 JSON 物件回傳給前端。
+
+【前端介面需求 (index.html)】
+
+1. 單一檔案結構：CSS 與 JavaScript 請全部寫在 HTML 檔案內，不要拆分。
+2. 視覺風格 (UI/UX)：
+   - 主題：深色模式 (Dark Mode)，背景採用 CSS 繪製的「星空背景 (Starry night)」。
+   - 容器：使用「毛玻璃特效 (Glassmorphism)」，帶有半透明背景、邊框模糊與發光效果。
+   - 顏色：強調色使用霓虹藍 (Accent Blue) 與青色 (Cyan)，文字為白色或淺藍色。
+3. 功能組件：
+   - 載入動畫：啟動與重新整理時，顯示全螢幕的 Spinner 讀取畫面。
+   - 頁籤切換 (Tabs)：上方放置 5 個頁籤，分別對應那 5 張報表。點擊時無縫切換表格內容。
+   - 動態表格：表格需有 sticky header（凍結表頭），滑鼠懸停 (hover) 時有列高亮效果。請透過 JavaScript 判斷，若該列包含「合計」或「總計」字眼，請套用特殊顏色的 CSS 樣式。
+   - 列印功能：右上角放置「列印報表」按鈕 (window.print())。必須包含 @media print 樣式：列印時強制隱藏星空背景、隱藏按鈕與頁籤，將背景轉為純白，文字轉為深黑色以節省墨水，並設定 A4 橫向列印。
+
+【程式碼產出要求】
+請直接提供完整、無省略的 code.gs 與 index.html 程式碼，並在程式碼中加上適當的中文註解說明。</pre>
+          </div>
+        </section>
+        <section id="deploy">
+          <div class="head">
+            <small>06 · DEPLOYMENT</small>
+            <h2>部署與維護提醒</h2>
+          </div>
+          <div class="acc glass open">
+            <button>建議的專案整理方式 <span>＋</span></button>
+            <div class="body">
+              <ol>
+                <li>用雲端硬碟資料夾依行政業務分類專案。</li>
+                <li>GAS 綁定對應試算表，方便找到資料與程式。</li>
+                <li>首次執行完成授權，再測試部署網址與帳號權限。</li>
+                <li>記錄版本、負責人、欄位與部署網址。</li>
+              </ol>
+            </div>
+          </div>
+          <div class="acc glass">
+            <button>網頁應用程式部署檢查 <span>＋</span></button>
+            <div class="body">
+              <ul>
+                <li>確認執行身分與存取對象符合校內需求。</li>
+                <li>敏感金鑰、Webhook 或個資不可寫在前端 HTML。</li>
+                <li>用測試資料驗證新增、查詢與錯誤提示。</li>
+                <li>修改後建立新版本並重新部署。</li>
+              </ul>
+            </div>
+          </div>
+          <div class="acc glass">
+            <button>AI 產生程式後的必要檢查 <span>＋</span></button>
+            <div class="body">
+              <ul>
+                <li>核對工作表名稱、欄位位置與資料格式。</li>
+                <li>檢查重複送出、未授權、空值與多人操作問題。</li>
+                <li>學生或教師資料採最小權限並限制可存取帳號。</li>
+                <li>保留可回復版本；AI 是副駕，方向盤仍在管理者手上。</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+        <section id="office">
+          <div class="head">
+            <small>07 · GAS Application cases</small>
+            <h2>更多GAS的應用案例</h2>
+            <p>
+              整合教務處常用行政系統，請參考各種實例。
+            </p>
+          </div>
+          <a class="glass system" target="_blank" rel="noopener" href="https://script.google.com/a/macros/gapp.hcc.edu.tw/s/AKfycbxSdbtDo19g0RsJ4F_gYCD4kRpmb-R4kRMtgNKC57wO-TVWJcZzvGOVyAWTDao6MRfM/exec">
+			 <div class="sysicon">🏫</div>
+            <div>
+              <b>教務處行政數位網</b>
+              <p>開啟教務處行政工具入口。</p>
+              <span class="go">進入行政數位網 ↗</span>
+            </div>
+			 </a>
+			 
+        </section>
+        <!-- =========================================================
+             04. 六個行政案例的原始程式碼
+             使用隱藏 textarea 保存，避免程式碼中的 HTML／JavaScript
+             干擾本頁本身的解析。
+        ========================================================== -->
+        <textarea id="replacementExamUploadGs" hidden>
+const SHEET_NAME = '試卷上傳';
+const FOLDER_ID = '請貼上Google_Drive資料夾ID';
+const MAX_BYTES = 20 * 1024 * 1024;
+const ALLOWED = ['application/pdf','application/vnd.openxmlformats-officedocument.wordprocessingml.document','image/jpeg','image/png'];
+
+function setup() {
+  if (FOLDER_ID.startsWith('請貼上')) throw new Error('請先設定 FOLDER_ID');
+  DriveApp.getFolderById(FOLDER_ID).getName();
+  const ss = SpreadsheetApp.getActive();
+  let sh = ss.getSheetByName(SHEET_NAME);
+  if (!sh) sh = ss.insertSheet(SHEET_NAME);
+  if (sh.getLastRow() === 0) {
+    sh.appendRow(['時間戳記','學期','年級','科目','評量類型','上傳者','檔名','檔案網址','備註']);
+    sh.setFrozenRows(1);
+  }
+}
+
+function doGet() {
+  return HtmlService.createHtmlOutputFromFile('index')
+    .setTitle('試卷上傳通知')
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+}
+
+function uploadExam(data) {
+  ['semester','grade','subject','examType','uploader','fileName','mimeType','base64'].forEach(k => {
+    if (!String(data[k] || '').trim()) throw new Error('資料或檔案不完整');
+  });
+  if (!ALLOWED.includes(data.mimeType)) throw new Error('只接受 PDF、DOCX、JPG、PNG');
+  const bytes = Utilities.base64Decode(data.base64);
+  if (bytes.length > MAX_BYTES) throw new Error('檔案不可超過 20MB');
+  const safeName = data.fileName.replace(/[\\/:*?"<>|]/g,'_');
+  const lock = LockService.getScriptLock(); lock.waitLock(15000);
+  try {
+    const file = DriveApp.getFolderById(FOLDER_ID).createFile(Utilities.newBlob(bytes,data.mimeType,safeName));
+    const sh = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME);
+    if (!sh) throw new Error('請先執行 setup()');
+    sh.appendRow([new Date(),data.semester,data.grade,data.subject,data.examType,data.uploader,safeName,file.getUrl(),data.note || '']);
+    notifyChat('📄 新試卷上傳\\n'+data.grade+'／'+data.subject+'／'+data.examType+'\\n上傳者：'+data.uploader+'\\n'+file.getUrl());
+    return {ok:true,message:'試卷已上傳並完成通知'};
+  } finally { lock.releaseLock(); }
+}
+
+function notifyChat(text) {
+  const url = PropertiesService.getScriptProperties().getProperty('CHAT_WEBHOOK');
+  if (!url) throw new Error('尚未設定 Script Property：CHAT_WEBHOOK');
+  const res = UrlFetchApp.fetch(url,{method:'post',contentType:'application/json',payload:JSON.stringify({text}),muteHttpExceptions:true});
+  if (res.getResponseCode() >= 300) throw new Error('Google Chat 通知失敗');
+}
+        </textarea>
+        <textarea id="replacementExamUploadHtml" hidden>
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>試卷上傳通知</title>
+<style>*{box-sizing:border-box}body{font-family:"Microsoft JhengHei",sans-serif;background:#eef2ff;color:#1e1b4b}.card{max-width:820px;margin:35px auto;background:#fff;padding:28px;border-radius:20px;box-shadow:0 12px 40px #312e8120}form{display:grid;grid-template-columns:1fr 1fr;gap:15px}label{font-weight:700}input,select,textarea{width:100%;padding:11px;margin-top:5px;border:1px solid #c7d2fe;border-radius:9px}.wide,button{grid-column:1/-1}button{padding:13px;border:0;border-radius:10px;background:#4f46e5;color:#fff;font-weight:800}@media(max-width:650px){form{grid-template-columns:1fr}.wide,button{grid-column:auto}}</style></head>
+<body><main class="card"><h1>📤 試卷上傳通知</h1><form id="form"><label>學期<input name="semester" required></label><label>年級<select name="grade" required><option value="">請選擇</option><option>一年級</option><option>二年級</option><option>三年級</option><option>四年級</option><option>五年級</option><option>六年級</option></select></label><label>科目<input name="subject" required></label><label>評量類型<select name="examType"><option>期中考</option><option>期末考</option><option>平時評量</option></select></label><label>上傳者<input name="uploader" required></label><label>試卷<input id="file" type="file" accept=".pdf,.docx,.jpg,.jpeg,.png" required></label><label class="wide">備註<textarea name="note">&lt;/textarea></label><button id="send">上傳並通知</button></form><p id="msg"></p></main>
+<script>form.onsubmit=function(e){e.preventDefault();var f=file.files[0];if(!f)return;if(f.size>20*1024*1024){msg.textContent='檔案不可超過 20MB';return}send.disabled=true;msg.textContent='上傳中…';var reader=new FileReader();reader.onload=function(){var data=Object.fromEntries(new FormData(form).entries());data.fileName=f.name;data.mimeType=f.type;data.base64=reader.result.split(',')[1];google.script.run.withSuccessHandler(function(r){msg.textContent=r.message;form.reset();send.disabled=false}).withFailureHandler(function(e){msg.textContent='錯誤：'+e.message;send.disabled=false}).uploadExam(data)};reader.readAsDataURL(f)};</script></body></html>
+        </textarea>
+        <textarea id="replacementSubmissionGs" hidden>
+const SHEET_NAME = '投稿資料';
+const FOLDER_ID = '請貼上Google_Drive資料夾ID';
+const MAX_BYTES = 10 * 1024 * 1024;
+const ALLOWED = ['application/pdf','application/vnd.openxmlformats-officedocument.wordprocessingml.document','image/jpeg','image/png'];
+
+function setup() {
+  if (FOLDER_ID.startsWith('請貼上')) throw new Error('請先設定 FOLDER_ID');
+  DriveApp.getFolderById(FOLDER_ID).getName();
+  const ss = SpreadsheetApp.getActive();
+  let sh = ss.getSheetByName(SHEET_NAME);
+  if (!sh) sh = ss.insertSheet(SHEET_NAME);
+  if (sh.getLastRow() === 0) {
+    sh.appendRow(['投稿編號','時間戳記','投稿日期','班級','作者','標題','類別','文章內容','指導教師','附件網址','狀態']);
+    sh.setFrozenRows(1);
+    sh.getRange(1,1,1,11).setFontWeight('bold').setBackground('#dcfce7');
+  }
+}
+
+function doGet() {
+  return HtmlService.createHtmlOutputFromFile('index')
+    .setTitle('校內投稿系統')
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+}
+
+function submitArticle(data) {
+  ['date','className','author','title','category','content','teacher'].forEach(k => {
+    if (!String(data[k] || '').trim()) throw new Error('尚有必填欄位未填');
+  });
+  let fileUrl = '';
+  if (data.base64) {
+    if (!ALLOWED.includes(data.mimeType)) throw new Error('附件只接受 PDF、DOCX、JPG、PNG');
+    const bytes = Utilities.base64Decode(data.base64);
+    if (bytes.length > MAX_BYTES) throw new Error('附件不可超過 10MB');
+    const safeName = String(data.fileName).replace(/[\\/:*?"<>|]/g,'_');
+    fileUrl = DriveApp.getFolderById(FOLDER_ID)
+      .createFile(Utilities.newBlob(bytes,data.mimeType,safeName)).getUrl();
+  }
+  const id = 'ART-' + Utilities.formatDate(new Date(),Session.getScriptTimeZone(),'yyyyMMdd') + '-' + Utilities.getUuid().slice(0,6).toUpperCase();
+  const lock = LockService.getScriptLock(); lock.waitLock(10000);
+  try {
+    const sh = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME);
+    if (!sh) throw new Error('請先執行 setup()');
+    sh.appendRow([id,new Date(),data.date,data.className,data.author,data.title,
+      data.category,data.content,data.teacher,fileUrl,'待審核']);
+    return {ok:true,message:'投稿完成，投稿編號：'+id};
+  } finally { lock.releaseLock(); }
+}
+        </textarea>
+        <textarea id="replacementSubmissionHtml" hidden>
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>校內投稿系統</title>
+<style>*{box-sizing:border-box}body{font-family:"Microsoft JhengHei",sans-serif;background:#f0fdf4;color:#14532d}.card{max-width:860px;margin:35px auto;background:#fff;padding:28px;border-radius:20px;box-shadow:0 12px 40px #16653420}form{display:grid;grid-template-columns:1fr 1fr;gap:15px}label{font-weight:700}input,select,textarea{width:100%;padding:11px;margin-top:5px;border:1px solid #bbf7d0;border-radius:9px}.wide,button{grid-column:1/-1}button{padding:13px;border:0;border-radius:10px;background:#16a34a;color:#fff;font-weight:800}@media(max-width:650px){form{grid-template-columns:1fr}.wide,button{grid-column:auto}}</style></head>
+<body><main class="card"><h1>✍️ 校內投稿系統</h1><form id="form"><label>投稿日期<input name="date" type="date" required></label><label>班級<input name="className" required></label><label>作者<input name="author" required></label><label>指導教師<input name="teacher" required></label><label>文章標題<input name="title" required></label><label>投稿類別<select name="category"><option>作文</option><option>詩歌</option><option>閱讀心得</option><option>校園報導</option></select></label><label class="wide">文章內容<textarea name="content" rows="9" required>&lt;/textarea></label><label class="wide">附件（選填，10MB內）<input id="file" type="file" accept=".pdf,.docx,.jpg,.jpeg,.png"></label><button id="send">送出投稿</button></form><p id="msg"></p></main>
+<script>form.onsubmit=function(e){e.preventDefault();send.disabled=true;msg.textContent='送出中…';var data=Object.fromEntries(new FormData(form).entries()),f=file.files[0];function sendData(){google.script.run.withSuccessHandler(function(r){msg.textContent=r.message;form.reset();send.disabled=false}).withFailureHandler(function(e){msg.textContent='錯誤：'+e.message;send.disabled=false}).submitArticle(data)}if(!f){sendData();return}if(f.size>10*1024*1024){msg.textContent='附件不可超過 10MB';send.disabled=false;return}var reader=new FileReader();reader.onload=function(){data.fileName=f.name;data.mimeType=f.type;data.base64=reader.result.split(',')[1];sendData()};reader.readAsDataURL(f)};</script></body></html>
+        </textarea>
+        <textarea id="replacementTextbookGs" hidden>
+/**
+ * 網頁應用程式入口
+ */
+function doGet() {
+  return HtmlService.createTemplateFromFile('index')
+    .evaluate()
+    .setTitle('教科書費用統計查詢系統')
+    .addMetaTag('viewport', 'width=device-width, initial-scale=1');
+}
+
+/**
+ * 抓取所有統計數據供網頁顯示 (新增學校用書統計)
+ */
+function getWebAppData() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheetsToFetch = ["年級費用統計", "學校用書統計", "康軒統計", "翰林統計", "南一統計"];
+  const result = {};
+
+  sheetsToFetch.forEach(name => {
+    const sheet = ss.getSheetByName(name);
+    if (sheet) {
+      result[name] = sheet.getDataRange().getValues();
+    } else {
+      result[name] = [];
+    }
+  });
+
+  return result;
+}
+
+/**
+ * 綜合統計功能選單
+ */
+function onOpen() {
+  const ui = SpreadsheetApp.getUi();
+  ui.createMenu('📋 教科書工具')
+      .addItem('1. 生成年級費用總表', 'generateGradeExpenseReport')
+      .addItem('2. 生成各版本分類報表', 'generatePublisherReports')
+      .addItem('3. 生成學校用書專屬報表', 'generateSchoolBookReport')
+      .addToUi();
+}
+/*
+function showWebAppUrl() {
+  const url = ScriptApp.getService().getUrl();
+  const html = HtmlService.createHtmlOutput(`<p>請先完成「部署」後點擊下方連結：</p><a href="${url}" target="_blank">${url}</a>`)
+      .setWidth(400)
+      .setHeight(150);
+  SpreadsheetApp.getUi().showModalDialog(html, '網頁應用程式連結');
+}
+*/
+/**
+ * 新增功能：生成學校用書統計報表 (分區塊顯示)
+ */
+function generateSchoolBookReport() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheetCounts = ss.getSheetByName("各年級人數");
+  const sheetVersions = ss.getSheetByName("選用版本");
+  const sheetPrices = ss.getSheetByName("各版本價格");
+  
+  const countsData = sheetCounts.getDataRange().getValues();
+  const versionsData = sheetVersions.getDataRange().getValues();
+  const pricesData = sheetPrices.getDataRange().getValues();
+  const priceMap = getPriceMap(pricesData);
+  
+  let reportSheet = ss.getSheetByName("學校用書統計") || ss.insertSheet("學校用書統計");
+  reportSheet.clear();
+
+  const publishers = ["康軒", "翰林", "南一"];
+  const gradeNames = ["一年級", "二年級", "三年級", "四年級", "五年級", "六年級"];
+  const allRows = [];
+  let grandTotal = 0;
+
+  publishers.forEach(pubName => {
+    // 區塊標題
+    allRows.push([pubName + " 版本 - 學校用書明細", "", "", "", "", ""]);
+    allRows.push(["年級", "科目", "類別", "單價", "申請數量", "金額小計"]);
+    
+    let pubSubTotal = 0;
+    let hasData = false;
+
+    gradeNames.forEach((gradeName, gIdx) => {
+      const gradeNum = gIdx + 1;
+      let gData = getGradeData(countsData, gradeName);
+      
+      for (let i = 1; i < versionsData.length; i++) {
+        const subject = versionsData[i][0];
+        const selectedPub = versionsData[i][gIdx + 1];
+        
+        if (selectedPub === pubName) {
+          ["課本", "習作"].forEach(type => {
+            const price = priceMap[`${gradeNum}_${subject}_${type}_${pubName}`] || 0;
+            if (price > 0 && gData.schoolQty > 0) {
+              const subTotal = gData.schoolQty * price;
+              allRows.push([gradeName, subject, type, price, gData.schoolQty, subTotal]);
+              pubSubTotal += subTotal;
+              hasData = true;
+            }
+          });
+        }
+      }
+    });
+
+    if (!hasData) {
+      allRows.push(["-", "無選用教材", "-", "-", "-", 0]);
+    }
+
+    // 版本個別合計列
+    allRows.push([pubName + " 合計", "", "", "", "", pubSubTotal]);
+    allRows.push(["", "", "", "", "", ""]); // 空行隔開區塊
+    
+    grandTotal += pubSubTotal;
+  });
+
+  // 全校總計
+  allRows.push(["全校學校用書總計", "", "", "", "", grandTotal]);
+
+  // 寫入並美化
+  const range = reportSheet.getRange(1, 1, allRows.length, 6);
+  range.setValues(allRows);
+  
+  // 美化邏輯
+  for (let i = 0; i < allRows.length; i++) {
+    const rowNum = i + 1;
+    const firstCell = allRows[i][0];
+    
+    if (firstCell.includes("版本 - 學校用書明細")) {
+      reportSheet.getRange(rowNum, 1, 1, 6).setBackground("#D9EAD3").setFontWeight("bold").merge();
+    } else if (firstCell === "年級") {
+      reportSheet.getRange(rowNum, 1, 1, 6).setBackground("#F3F4F6").setFontWeight("bold");
+    } else if (firstCell.includes("合計")) {
+      reportSheet.getRange(rowNum, 1, 1, 6).setBackground("#FFF2CC").setFontWeight("bold");
+    } else if (firstCell === "全校學校用書總計") {
+      reportSheet.getRange(rowNum, 1, 1, 6).setBackground("#F4CCCC").setFontWeight("bold").setFontSize(12);
+    }
+  }
+
+  reportSheet.autoResizeColumns(1, 6);
+  SpreadsheetApp.getUi().alert("學校用書統計報表已生成！");
+}
+
+// --- 以下為原本已有的功能 (保持不變) ---
+
+function generateGradeExpenseReport() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheetCounts = ss.getSheetByName("各年級人數");
+  const sheetVersions = ss.getSheetByName("選用版本");
+  const sheetPrices = ss.getSheetByName("各版本價格");
+  
+  if (!sheetCounts || !sheetVersions || !sheetPrices) {
+    throw new Error("找不到必要的工作表，請檢查名稱是否正確。");
+  }
+
+  let reportSheet = ss.getSheetByName("年級費用統計") || ss.insertSheet("年級費用統計");
+  reportSheet.clear();
+
+  const countsData = sheetCounts.getDataRange().getValues();
+  const versionsData = sheetVersions.getDataRange().getValues();
+  const pricesData = sheetPrices.getDataRange().getValues();
+  const priceMap = getPriceMap(pricesData);
+
+  const headers = [
+    "年級", "總人數", "單生課本費", "單生習作費", "全年級書款", "單生註冊費",
+    "原住民人數", "原住民費用", "身障學生人數", "身障學生費用", "身障子女人數", "身障子女費用",
+    "弱勢總人次", "弱勢總費用", "無力繳交人數", "無力繳交費用",
+    "學校用書(申請數)", "全校總註冊費", "學校用書費用"
+  ];
+  const reportRows = [headers];
+  const gradeNames = ["一年級", "二年級", "三年級", "四年級", "五年級", "六年級"];
+  
+  gradeNames.forEach((gradeName, index) => {
+    const gradeNum = index + 1;
+    let data = getGradeData(countsData, gradeName);
+    let costs = calculateGradeCosts(priceMap, versionsData, index, gradeNum);
+    
+    let regFee = costs.textbook + costs.workbook;
+    let totalGradeBookCost = data.totalPop * regFee; 
+    let disadvantagedTotal = data.indigen + data.disabledStu + data.disabledChild;
+    let disadvantagedTotalFee = disadvantagedTotal * regFee;
+
+    reportRows.push([
+      gradeName, data.totalPop, costs.textbook, costs.workbook, totalGradeBookCost, regFee,
+      data.indigen, (data.indigen * regFee),
+      data.disabledStu, (data.disabledStu * regFee),
+      data.disabledChild, (data.disabledChild * regFee),
+      disadvantagedTotal, disadvantagedTotalFee,
+      data.financialAid, (data.financialAid * regFee),
+      data.schoolQty, (data.totalPop * regFee), (data.schoolQty * regFee)
+    ]);
+  });
+
+  appendFooterAndFormat(reportSheet, reportRows, [8, 10, 12, 14, 16], 18, 19);
+}
+
+function generatePublisherReports() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheetCounts = ss.getSheetByName("各年級人數");
+  const sheetVersions = ss.getSheetByName("選用版本");
+  const sheetPrices = ss.getSheetByName("各版本價格");
+  
+  const countsData = sheetCounts.getDataRange().getValues();
+  const versionsData = sheetVersions.getDataRange().getValues();
+  const pricesData = sheetPrices.getDataRange().getValues();
+  const priceMap = getPriceMap(pricesData);
+  
+  const publishers = ["康軒", "翰林", "南一"];
+  const gradeNames = ["一年級", "二年級", "三年級", "四年級", "五年級", "六年級"];
+
+  publishers.forEach(pubName => {
+    let pubSheet = ss.getSheetByName(pubName + "統計") || ss.insertSheet(pubName + "統計");
+    pubSheet.clear();
+    const headers = [
+      "年級", "科目", "類別", "單價", "學生數", "學生用書小計", "學校用書(申請數)", "學校用書小計",
+      "原住民人數", "原住民金額", "身障學生人數", "身障學生金額", "身障子女人數", "身障子女金額",
+      "弱勢總人次", "弱勢總金額", "無力繳交人數", "無力繳交金額"
+    ];
+    const moneyColIndexes = [5, 7, 9, 11, 13, 15, 17];
+    const rows = [headers];
+
+    gradeNames.forEach((gradeName, gIdx) => {
+      const gradeNum = gIdx + 1;
+      let gData = getGradeData(countsData, gradeName);
+      let disadvantagedTotal = gData.indigen + gData.disabledStu + gData.disabledChild;
+      for (let i = 1; i < versionsData.length; i++) {
+        const subject = versionsData[i][0];
+        const selectedPub = versionsData[i][gIdx + 1];
+        if (selectedPub === pubName) {
+          ["課本", "習作"].forEach(type => {
+            const price = priceMap[`${gradeNum}_${subject}_${type}_${pubName}`] || 0;
+            if (price > 0) {
+              rows.push([
+                gradeName, subject, type, price, gData.totalPop, (gData.totalPop * price),
+                gData.schoolQty, (gData.schoolQty * price),
+                gData.indigen, (gData.indigen * price),
+                gData.disabledStu, (gData.disabledStu * price),
+                gData.disabledChild, (gData.disabledChild * price),
+                disadvantagedTotal, (disadvantagedTotal * price),
+                gData.financialAid, (gData.financialAid * price)
+              ]);
+            }
+          });
+        }
+      }
+    });
+
+    if (rows.length > 1) {
+      pubSheet.getRange(1, 1, rows.length, headers.length).setValues(rows);
+      const lastRowIdx = rows.length + 1;
+      const footer = new Array(headers.length).fill("");
+      footer[0] = "合計";
+      moneyColIndexes.forEach(colIdx => {
+        let sum = 0;
+        for (let r = 1; r < rows.length; r++) sum += (rows[r][colIdx] || 0);
+        footer[colIdx] = sum;
+      });
+      pubSheet.getRange(lastRowIdx, 1, 1, headers.length).setValues([footer]);
+      pubSheet.getRange(1, 1, 1, headers.length).setBackground("#D9EAD3").setFontWeight("bold");
+      pubSheet.getRange(lastRowIdx, 1, 1, headers.length).setBackground("#FFF2CC").setFontWeight("bold");
+      moneyColIndexes.forEach(idx => pubSheet.getRange(1, idx + 1, lastRowIdx, 1).setBackground("#F2F2F2"));
+      pubSheet.setFrozenRows(1);
+      pubSheet.autoResizeColumns(1, headers.length);
+    }
+  });
+}
+
+function getPriceMap(pricesData) {
+  const map = {};
+  for (let i = 1; i < pricesData.length; i++) {
+    const subject = pricesData[i][1], grade = pricesData[i][2], type = pricesData[i][4];
+    const pubs = {"康軒": 5, "翰林": 6, "南一": 7};
+    for (let p in pubs) {
+      const val = pricesData[i][pubs[p]];
+      if (val && val !== "-") map[`${grade}_${subject}_${type}_${p}`] = parseFloat(val);
+    }
+  }
+  return map;
+}
+
+function getGradeData(countsData, gradeName) {
+  for (let i = 1; i < countsData.length; i++) {
+    if (countsData[i][0] === gradeName) {
+      return {
+        schoolQty: countsData[i][9] || 0,
+        totalPop: countsData[i][2] || 0,
+        indigen: countsData[i][4] || 0,
+        disabledStu: countsData[i][5] || 0,
+        disabledChild: countsData[i][6] || 0,
+        financialAid: countsData[i][7] || 0
+      };
+    }
+  }
+  return {schoolQty:0, totalPop:0, indigen:0, disabledStu:0, disabledChild:0, financialAid:0};
+}
+
+function calculateGradeCosts(priceMap, versionsData, gIdx, gradeNum) {
+  let tb = 0, wb = 0;
+  for (let i = 1; i < versionsData.length; i++) {
+    const sub = versionsData[i][0], pub = versionsData[i][gIdx + 1];
+    if (pub) {
+      tb += (priceMap[`${gradeNum}_${sub}_課本_${pub}`] || 0);
+      wb += (priceMap[`${gradeNum}_${sub}_習作_${pub}`] || 0);
+    }
+  }
+  return {textbook: tb, workbook: wb};
+}
+
+function appendFooterAndFormat(sheet, rows, greyCols, greenCol, orangeCol) {
+  const lastRowIdx = rows.length;
+  const footer = new Array(rows[0].length).fill(0);
+  footer[0] = "合計";
+  for (let col = 1; col < rows[0].length; col++) {
+    let sum = 0;
+    for (let row = 1; row < lastRowIdx; row++) sum += (rows[row][col] || 0);
+    footer[col] = sum;
+  }
+  rows.push(footer);
+  sheet.getRange(1, 1, rows.length, rows[0].length).setValues(rows);
+  sheet.getRange(1, 1, 1, rows[0].length).setBackground("#DDEBF7").setFontWeight("bold");
+  sheet.getRange(rows.length, 1, 1, rows[0].length).setBackground("#FFF2CC").setFontWeight("bold");
+  greyCols.forEach(c => sheet.getRange(1, c, rows.length, 1).setBackground("#F2F2F2"));
+  sheet.getRange(1, greenCol, rows.length, 1).setBackground("#E2EFDA").setFontWeight("bold");
+  sheet.getRange(1, orangeCol, rows.length, 1).setBackground("#FCE4D6");
+}
+
+
+</textarea>
+        <textarea id="replacementTextbookHtml" hidden>
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --glass-bg: rgba(10, 30, 65, 0.55);
+      --glass-bg-light: rgba(15, 40, 85, 0.40);
+      --glass-border: rgba(80, 160, 255, 0.22);
+      --glass-border-bright: rgba(100, 180, 255, 0.45);
+      --accent-blue: #3A8EF6;
+      --accent-cyan: #36D9F0;
+      --accent-glow: rgba(58, 142, 246, 0.30);
+      --text-primary: #E8F4FF;
+      --text-secondary: rgba(180, 215, 255, 0.75);
+      --text-muted: rgba(140, 185, 235, 0.55);
+      --deep-bg: #020C1B;
+      --panel-bg: rgba(5, 20, 50, 0.70);
+      --row-hover: rgba(58, 142, 246, 0.08);
+      --row-even: rgba(10, 35, 75, 0.35);
+      --footer-row: rgba(58, 142, 246, 0.18);
+      --section-row: rgba(54, 217, 240, 0.10);
+      --grand-total-row: rgba(255, 90, 90, 0.15);
+      --success: #36D9A0;
+      --tab-active-bg: rgba(58, 142, 246, 0.20);
+    }
+
+    html, body {
+      min-height: 100vh;
+      font-family: 'Inter', 'Noto Sans TC', sans-serif;
+      background: var(--deep-bg);
+      color: var(--text-primary);
+    }
+
+    /* 星空背景 */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 10%, rgba(10, 60, 140, 0.55) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 80% 80%, rgba(5, 40, 100, 0.45) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 40% at 60% 20%, rgba(20, 80, 160, 0.30) 0%, transparent 50%),
+        linear-gradient(160deg, #020C1B 0%, #040E22 40%, #020C1B 100%);
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        radial-gradient(1px 1px at 15% 25%, rgba(150,200,255,0.6) 0%, transparent 100%),
+        radial-gradient(1px 1px at 72% 18%, rgba(150,200,255,0.5) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 45% 60%, rgba(150,200,255,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 88% 45%, rgba(150,200,255,0.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 30% 80%, rgba(150,200,255,0.35) 0%, transparent 100%),
+        radial-gradient(1px 1px at 62% 88%, rgba(150,200,255,0.4) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 5% 55%, rgba(200,230,255,0.45) 0%, transparent 100%),
+        radial-gradient(1px 1px at 95% 70%, rgba(150,200,255,0.4) 0%, transparent 100%);
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* 載入動畫 */
+    .loading-overlay {
+      position: fixed; inset: 0;
+      background: rgba(2, 12, 27, 0.92);
+      display: flex; flex-direction: column;
+      justify-content: center; align-items: center;
+      z-index: 999;
+      gap: 20px;
+    }
+    .spinner-ring {
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      border: 2px solid rgba(58, 142, 246, 0.15);
+      border-top-color: var(--accent-blue);
+      border-right-color: var(--accent-cyan);
+      animation: spin 0.9s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text {
+      font-size: 14px;
+      color: var(--text-secondary);
+      letter-spacing: 0.05em;
+    }
+
+    /* 主容器 */
+    .app-wrap {
+      position: relative; z-index: 1;
+      max-width: 1400px; margin: 0 auto;
+      padding: 24px 20px 40px;
+    }
+
+    /* Header */
+    .app-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 28px;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .header-title-group { display: flex; flex-direction: column; gap: 6px; }
+    .header-eyebrow {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--accent-cyan);
+      font-weight: 600;
+    }
+    .header-eyebrow::before {
+      content: '';
+      display: inline-block; width: 20px; height: 1px;
+      background: var(--accent-cyan);
+    }
+    .header-h1 {
+      font-size: 22px; font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.02em;
+    }
+    .header-sub {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    .header-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+
+    /* 玻璃按鈕 */
+    .btn {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 9px 18px;
+      border-radius: 8px;
+      border: 1px solid var(--glass-border-bright);
+      background: var(--glass-bg-light);
+      backdrop-filter: blur(12px);
+      color: var(--text-primary);
+      font-size: 13px; font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+      font-family: inherit;
+    }
+    .btn:hover {
+      background: rgba(58, 142, 246, 0.25);
+      border-color: var(--accent-blue);
+      color: #fff;
+    }
+    .btn-primary {
+      background: rgba(58, 142, 246, 0.25);
+      border-color: var(--accent-blue);
+    }
+    .btn svg { width: 15px; height: 15px; stroke: currentColor; flex-shrink: 0; }
+
+    /* 主面板玻璃卡片 */
+    .glass-panel {
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow:
+        0 0 0 1px rgba(58, 142, 246, 0.06) inset,
+        0 24px 60px rgba(0, 0, 0, 0.50),
+        0 0 80px rgba(10, 50, 120, 0.20);
+    }
+
+    /* 頂部發光線 */
+    .glass-panel::before {
+      content: '';
+      display: block;
+      height: 1px;
+      background: linear-gradient(90deg, transparent 0%, rgba(100, 180, 255, 0.60) 30%, rgba(54, 217, 240, 0.50) 60%, transparent 100%);
+    }
+
+    /* Tab 列 */
+    .tab-bar {
+      display: flex;
+      overflow-x: auto;
+      border-bottom: 1px solid var(--glass-border);
+      padding: 0 8px;
+      gap: 2px;
+      scrollbar-width: none;
+    }
+    .tab-bar::-webkit-scrollbar { display: none; }
+
+    .tab-btn {
+      display: flex; align-items: center; gap: 7px;
+      padding: 14px 18px;
+      font-size: 13px; font-weight: 500;
+      color: var(--text-muted);
+      background: none; border: none;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+      font-family: inherit;
+      position: relative;
+      margin-bottom: -1px;
+    }
+    .tab-btn:hover { color: var(--text-secondary); }
+    .tab-btn.tab-active {
+      color: var(--accent-blue);
+      border-bottom-color: var(--accent-blue);
+      background: var(--tab-active-bg);
+      border-radius: 6px 6px 0 0;
+    }
+    .tab-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--accent-cyan);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .tab-btn.tab-active .tab-dot { opacity: 1; }
+
+    /* 表格區域 */
+    .table-wrap {
+      padding: 16px;
+    }
+    .table-container {
+      overflow-x: auto;
+      overflow-y: auto;
+      max-height: 72vh;
+      border-radius: 10px;
+      border: 1px solid var(--glass-border);
+    }
+    .table-container::-webkit-scrollbar { width: 6px; height: 6px; }
+    .table-container::-webkit-scrollbar-track { background: rgba(10, 30, 65, 0.3); }
+    .table-container::-webkit-scrollbar-thumb { background: rgba(58, 142, 246, 0.40); border-radius: 3px; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    thead th, tr:first-child th {
+      background: rgba(5, 20, 55, 0.90);
+      color: var(--accent-cyan);
+      font-weight: 600;
+      font-size: 12px;
+      letter-spacing: 0.04em;
+      padding: 11px 14px;
+      text-align: center;
+      border-bottom: 1px solid var(--glass-border-bright);
+      border-right: 1px solid rgba(58, 142, 246, 0.10);
+      position: sticky; top: 0; z-index: 10;
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 9px 14px;
+      text-align: center;
+      border-bottom: 1px solid rgba(40, 80, 140, 0.20);
+      border-right: 1px solid rgba(40, 80, 140, 0.12);
+      color: var(--text-primary);
+      white-space: nowrap;
+    }
+
+    tr:nth-child(even) td { background: var(--row-even); }
+    tr:hover td { background: var(--row-hover); }
+
+    /* 合計列 */
+    .footer-row td {
+      background: var(--footer-row) !important;
+      color: #A8D8FF;
+      font-weight: 600;
+      border-top: 1px solid rgba(58, 142, 246, 0.35);
+    }
+
+    /* 區塊標題列 */
+    .section-header th {
+      background: var(--section-row) !important;
+      color: var(--accent-cyan) !important;
+      text-align: left !important;
+      padding-left: 20px !important;
+      letter-spacing: 0.06em;
+      font-size: 12px;
+      border-top: 1px solid rgba(54, 217, 240, 0.25);
+      border-bottom: 1px solid rgba(54, 217, 240, 0.25);
+    }
+
+    /* 總計列 */
+    .grand-total td {
+      background: var(--grand-total-row) !important;
+      color: #FFB5B5 !important;
+      font-weight: 700 !important;
+      font-size: 14px !important;
+      border-top: 1px solid rgba(255, 90, 90, 0.35);
+    }
+
+    /* 空白提示 */
+    .empty-tip {
+      padding: 60px 20px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    /* 列印樣式 */
+    @media print {
+      @page { size: A4 landscape; margin: 1cm; }
+      body::before, body::after { display: none; }
+      body { background: white; }
+      .app-header, .tab-bar, .no-print { display: none !important; }
+      .glass-panel { background: white; border: none; box-shadow: none; border-radius: 0; }
+      .glass-panel::before { display: none; }
+      .table-container { overflow: visible; max-height: none; border: none; }
+      table { font-size: 8pt; }
+      thead th, tr:first-child th { background: #1a3a6a !important; color: white !important; -webkit-print-color-adjust: exact; }
+      .footer-row td { background: #dbeafe !important; -webkit-print-color-adjust: exact; }
+      .section-header th { background: #d1fae5 !important; -webkit-print-color-adjust: exact; }
+      .grand-total td { background: #fee2e2 !important; -webkit-print-color-adjust: exact; }
+      td { color: #111 !important; border-color: #ccc !important; }
+      tr { page-break-inside: avoid; }
+      .table-wrap { padding: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="loader" class="loading-overlay no-print">
+    <div class="spinner-ring"></div>
+    <div class="loading-text">正在從試算表抓取最新統計數據⋯</div>
+  </div>
+
+  <div class="app-wrap">
+
+    <header class="app-header no-print">
+      <div class="header-title-group">
+        <div class="header-eyebrow">Education Management System</div>
+        <h1 class="header-h1">教科書費用統計查詢系統</h1>
+        <p class="header-sub">即時呈現各年級與出版社統計結果</p>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-primary" onclick="window.print()">
+          <svg fill="none" viewBox="0 0 24 24" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0110.56 0m-10.56 0L6.75 19.817m-.8-5.988a4.5 4.5 0 01-.168-3.644A4.5 4.5 0 0110.5 7.5h3a4.5 4.5 0 014.218 2.685 4.5 4.5 0 01-.168 3.644M6.72 13.83L6.75 19.817m0 0a2.25 2.25 0 002.25 2.25h6a2.25 2.25 0 002.25-2.25m-10.5 0V19.5m10.5.317V19.5m0 0a2.25 2.25 0 00-2.25-2.25m0 0H9.75m5.25 0v-2.25m-5.25 2.25v-2.25"/></svg>
+          列印報表
+        </button>
+        <button class="btn" onclick="refreshData()">
+          <svg fill="none" viewBox="0 0 24 24" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
+          重新整理
+        </button>
+      </div>
+    </header>
+
+    <div class="glass-panel">
+
+      <div class="tab-bar no-print">
+        <button onclick="switchTab('年級費用統計')" id="btn-年級費用統計" class="tab-btn tab-active">
+          <span class="tab-dot"></span>年級費用總表
+        </button>
+        <button onclick="switchTab('學校用書統計')" id="btn-學校用書統計" class="tab-btn">
+          <span class="tab-dot"></span>學校用書專表
+        </button>
+        <button onclick="switchTab('康軒統計')" id="btn-康軒統計" class="tab-btn">
+          <span class="tab-dot"></span>康軒明細
+        </button>
+        <button onclick="switchTab('翰林統計')" id="btn-翰林統計" class="tab-btn">
+          <span class="tab-dot"></span>翰林明細
+        </button>
+        <button onclick="switchTab('南一統計')" id="btn-南一統計" class="tab-btn">
+          <span class="tab-dot"></span>南一明細
+        </button>
+      </div>
+
+      <div class="table-wrap">
+        <div class="mb-4 hidden print:block">
+          <h2 id="print-title" style="text-align:center; font-size:16px; font-weight:700; margin-bottom:8px; color:#111;">教科書統計報表</h2>
+        </div>
+        <div id="table-display" class="table-container"></div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    let allData = {};
+    let currentTab = '年級費用統計';
+
+    window.onload = function() { fetchData(); };
+
+    function fetchData() {
+      document.getElementById('loader').style.display = 'flex';
+      google.script.run
+        .withSuccessHandler(function(data) {
+          allData = data;
+          renderTable(currentTab);
+          document.getElementById('loader').style.display = 'none';
+        })
+        .withFailureHandler(function(err) {
+          alert('讀取失敗：' + err);
+          document.getElementById('loader').style.display = 'none';
+        })
+        .getWebAppData();
+    }
+
+    function refreshData() { fetchData(); }
+
+    function switchTab(tabName) {
+      currentTab = tabName;
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('tab-active'));
+      var targetBtn = document.getElementById('btn-' + tabName);
+      if (targetBtn) targetBtn.classList.add('tab-active');
+      renderTable(tabName);
+    }
+
+    function renderTable(tabName) {
+      var data = allData[tabName];
+      var container = document.getElementById('table-display');
+
+      var printTitleMap = {
+        '年級費用統計': '教科書費用統計 — 年級費用總表',
+        '學校用書統計': '教科書費用統計 — 學校用書專屬報表',
+        '康軒統計': '教科書費用統計 — 康軒版明細',
+        '翰林統計': '教科書費用統計 — 翰林版明細',
+        '南一統計': '教科書費用統計 — 南一版明細'
+      };
+      document.getElementById('print-title').innerText = printTitleMap[tabName] || '教科書統計報表';
+
+      if (!data || data.length === 0) {
+        container.innerHTML = '<div class="empty-tip">目前「' + tabName + '」工作表無資料或尚未生成。</div>';
+        return;
+      }
+
+      var html = '<table>';
+      data.forEach(function(row, index) {
+        var firstCell = String(row[0]);
+        var isHeader = firstCell === '年級' || (tabName === '年級費用統計' && index === 0);
+        var isSection = firstCell.includes('版本 - 學校用書明細');
+        var isSubTotal = firstCell.includes('合計') && tabName === '學校用書統計';
+        var isGrandTotal = firstCell === '全校學校用書總計';
+        var isFooter = (firstCell === '合計' && tabName !== '學校用書統計');
+
+        var rowClass = '';
+        if (isSection) rowClass = 'section-header';
+        else if (isSubTotal || isFooter) rowClass = 'footer-row';
+        else if (isGrandTotal) rowClass = 'grand-total';
+
+        html += '<tr class="' + rowClass + '">';
+        row.forEach(function(cell, cellIdx) {
+          var tag = (isHeader || isSection) ? 'th' : 'td';
+          var displayVal = (cell === null || cell === '') ? '' : cell;
+          if (typeof cell === 'number') {
+            displayVal = cell.toLocaleString('zh-TW');
+          }
+          if (isSection && cellIdx === 0) {
+            html += '<' + tag + ' colspan="6">' + displayVal + '</' + tag + '>';
+          } else if (!isSection || cellIdx === -1) {
+            html += '<' + tag + '>' + displayVal + '</' + tag + '>';
+          }
+        });
+        html += '</tr>';
+      });
+      html += '</table>';
+      container.innerHTML = html;
+    }
+  </script>
+</body>
+</html>
+</textarea>
+        <textarea id="replacementAwardsGs" hidden>
+/**
+ * 處理網頁 GET 請求，回傳 index.html
+ */
+function doGet() {
+  return HtmlService.createHtmlOutputFromFile('index')
+      .setTitle('前五名與進步獎填寫系統')
+      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
+      .addMetaTag('viewport', 'width=device-width, initial-scale=1');
+}
+
+/**
+ * 初始設定：建立試算表標題列
+ * 第一次使用請在 Apps Script 編輯器中選擇 setup 函式並執行
+ */
+function setup() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  const headers = [
+    '時間', '班級', '填報教師',
+    '前五名-正式1', '前五名-正式2', '前五名-正式3', '前五名-正式4', '前五名-正式5',
+    '前五名-備用1', '前五名-備用2', '前五名-備用3',
+    '進步獎-正式1', '進步獎-正式2', '進步獎-正式3',
+    '進步獎-備用1', '進步獎-備用2'
+  ];
+
+  // 檢查是否已經有標題，若沒有則寫入
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow(headers);
+    // 設定標題列樣式
+    const headerRange = sheet.getRange(1, 1, 1, headers.length);
+    headerRange.setFontWeight('bold').setBackground('#f3f4f6');
+    sheet.setFrozenRows(1);
+  }
+}
+
+/**
+ * 處理來自前端的表單資料
+ * @param {Object} data 前端傳來的表單物件
+ * @returns {Object} 處理結果狀態與訊息
+ */
+function submitData(data) {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  const timestamp = new Date();
+
+  // 整理成「一班一列」資料列
+  const row = [
+    timestamp,
+    data.className || '',
+    data.teacher || '',
+    (data.top5_1 || '').trim(),
+    (data.top5_2 || '').trim(),
+    (data.top5_3 || '').trim(),
+    (data.top5_4 || '').trim(),
+    (data.top5_5 || '').trim(),
+    (data.top5_b1 || '').trim(),
+    (data.top5_b2 || '').trim(),
+    (data.top5_b3 || '').trim(),
+    (data.prog_1 || '').trim(),
+    (data.prog_2 || '').trim(),
+    (data.prog_3 || '').trim(),
+    (data.prog_b1 || '').trim(),
+    (data.prog_b2 || '').trim()
+  ];
+
+  // 1. 嘗試寫入 Google Sheets
+  try {
+    const lock = LockService.getScriptLock();
+    // 等待鎖定最多 10 秒，避免多人同時寫入發生衝突
+    if (lock.tryLock(10000)) {
+      // 寫入一列資料
+      sheet.appendRow(row);
+      lock.releaseLock();
+    } else {
+      throw new Error('系統忙碌中，無法取得寫入權限，請稍後再試。');
+    }
+  } catch (error) {
+    return { status: 'error', message: '寫入試算表失敗：' + error.message };
+  }
+
+  // 2. 嘗試發送 Google Chat 通知
+  try {
+    sendChatNotification(data);
+  } catch (error) {
+    // 若寫入成功但通知失敗，回傳特定警告
+    return { status: 'partial', message: '資料已儲存、通知失敗 (' + error.message + ')' };
+  }
+
+  // 3. 兩者皆成功
+  return { status: 'success', message: '資料已成功儲存並送出通知！' };
+}
+
+/**
+ * 發送 Google Chat Webhook 通知
+ * @param {Object} data 表單資料
+ */
+function sendChatNotification(data) {
+  const scriptProperties = PropertiesService.getScriptProperties();
+  const webhookUrl = scriptProperties.getProperty('CHAT_WEBHOOK');
+
+  if (!webhookUrl) {
+    throw new Error('尚未設定 CHAT_WEBHOOK 指令碼屬性');
+  }
+
+  // 收集名單以產生文字摘要
+  const getNames = (prefix, count) => {
+    let names = [];
+    for(let i=1; i<=count; i++) {
+      if(data[prefix + i]) names.push(data[prefix + i].trim());
+    }
+    return names.length > 0 ? names.join(', ') : '無';
+  };
+
+  const top5Primary = getNames('top5_', 5);
+  const top5Backup = getNames('top5_b', 3);
+  const progPrimary = getNames('prog_', 3);
+  const progBackup = getNames('prog_b', 2);
+
+  const messageText =
+    `*【得獎名單填報通知】*\n` +
+    `*班級：* ${data.className}\n` +
+    `*填報教師：* ${data.teacher}\n\n` +
+    `*🏆 前五名*\n` +
+    `正式：${top5Primary}\n` +
+    `備用：${top5Backup}\n\n` +
+    `*📈 進步獎*\n` +
+    `正式：${progPrimary}\n` +
+    `備用：${progBackup}`;
+
+  const payload = {
+    "text": messageText
+  };
+
+  const options = {
+    "method": "post",
+    "contentType": "application/json",
+    "payload": JSON.stringify(payload),
+    "muteHttpExceptions": true // 允許讀取錯誤回應內容以利除錯
+  };
+
+  const response = UrlFetchApp.fetch(webhookUrl, options);
+  if (response.getResponseCode() !== 200) {
+    throw new Error('Google Chat API 錯誤狀態碼: ' + response.getResponseCode());
+  }
+}
+</textarea
+        >
+        <textarea id="replacementAwardsHtml" hidden>
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>前五名與進步獎填寫系統</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+    /* 自訂 Modal 隱藏與顯示 */
+    .modal-hidden { display: none; opacity: 0; pointer-events: none; }
+    .modal-visible { display: flex; opacity: 1; pointer-events: auto; transition: opacity 0.2s ease-in-out; }
+  </style>
+</head>
+<body class="p-4 sm:p-8 text-gray-800">
+
+  <!-- 自訂提示框 Modal -->
+  <div id="alertModal" class="modal-hidden fixed inset-0 z-50 items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm px-4">
+    <div class="bg-white rounded-xl shadow-2xl p-6 max-w-sm w-full transform transition-all">
+      <div id="alertIcon" class="mx-auto flex items-center justify-center h-12 w-12 rounded-full mb-4">
+        <!-- Icon injected via JS -->
+      </div>
+      <h3 id="alertTitle" class="text-lg leading-6 font-medium text-center text-gray-900 mb-2">通知</h3>
+      <p id="alertMessage" class="text-sm text-gray-500 text-center mb-6"></p>
+      <div class="flex justify-center">
+        <button onclick="closeModal()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none sm:text-sm transition-colors">
+          確認
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg overflow-hidden">
+    <div class="bg-blue-600 px-6 py-4">
+      <h1 class="text-2xl font-bold text-white">前五名與進步獎填寫系統</h1>
+      <p class="text-blue-100 text-sm mt-1">請填寫正式名額與備用名單，同一學生不可重複。</p>
+    </div>
+
+    <form id="awardForm" class="p-6 sm:p-8 space-y-8" onsubmit="handleFormSubmit(event)">
+      
+      <!-- 基本資訊區 -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 bg-gray-50 p-6 rounded-xl border border-gray-100">
+        <div>
+          <label for="className" class="block text-sm font-semibold text-gray-700 mb-1">班級 <span class="text-red-500">*</span></label>
+          <input type="text" id="className" name="className" required placeholder="例如：一年甲班" 
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+        </div>
+        <div>
+          <label for="teacher" class="block text-sm font-semibold text-gray-700 mb-1">填報教師 <span class="text-red-500">*</span></label>
+          <input type="text" id="teacher" name="teacher" required placeholder="請輸入姓名"
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+        </div>
+      </div>
+
+      <!-- 前五名區塊 -->
+      <div>
+        <div class="flex items-center mb-4">
+          <div class="w-8 h-8 rounded-full bg-yellow-100 text-yellow-600 flex items-center justify-center font-bold mr-3">1</div>
+          <h2 class="text-xl font-bold text-gray-800">前五名名單</h2>
+        </div>
+        
+        <div class="space-y-4 ml-0 sm:ml-11">
+          <div>
+            <h3 class="text-sm font-semibold text-gray-700 mb-2 border-b pb-1">正式名單 (必填 5 名)</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-5 gap-3">
+              <input type="text" id="top5_1" name="top5_1" placeholder="第一名" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400">
+              <input type="text" id="top5_2" name="top5_2" placeholder="第二名" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400">
+              <input type="text" id="top5_3" name="top5_3" placeholder="第三名" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400">
+              <input type="text" id="top5_4" name="top5_4" placeholder="第四名" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400">
+              <input type="text" id="top5_5" name="top5_5" placeholder="第五名" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400">
+            </div>
+          </div>
+          <div class="pt-2">
+            <h3 class="text-sm font-semibold text-gray-500 mb-2 border-b pb-1">備用名單 (選填至多 3 名)</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <input type="text" id="top5_b1" name="top5_b1" placeholder="備用一" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-300 bg-gray-50">
+              <input type="text" id="top5_b2" name="top5_b2" placeholder="備用二" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-300 bg-gray-50">
+              <input type="text" id="top5_b3" name="top5_b3" placeholder="備用三" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-300 bg-gray-50">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 進步獎區塊 -->
+      <div>
+        <div class="flex items-center mb-4">
+          <div class="w-8 h-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center font-bold mr-3">2</div>
+          <h2 class="text-xl font-bold text-gray-800">進步獎名單</h2>
+        </div>
+        
+        <div class="space-y-4 ml-0 sm:ml-11">
+          <div>
+            <h3 class="text-sm font-semibold text-gray-700 mb-2 border-b pb-1">正式名單 (選填至多 3 名)</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <input type="text" id="prog_1" name="prog_1" placeholder="進步獎一" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-400">
+              <input type="text" id="prog_2" name="prog_2" placeholder="進步獎二" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-400">
+              <input type="text" id="prog_3" name="prog_3" placeholder="進步獎三" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-400">
+            </div>
+          </div>
+          <div class="pt-2">
+            <h3 class="text-sm font-semibold text-gray-500 mb-2 border-b pb-1">備用名單 (選填至多 2 名)</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+              <input type="text" id="prog_b1" name="prog_b1" placeholder="備用一" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-300 bg-gray-50">
+              <input type="text" id="prog_b2" name="prog_b2" placeholder="備用二" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-300 bg-gray-50">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 送出按鈕 -->
+      <div class="pt-6 border-t border-gray-100 flex items-center justify-end">
+        <span id="loadingText" class="hidden text-sm text-gray-500 mr-4 flex items-center">
+          <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          資料處理中...
+        </span>
+        <button type="submit" id="submitBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-xl shadow-md transition-all transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+          確認送出
+        </button>
+      </div>
+
+    </form>
+  </div>
+
+  <script>
+    
+    // Custom Alert Box logic
+    function showAlert(type, title, message) {
+      const modal = document.getElementById('alertModal');
+      const icon = document.getElementById('alertIcon');
+      const titleEl = document.getElementById('alertTitle');
+      const msgEl = document.getElementById('alertMessage');
+      
+      titleEl.innerText = title;
+      msgEl.innerText = message;
+      
+      if (type === 'error') {
+        icon.className = 'mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4';
+        icon.innerHTML = `<svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>`;
+      } else if (type === 'warning') {
+        icon.className = 'mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-yellow-100 mb-4';
+        icon.innerHTML = `<svg class="h-6 w-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>`;
+      } else {
+        icon.className = 'mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4';
+        icon.innerHTML = `<svg class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>`;
+      }
+      
+      modal.classList.remove('modal-hidden');
+      modal.classList.add('modal-visible');
+    }
+
+    function closeModal() {
+      const modal = document.getElementById('alertModal');
+      modal.classList.remove('modal-visible');
+      modal.classList.add('modal-hidden');
+    }
+
+    function setUIState(isLoading) {
+      const btn = document.getElementById('submitBtn');
+      const loader = document.getElementById('loadingText');
+      if (isLoading) {
+        btn.disabled = true;
+        btn.classList.add('opacity-50', 'cursor-not-allowed');
+        loader.classList.remove('hidden');
+      } else {
+        btn.disabled = false;
+        btn.classList.remove('opacity-50', 'cursor-not-allowed');
+        loader.classList.add('hidden');
+      }
+    }
+
+    function handleFormSubmit(event) {
+      event.preventDefault();
+      
+      // 1. 取得所有輸入資料
+      const form = document.getElementById('awardForm');
+      const formData = new FormData(form);
+      const data = Object.fromEntries(formData.entries());
+      
+      // 2. 驗證：前五名正式名單是否填滿（進步獎已改為選填）
+      const requiredPrimary = [
+        'top5_1', 'top5_2', 'top5_3', 'top5_4', 'top5_5'
+      ];
+      for (const field of requiredPrimary) {
+        if (!data[field] || data[field].trim() === '') {
+          showAlert('error', '資料未填妥', '請確認「前五名」(5位) 的正式名單皆已填寫完畢。');
+          return;
+        }
+      }
+
+      // 3. 驗證：同一學生不可重複
+      const allNames = [];
+      const nameFields = [
+        'top5_1', 'top5_2', 'top5_3', 'top5_4', 'top5_5',
+        'top5_b1', 'top5_b2', 'top5_b3',
+        'prog_1', 'prog_2', 'prog_3',
+        'prog_b1', 'prog_b2'
+      ];
+      
+      for (const field of nameFields) {
+        const val = data[field] ? data[field].trim() : '';
+        if (val !== '') {
+          allNames.push(val);
+        }
+      }
+      
+      const uniqueNames = new Set(allNames);
+      if (uniqueNames.size !== allNames.length) {
+        showAlert('error', '名單重複', '同一位學生不可重複出現在名單中（包含正式與備用），請檢查輸入資料。');
+        return;
+      }
+
+      // 4. 傳送資料到 Google Apps Script
+      setUIState(true);
+      
+      // 使用 google.script.run 呼叫後端函式
+      google.script.run
+        .withSuccessHandler(function(response) {
+          setUIState(false);
+          if (response.status === 'success') {
+            showAlert('success', '成功', response.message);
+            form.reset(); // 清空表單
+          } else if (response.status === 'partial') {
+            // 資料儲存成功，但 Chat 通知失敗
+            showAlert('warning', '部分成功', response.message);
+            form.reset();
+          } else {
+            showAlert('error', '系統錯誤', response.message);
+          }
+        })
+        .withFailureHandler(function(error) {
+          setUIState(false);
+          showAlert('error', '連線失敗', '無法與伺服器連線：' + error.message);
+        })
+        .submitData(data);
+    }
+  </script>
+</body>
+</html>
+</textarea>
+
+        <textarea id="replacementPoetryGs" hidden>
+// Google Chat Webhook 請設定於「專案設定 → 指令碼屬性」
+// 屬性名稱：CHAT_WEBHOOK
+var WEBHOOK_URL = PropertiesService.getScriptProperties().getProperty('CHAT_WEBHOOK') || "";
+
+var ss = SpreadsheetApp.getActiveSpreadsheet();
+var recordSheet = ss.getSheetByName("檢核記錄");
+
+function doGet() {
+  return HtmlService.createTemplateFromFile('index')
+      .evaluate()
+      .setTitle('唐詩宋詞檢核系統 (完整版)')
+      .addMetaTag('viewport', 'width=device-width, initial-scale=1');
+}
+
+// --- 既有功能：抽籤 ---
+function drawWeeklyNumbers(manualSeat) {
+  var grades = [1, 2, 3, 4, 5, 6];
+  var classTypes = ["甲", "乙", "丙"];
+  var resultList = [];
+  var targetSeat = manualSeat || 1;
+
+  grades.forEach(g => {
+    classTypes.forEach(c => {
+      resultList.push({ grade: g, cls: c, seat: targetSeat });
+    });
+  });
+
+  return { seat: targetSeat, list: resultList };
+}
+
+// --- 既有功能：存檔 ---
+function submitResult(recordData) {
+  try {
+    if (!recordSheet) recordSheet = ss.getSheetByName("檢核記錄");
+    if (!recordSheet) return { success: false, error: "找不到「檢核記錄」工作表" };
+
+    var timestamp = new Date();
+    recordSheet.appendRow([
+      timestamp, recordData.week, recordData.grade, recordData.cls,
+      recordData.seat, recordData.poem, recordData.result
+    ]);
+    return { success: true };
+  } catch (e) {
+    return { success: false, error: e.toString() };
+  }
+}
+
+// --- 既有功能：查詢記錄 ---
+function searchByWeek(week) {
+  if (!recordSheet) recordSheet = ss.getSheetByName("檢核記錄");
+  if (!recordSheet) return [];
+
+  var data = recordSheet.getDataRange().getValues();
+  if (data.length <= 1) return [];
+
+  var results = data.slice(1).filter(row => row[1] == week).map(row => {
+    return {
+      time: Utilities.formatDate(new Date(row[0]), Session.getScriptTimeZone(), "MM/dd HH:mm"),
+      grade: row[2], cls: row[3], seat: row[4], poem: row[5], result: row[6]
+    };
+  });
+
+  results.sort((a, b) => a.grade - b.grade || a.cls.localeCompare(b.cls));
+  return results;
+}
+
+// --- 傳送至 Google Chat 群組通知 ---
+function sendReportToChat(week) {
+  // 1. 檢查 Webhook
+  if (!WEBHOOK_URL || WEBHOOK_URL.indexOf("http") === -1) {
+    return { success: false, error: "未設定指令碼屬性 CHAT_WEBHOOK" };
+  }
+
+  // 2. 撈取該週資料
+  var results = searchByWeek(week);
+  if (results.length === 0) {
+    return { success: false, error: "該週次尚無任何檢核資料" };
+  }
+
+  // 3. 統計數據
+  var total = results.length;
+  var pass = results.filter(r => r.result === '通過').length;
+  var fail = total - pass;
+  var passRate = Math.round((pass / total) * 100);
+
+  // 4. 組合訊息內容
+  var message = `📊 *唐詩檢核報告 - 第 ${week} 週*\n`;
+  message += `------------------------------\n`;
+  message += `👥 總檢核人數：${total} 人\n`;
+  message += `✅ 通過人數：${pass} 人 (${passRate}%)\n`;
+  message += `❌ 未通過人數：${fail} 人\n`;
+  message += `------------------------------\n`;
+  message += `📋 *詳細名單：*\n`;
+
+  // 條列式顯示（依年級排序）
+  results.forEach(function(r) {
+    var icon = (r.result === '通過') ? "✅" : "❌";
+    message += `${icon} ${r.grade}年${r.cls}班 ${r.seat}號 - ${r.poem}\n`;
+  });
+
+  message += `\n🕒 統計時間：${Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "MM/dd HH:mm")}`;
+
+  // 5. 發送 Request 到 Google Chat
+  var options = {
+    method: 'post',
+    contentType: 'application/json',
+    payload: JSON.stringify({ "text": message }),
+    muteHttpExceptions: true
+  };
+
+  try {
+    var response = UrlFetchApp.fetch(WEBHOOK_URL, options);
+    var statusCode = response.getResponseCode();
+    if (statusCode < 200 || statusCode >= 300) {
+      throw new Error("Google Chat API 錯誤狀態碼: " + statusCode);
+    }
+    return { success: true };
+  } catch (e) {
+    return { success: false, error: e.toString() };
+  }
+}
+
+/**
+ * 抓取所有詩詞工作表的內容
+ */
+function getAllPoems() {
+  var sheetNames = [
+    "一上", "一下", "二上", "二下", "三上", "三下",
+    "四上", "四下", "五上", "五下", "六上", "六下"
+  ];
+
+  var library = {};
+
+  sheetNames.forEach(function(name) {
+    var sheet = ss.getSheetByName(name);
+    if (sheet) {
+      var data = sheet.getDataRange().getValues();
+      if (data.length > 1) {
+        library[name] = data;
+      } else {
+        library[name] = [];
+      }
+    } else {
+      library[name] = null;
+    }
+  });
+
+  return library;
+}
+
+/**
+ * 初始化詩詞工作表
+ */
+function initPoemSheets() {
+  var sheetNames = [
+    "一上", "一下", "二上", "二下", "三上", "三下",
+    "四上", "四下", "五上", "五下", "六上", "六下"
+  ];
+
+  // 建立紀錄表
+  if (!ss.getSheetByName("檢核記錄")) {
+    var recSheet = ss.insertSheet("檢核記錄");
+    recSheet.appendRow(["時間", "週次", "年級", "班級", "座號", "檢核詩詞", "結果"]);
+    recSheet.setFrozenRows(1);
+  }
+
+  // 建立詩詞表
+  sheetNames.forEach(function(name) {
+    var sheet = ss.getSheetByName(name);
+    if (!sheet) {
+      sheet = ss.insertSheet(name);
+      sheet.appendRow(["詩名", "作者", "詩文內容"]);
+      sheet.appendRow(["範例詩_" + name, "李白", "請在此填入詩文內容"]);
+      sheet.setFrozenRows(1);
+    }
+  });
+  console.log("初始化完成！");
+}
+
+function testConnection() {
+  if (!WEBHOOK_URL) {
+    console.log("❌ 錯誤：尚未設定指令碼屬性 CHAT_WEBHOOK");
+    return;
+  }
+
+  var options = {
+    method: 'post',
+    contentType: 'application/json',
+    payload: JSON.stringify({ "text": "🔔 測試成功！Google Chat 連線正常。" }),
+    muteHttpExceptions: true
+  };
+
+  try {
+    var response = UrlFetchApp.fetch(WEBHOOK_URL, options);
+    var statusCode = response.getResponseCode();
+    if (statusCode < 200 || statusCode >= 300) {
+      throw new Error("Google Chat API 錯誤狀態碼: " + statusCode);
+    }
+    console.log("✅ 發送成功！請檢查您的 Chat 群組。");
+  } catch (e) {
+    console.log("❌ 發送失敗，錯誤原因：" + e.toString());
+  }
+}
+</textarea>
+        <textarea id="replacementPoetryHtml" hidden>
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+  <style>
+    /* 全局樣式 */
+    body { background-color: #f8f9fa; padding-top: 20px; font-family: "Microsoft JhengHei", sans-serif; display: flex; flex-direction: column; min-height: 100vh; }
+    h3 { color: #2c3e50; font-weight: 700; margin-bottom: 20px; }
+    
+    /* 內容容器 (讓 Footer 沉底用) */
+    .main-content { flex: 1; }
+
+    /* Tabs */
+    .nav-tabs .nav-link { color: #6c757d; cursor: pointer; border: none; background: transparent; }
+    .nav-tabs .nav-link.active { font-weight: bold; color: #0d6efd; border-top: 3px solid #0d6efd; background-color: #fff; border-bottom: 1px solid #fff; }
+    .nav-tabs { border-bottom: 1px solid #dee2e6; }
+    
+    /* Cards */
+    .card-student { margin-bottom: 15px; border: none; border-left: 5px solid #6c757d; background-color: #fff; transition: transform 0.2s; }
+    .card-student:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .card-done-pass { border-left-color: #198754; background-color: #d1e7dd; }
+    .card-done-fail { border-left-color: #dc3545; background-color: #f8d7da; }
+    
+    /* Poem Library Styles */
+    .semester-block { background: white; border-radius: 8px; padding: 15px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+    .semester-title { border-bottom: 2px solid #e9ecef; padding-bottom: 10px; margin-bottom: 15px; color: #495057; font-weight: bold; }
+    .poem-table th { background-color: #f8f9fa; }
+    .badge-semester { background-color: #6c757d; font-size: 0.9em; margin-right: 10px; }
+    
+    /* Loading */
+    .loading-overlay { display: none; margin: 30px auto; text-align: center; color: #666; }
+
+    /* Footer */
+    footer { margin-top: 40px; padding: 20px 0; background-color: #e9ecef; border-top: 1px solid #dee2e6; color: #6c757d; }
+    footer a { color: #0d6efd; text-decoration: none; font-weight: bold; transition: color 0.3s; }
+    footer a:hover { color: #0a58ca; text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+<div class="container main-content" style="max-width: 1200px;">
+  <!-- 標題列 -->
+  <h3 class="text-center">🏫 唐詩宋詞檢核系統</h3>
+
+  <!-- 頁籤導覽列 -->
+  <ul class="nav nav-tabs mb-4" id="myTab" role="tablist">
+    <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#draw-pane">📝 本週檢核</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#query-pane">🔍 結果查詢</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#library-pane" onclick="loadLibraryOnce()">📚 詩詞題庫</button></li>
+  </ul>
+
+  <!-- 頁籤內容區 -->
+  <div class="tab-content">
+    
+    <!-- 1. 本週檢核 (抽籤功能) -->
+    <div class="tab-pane fade show active" id="draw-pane">
+      <div class="card mb-4 shadow-sm border-0">
+        <div class="card-body bg-white rounded">
+          <div class="row g-2 justify-content-center">
+            <div class="col-auto"><div class="input-group"><span class="input-group-text fw-bold bg-light">📅 週次</span><input type="number" id="weekInput" class="form-control text-center" style="width: 70px;" min="1"></div></div>
+            <div class="col-auto"><div class="input-group"><span class="input-group-text fw-bold bg-light">🔢 座號</span><input type="number" id="seatInput" class="form-control text-center" style="width: 70px;" min="1"></div></div>
+            <div class="col-auto"><button class="btn btn-primary fw-bold" onclick="startDraw()">🚀 產生名單</button></div>
+          </div>
+        </div>
+      </div>
+      <div id="draw-loading" class="loading-overlay"><div class="spinner-border text-primary"></div><p>名單產生中...</p></div>
+      <div id="number-display" class="alert alert-primary text-center fw-bold fs-4" style="display:none;"></div>
+      <div id="class-list" class="row"></div>
+    </div>
+
+    <!-- 2. 結果查詢功能 -->
+    <div class="tab-pane fade" id="query-pane">
+      <div class="input-group mb-3 shadow-sm">
+        <span class="input-group-text bg-white">查詢週次</span>
+        <input type="number" id="queryWeekInput" class="form-control" min="1">
+        <button class="btn btn-outline-primary" onclick="startQuery()">🔍 查詢</button>
+        <button class="btn btn-outline-success" onclick="sendToChat()">📢 傳送至 Chat</button>
+      </div>
+      <div id="query-loading" class="loading-overlay"><div class="spinner-border text-secondary"></div></div>
+      <div class="card border-0 shadow-sm"><div class="card-body p-0"><div class="table-responsive">
+        <table class="table table-striped mb-0 text-center">
+          <thead>
+            <tr>
+              <th>班級</th>
+              <th>座號</th>
+              <th>檢核詩詞</th>
+              <th>結果</th>
+              <th>時間</th>
+            </tr>
+          </thead>
+          <tbody id="result-table-body">
+            <tr><td colspan="5" class="text-center py-4 text-muted">請輸入週次並點擊查詢</td></tr>
+          </tbody>
+        </table>
+      </div></div></div>
+    </div>
+
+    <!-- 3. 詩詞題庫預覽 -->
+    <div class="tab-pane fade" id="library-pane">
+      <div class="sticky-top bg-white p-3 shadow-sm mb-3 rounded" style="top: 0px; z-index: 100;">
+        <div class="input-group">
+          <span class="input-group-text">🔍 搜尋詩詞</span>
+          <input type="text" id="poemSearchInput" class="form-control" placeholder="輸入詩名或作者過濾..." onkeyup="filterPoems()">
+          <button class="btn btn-secondary" onclick="loadLibrary(true)">🔄 重新讀取</button>
+        </div>
+      </div>
+
+      <div id="lib-loading" class="loading-overlay">
+        <div class="spinner-border text-info"></div>
+        <p class="mt-2">正在載入所有詩詞庫...</p>
+      </div>
+
+      <div id="library-content"></div>
+    </div>
+
+  </div>
+</div>
+
+<footer class="text-center">
+  <div class="container">
+    <span class="small">設計者：</span>
+    <a href="https://docs.google.com/spreadsheets/d/1OyD0EeCpZbaUoRC4Mk-iFwnY3zoI3NWMrfKYz_JDl-I/edit?gid=1598274303#gid=1598274303" target="_blank">
+      Vincent Wang
+    </a>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // ================= 0. 系統環境設定與模擬器 =================
+  const isGAS = typeof google !== 'undefined' && typeof google.script !== 'undefined';
+  
+  const mockGAS = {
+    drawWeeklyNumbers: (seat) => ({
+      seat: seat,
+      list: [
+        { grade: 1, cls: "甲", seat: seat }, { grade: 1, cls: "乙", seat: seat },
+        { grade: 2, cls: "甲", seat: seat }
+      ]
+    }),
+    submitResult: () => ({ success: true }),
+    searchByWeek: () => [
+      { grade: 1, cls: "甲", seat: 5, poem: "[一上] 春曉", result: "通過", time: "05/12 10:00" },
+      { grade: 1, cls: "乙", seat: 5, poem: "[一下] 靜夜思", result: "未通過", time: "05/12 10:05" }
+    ],
+    sendReportToChat: () => ({ success: true }),
+    getAllPoems: () => ({
+      "一上": [["詩名", "作者", "詩文內容"], ["春曉", "孟浩然", "春眠不覺曉..."], ["詠鵝", "駱賓王", "鵝鵝鵝..."]],
+      "一下": [["詩名", "作者", "詩文內容"], ["靜夜思", "李白", "床前明月光..."]]
+    })
+  };
+
+  // Promise 封裝 (相容實際 GAS 與本地模擬)
+  const runGAS = (method, ...args) => {
+    return new Promise((resolve, reject) => {
+      if (!isGAS) {
+        setTimeout(() => {
+          try { resolve(mockGAS[method](...args)); } catch (e) { reject(e); }
+        }, 500); // 模擬延遲
+      } else {
+        google.script.run.withSuccessHandler(resolve).withFailureHandler(reject)[method](...args);
+      }
+    });
+  };
+
+  let globalPoemOptions = '<option value="">正在載入詩詞...</option>';
+  let rawLibraryData = null;
+
+  // 網頁載入時預先載入詩詞
+  window.onload = async () => {
+    try {
+      rawLibraryData = await runGAS('getAllPoems');
+      let optionsHtml = '<option value="">請選擇詩詞...</option>';
+      const order = ["一上", "一下", "二上", "二下", "三上", "三下", "四上", "四下", "五上", "五下", "六上", "六下"];
+      
+      order.forEach(semester => {
+        const rows = rawLibraryData ? rawLibraryData[semester] : null;
+        if (rows && rows.length > 1) {
+          optionsHtml += `<optgroup label="${semester}">`;
+          for (let i = 1; i < rows.length; i++) {
+            let title = rows[i][0];
+            optionsHtml += `<option value="[${semester}] ${title}">${title}</option>`;
+          }
+          optionsHtml += `</optgroup>`;
+        }
+      });
+      globalPoemOptions = optionsHtml;
+    } catch (e) {
+      console.error("載入詩詞選單失敗", e);
+      globalPoemOptions = '<option value="">載入失敗</option>';
+    }
+  };
+
+  // ================= 1. 檢核功能 =================
+  async function startDraw() {
+    var week = document.getElementById('weekInput').value;
+    var seat = document.getElementById('seatInput').value;
+    if(!week || !seat) { alert("請輸入週次與座號"); return; }
+    
+    uiLoading('draw', true);
+    document.getElementById('class-list').innerHTML = '';
+    
+    try {
+      const data = await runGAS('drawWeeklyNumbers', seat);
+      renderDrawList(data);
+    } catch (e) {
+      alert("抽籤失敗: " + e);
+    } finally {
+      uiLoading('draw', false);
+    }
+  }
+
+  function renderDrawList(data) {
+    document.getElementById('number-display').innerText = "本週統一抽測座號： " + data.seat + " 號";
+    document.getElementById('number-display').style.display = 'block';
+    
+    var html = '';
+    data.list.forEach((item, idx) => {
+      html += `
+        <div class="col-md-6 col-lg-4">
+          <div class="card card-student shadow-sm" id="card-${idx}">
+            <div class="card-body p-3">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <h5 class="fw-bold m-0">${item.grade}年${item.cls}班</h5>
+                <span class="badge bg-secondary fs-6">${item.seat}號</span>
+              </div>
+              <select class="form-select mb-3 border-secondary" id="poem-${idx}">
+                ${globalPoemOptions}
+              </select>
+              <div class="d-flex gap-2" id="btn-group-${idx}">
+                <button class="btn btn-sm btn-outline-success flex-grow-1 fw-bold py-2" onclick="submit('${idx}', '${item.grade}', '${item.cls}', '${item.seat}', '通過')">✅ 通過</button>
+                <button class="btn btn-sm btn-outline-danger flex-grow-1 fw-bold py-2" onclick="submit('${idx}', '${item.grade}', '${item.cls}', '${item.seat}', '未通過')">❌ 未通過</button>
+              </div>
+            </div>
+          </div>
+        </div>`;
+    });
+    document.getElementById('class-list').innerHTML = html;
+  }
+
+  async function submit(idx, g, c, s, res) {
+    var poemSelect = document.getElementById('poem-'+idx);
+    var poem = poemSelect.value;
+    var week = document.getElementById('weekInput').value;
+    
+    if(!poem) { alert("請從選單中選擇檢核的詩詞！"); poemSelect.focus(); return; }
+    
+    var card = document.getElementById('card-'+idx);
+    var btns = document.getElementById('btn-group-'+idx);
+    btns.innerHTML = '<span class="text-muted small w-100 text-center py-2">💾 儲存中...</span>';
+    poemSelect.disabled = true;
+
+    try {
+      const r = await runGAS('submitResult', {week: week, grade: g, cls: c, seat: s, poem: poem, result: res});
+      if (r && r.success === false) throw new Error(r.error);
+
+      if(res === '通過') {
+        card.classList.add('card-done-pass');
+        btns.innerHTML = '<span class="text-success fw-bold w-100 text-center py-2">✅ 已通過</span>';
+      } else {
+        card.classList.add('card-done-fail');
+        btns.innerHTML = '<span class="text-danger fw-bold w-100 text-center py-2">❌ 未通過</span>';
+      }
+    } catch (e) {
+      alert("儲存失敗: " + e);
+      poemSelect.disabled = false;
+      btns.innerHTML = `
+        <button class="btn btn-sm btn-outline-success flex-grow-1 fw-bold py-2" onclick="submit('${idx}', '${g}', '${c}', '${s}', '通過')">✅ 通過</button>
+        <button class="btn btn-sm btn-outline-danger flex-grow-1 fw-bold py-2" onclick="submit('${idx}', '${g}', '${c}', '${s}', '未通過')">❌ 未通過</button>
+      `;
+    }
+  }
+
+  // ================= 2. 查詢功能 =================
+  async function startQuery() {
+    var w = document.getElementById('queryWeekInput').value;
+    if(!w) return;
+    
+    uiLoading('query', true);
+    document.getElementById('result-table-body').innerHTML = '';
+    
+    try {
+      let res = await runGAS('searchByWeek', w);
+      if (!res) res = []; // 防呆設計
+      
+      var html = res.length ? '' : `<tr><td colspan="5" class="text-center py-4 text-muted">第 ${w} 週尚無資料</td></tr>`;
+      res.forEach(r => {
+        var color = r.result === '通過' ? 'text-success' : 'text-danger';
+        var icon = r.result === '通過' ? '✅' : '❌';
+        html += `<tr>
+          <td class="align-middle fw-bold">${r.grade}年${r.cls}班</td>
+          <td class="align-middle">${r.seat}號</td>
+          <td class="align-middle text-primary fw-bold">${r.poem}</td>
+          <td class="${color} fw-bold align-middle">${icon} ${r.result}</td>
+          <td class="small text-muted align-middle">${r.time}</td>
+        </tr>`;
+      });
+      document.getElementById('result-table-body').innerHTML = html;
+    } catch (e) {
+      alert("查詢失敗: " + e);
+    } finally {
+      uiLoading('query', false);
+    }
+  }
+  
+  async function sendToChat() {
+    var w = document.getElementById('queryWeekInput').value;
+    if(!w || !confirm("確定要將「第 "+w+" 週」的檢核統計傳送至 Google Chat 嗎？")) return;
+    
+    try {
+      const r = await runGAS('sendReportToChat', w);
+      if (r.success) {
+        alert("📢 報表傳送成功！");
+      } else {
+        alert("傳送失敗: " + r.error);
+      }
+    } catch (e) {
+      alert("傳送發生錯誤: " + e);
+    }
+  }
+
+  // ================= 3. 詩詞題庫功能 =================
+  var isLibraryLoaded = false;
+
+  async function loadLibraryOnce() {
+    if (!isLibraryLoaded) await loadLibrary(false);
+  }
+
+  async function loadLibrary(forceReload = false) {
+    document.getElementById('lib-loading').style.display = 'block';
+    document.getElementById('library-content').innerHTML = '';
+    
+    try {
+      if (forceReload || !rawLibraryData) rawLibraryData = await runGAS('getAllPoems');
+      renderLibrary(rawLibraryData);
+      isLibraryLoaded = true;
+    } catch (e) {
+      document.getElementById('library-content').innerHTML = '<div class="alert alert-danger">題庫載入失敗：' + e + '</div>';
+    } finally {
+      document.getElementById('lib-loading').style.display = 'none';
+    }
+  }
+
+  function renderLibrary(libraryData) {
+    var container = document.getElementById('library-content');
+    var html = '';
+    var order = ["一上", "一下", "二上", "二下", "三上", "三下", "四上", "四下", "五上", "五下", "六上", "六下"];
+    
+    order.forEach(sheetName => {
+      var rows = libraryData ? libraryData[sheetName] : null; // 防呆設計
+      if (!rows) {
+        html += `<div class="semester-block opacity-50"><h5 class="semester-title">${sheetName} <span class="badge bg-secondary ms-2">無資料表</span></h5></div>`;
+      } else if (rows.length <= 1) {
+        html += `<div class="semester-block search-item"><h5 class="semester-title">${sheetName} <span class="badge bg-warning text-dark ms-2">尚無詩詞</span></h5></div>`;
+      } else {
+        var header = rows[0];
+        var bodyRows = rows.slice(1);
+        html += `<div class="semester-block search-item" data-search-content="">
+          <h5 class="semester-title"><span class="badge badge-semester">${sheetName}</span> 詩詞列表 (${bodyRows.length}首)</h5>
+          <div class="table-responsive">
+            <table class="table table-hover table-sm poem-table align-middle">
+              <thead><tr>`;
+        header.forEach(h => { html += `<th>${h}</th>`; });
+        html += `</tr></thead><tbody>`;
+        bodyRows.forEach(row => {
+          var rowText = row.join(" ").toLowerCase();
+          html += `<tr class="poem-row" data-text="${rowText}">`;
+          row.forEach(cell => { html += `<td>${cell}</td>`; });
+          html += `</tr>`;
+        });
+        html += `</tbody></table></div></div>`;
+      }
+    });
+    container.innerHTML = html;
+  }
+
+  function filterPoems() {
+    var input = document.getElementById('poemSearchInput').value.toLowerCase();
+    var blocks = document.getElementsByClassName('search-item');
+    
+    Array.from(blocks).forEach(block => {
+      var rows = block.getElementsByClassName('poem-row');
+      var hasVisibleRow = false;
+      Array.from(rows).forEach(row => {
+        var text = row.getAttribute('data-text');
+        if (text.includes(input)) {
+          row.style.display = '';
+          hasVisibleRow = true;
+        } else {
+          row.style.display = 'none';
+        }
+      });
+      if (input === '') {
+        block.style.display = '';
+      } else {
+        block.style.display = hasVisibleRow ? '' : 'none';
+      }
+    });
+  }
+
+  function uiLoading(type, show) {
+    var loader = document.getElementById(type + '-loading');
+    if(loader) loader.style.display = show ? 'block' : 'none';
+  }
+</script>
+
+</body>
+</html>
+</textarea
+        >
+
+        <textarea id="replacementTrainingGs" hidden>
+/**
+ * 當試算表開啟時自動執行，在工具列建立自訂選單
+ */
+function onOpen() {
+  var ui = SpreadsheetApp.getUi();
+  ui.createMenu('🛠️ 自訂工具')
+    .addItem('隱藏教師姓名中間字', 'maskTeacherNames')
+    .addItem('統計個別教師研習時數', 'calculateTotalHours')
+    .addToUi();
+}
+
+/**
+ * 將 B 欄（教師姓名）的姓名中間字替換為 "O"
+ */
+function maskTeacherNames() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var lastRow = sheet.getLastRow();
+
+  if (lastRow < 2) {
+    SpreadsheetApp.getUi().alert('沒有找到可以修改的資料喔！');
+    return;
+  }
+
+  var range = sheet.getRange(2, 2, lastRow - 1, 1);
+  var values = range.getValues();
+
+  for (var i = 0; i < values.length; i++) {
+    var name = values[i][0].toString().trim();
+    if (name.length > 0) {
+      values[i][0] = replaceMiddleWithO(name);
+    }
+  }
+
+  range.setValues(values);
+  SpreadsheetApp.getUi().alert('✅ 姓名遮蔽完成！');
+}
+
+/**
+ * 輔助函式：將名字中間替換成 "O"
+ * @param {string} name 原始姓名
+ * @return {string} 替換後的姓名
+ */
+function replaceMiddleWithO(name) {
+  var len = name.length;
+
+  if (len === 1) {
+    return name;
+  } else if (len === 2) {
+    return name.substring(0, 1) + 'O';
+  } else {
+    var firstChar = name.substring(0, 1);
+    var lastChar = name.substring(len - 1);
+    var middleO = '';
+
+    for (var i = 0; i < len - 2; i++) {
+      middleO += 'O';
+    }
+    return firstChar + middleO + lastChar;
+  }
+}
+
+/**
+ * 統計個別教師的研習總時數
+ * 教師姓名在 B 欄，研習時數在 I 欄
+ */
+function calculateTotalHours() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sourceSheet = ss.getActiveSheet();
+  var lastRow = sourceSheet.getLastRow();
+
+  if (lastRow < 2) {
+    SpreadsheetApp.getUi().alert('沒有找到可以統計的資料喔！');
+    return;
+  }
+
+  var range = sourceSheet.getRange(2, 1, lastRow - 1, 9);
+  var values = range.getValues();
+  var hoursMap = {};
+
+  for (var i = 0; i < values.length; i++) {
+    var name = values[i][1];
+    var hoursStr = values[i][8];
+
+    if (name) {
+      name = name.toString().trim();
+      if (name.length > 0) {
+        var hours = parseFloat(hoursStr);
+        if (isNaN(hours)) {
+          hours = 0;
+        }
+
+        if (hoursMap[name] !== undefined) {
+          hoursMap[name] += hours;
+        } else {
+          hoursMap[name] = hours;
+        }
+      }
+    }
+  }
+
+  var outputData = [["教師姓名", "總研習時數"]];
+  for (var teacher in hoursMap) {
+    outputData.push([teacher, hoursMap[teacher]]);
+  }
+
+  var targetSheetName = "教師總研習時數";
+  var targetSheet = ss.getSheetByName(targetSheetName);
+
+  if (targetSheet) {
+    targetSheet.clear();
+  } else {
+    targetSheet = ss.insertSheet(targetSheetName);
+  }
+
+  targetSheet.getRange(1, 1, outputData.length, 2).setValues(outputData);
+  targetSheet.getRange(1, 1, 1, 2).setFontWeight("bold").setBackground("#f3f3f3");
+
+  SpreadsheetApp.getUi().alert('✅ 統計完成！請查看下方新增的「' + targetSheetName + '」工作表。');
+}
+
+/**
+ * 網頁應用程式的進入點
+ */
+function doGet(e) {
+  return HtmlService.createTemplateFromFile('Index')
+    .evaluate()
+    .setTitle('教師研習時數查詢系統')
+    .addMetaTag('viewport', 'width=device-width, initial-scale=1');
+}
+
+/**
+ * 提供給網頁前端呼叫的資料擷取函式
+ */
+function getSpreadsheetData() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheets()[0];
+  var data = sheet.getDataRange().getDisplayValues();
+
+  if (data.length < 2) return { headers: [], details: [], summary: [] };
+
+  var headers = data[0];
+  var details = [];
+  var summaryMap = {};
+
+  for (var i = 1; i < data.length; i++) {
+    var row = data[i];
+    details.push(row);
+
+    var name = row[1];
+    var hoursStr = row[8];
+
+    if (name) {
+      name = name.trim();
+      if (name.length > 0) {
+        var hours = parseFloat(hoursStr);
+        if (isNaN(hours)) hours = 0;
+
+        if (summaryMap[name] !== undefined) {
+          summaryMap[name] += hours;
+        } else {
+          summaryMap[name] = hours;
+        }
+      }
+    }
+  }
+
+  var summary = [];
+  for (var teacher in summaryMap) {
+    summary.push([teacher, summaryMap[teacher]]);
+  }
+
+  return {
+    headers: headers,
+    details: details,
+    summaryHeaders: ["教師姓名", "總研習時數"],
+    summary: summary
+  };
+}
+</textarea
+        >
+        <textarea id="replacementTrainingHtml" hidden>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    min-height: 100vh;
+    padding: 28px 20px;
+    background: #020d1f;
+    background-image:
+      radial-gradient(ellipse 80% 60% at 20% 10%, rgba(0,80,200,0.22) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 50% at 80% 80%, rgba(0,180,255,0.12) 0%, transparent 55%),
+      linear-gradient(160deg, #020d1f 0%, #051830 50%, #030f22 100%);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #c8e4ff;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,120,255,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,120,255,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .main-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+    background: rgba(5, 25, 60, 0.45);
+    border: 1px solid rgba(0, 160, 255, 0.18);
+    border-radius: 20px;
+    padding: 36px 32px;
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    box-shadow:
+      0 0 0 1px rgba(0,160,255,0.08) inset,
+      0 8px 60px rgba(0, 0, 0, 0.6),
+      0 0 40px rgba(0, 100, 255, 0.06);
+  }
+
+  .page-title {
+    text-align: center;
+    margin-bottom: 28px;
+    font-size: 1.7rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: #e0f2ff;
+    text-shadow: 0 0 24px rgba(0,160,255,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .title-icon {
+    font-size: 1.8rem;
+    filter: drop-shadow(0 0 8px rgba(0,180,255,0.7));
+  }
+
+  .search-wrap {
+    margin-bottom: 24px;
+    position: relative;
+  }
+
+  .search-wrap .search-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1rem;
+    color: rgba(100, 180, 255, 0.6);
+    pointer-events: none;
+  }
+
+  #searchInput {
+    width: 100%;
+    padding: 13px 18px 13px 42px;
+    background: rgba(0, 30, 80, 0.5);
+    border: 1px solid rgba(0, 160, 255, 0.25);
+    border-radius: 12px;
+    color: #c8e4ff;
+    font-size: 0.95rem;
+    outline: none;
+    backdrop-filter: blur(8px);
+    transition: border-color 0.25s, box-shadow 0.25s;
+  }
+
+  #searchInput::placeholder { color: rgba(100, 160, 255, 0.4); }
+  #searchInput:focus {
+    border-color: rgba(0, 160, 255, 0.6);
+    box-shadow: 0 0 0 3px rgba(0, 120, 255, 0.12), 0 0 20px rgba(0, 120, 255, 0.1);
+  }
+
+  .glass-tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 24px;
+    background: rgba(0, 20, 55, 0.5);
+    border: 1px solid rgba(0, 120, 255, 0.15);
+    border-radius: 12px;
+    padding: 5px;
+  }
+
+  .glass-tab-btn {
+    flex: 1;
+    padding: 10px 20px;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 9px;
+    color: rgba(150, 200, 255, 0.6);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.22s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    letter-spacing: 0.02em;
+  }
+
+  .glass-tab-btn.active {
+    background: rgba(0, 100, 220, 0.3);
+    border-color: rgba(0, 160, 255, 0.35);
+    color: #80d4ff;
+    box-shadow: 0 0 18px rgba(0, 120, 255, 0.15), inset 0 1px 0 rgba(255,255,255,0.05);
+    text-shadow: 0 0 10px rgba(0,180,255,0.4);
+  }
+
+  .glass-tab-btn:hover:not(.active) {
+    background: rgba(0, 60, 140, 0.2);
+    color: rgba(180, 220, 255, 0.8);
+  }
+
+  .tab-pane { display: none; }
+  .tab-pane.active { display: block; }
+
+  .table-wrap {
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid rgba(0, 140, 255, 0.15);
+    background: rgba(0, 15, 45, 0.4);
+  }
+
+  .glass-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+  }
+
+  .glass-table thead tr {
+    background: rgba(0, 60, 150, 0.45);
+    border-bottom: 1px solid rgba(0, 160, 255, 0.25);
+  }
+
+  .glass-table thead th {
+    padding: 13px 16px;
+    color: #7ec8ff;
+    font-weight: 700;
+    font-size: 0.82rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    border: none;
+    text-shadow: 0 0 8px rgba(0,160,255,0.4);
+  }
+
+  .glass-table tbody tr {
+    border-bottom: 1px solid rgba(0, 100, 200, 0.08);
+    transition: background 0.15s;
+  }
+
+  .glass-table tbody tr:last-child { border-bottom: none; }
+  .glass-table tbody tr:hover { background: rgba(0, 80, 200, 0.12); }
+
+  .glass-table tbody td {
+    padding: 11px 16px;
+    color: #a8d4f5;
+    border: none;
+  }
+
+  .summary-wrap {
+    max-width: 520px;
+    margin: 0 auto;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid rgba(0, 140, 255, 0.15);
+    background: rgba(0, 15, 45, 0.4);
+  }
+
+  .summary-wrap .glass-table thead {
+    background: rgba(0, 40, 120, 0.5);
+  }
+
+  .summary-wrap .glass-table thead th {
+    color: #55d6ff;
+  }
+
+  #loading {
+    text-align: center;
+    padding: 60px 20px;
+    color: rgba(100, 180, 255, 0.6);
+    font-size: 1rem;
+  }
+
+  .spinner-glow {
+    width: 36px; height: 36px;
+    border: 2px solid rgba(0, 120, 255, 0.15);
+    border-top-color: rgba(0, 180, 255, 0.7);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 14px;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .empty-msg td {
+    padding: 28px !important;
+    text-align: center;
+    color: rgba(100, 160, 255, 0.4) !important;
+    font-style: italic;
+  }
+
+  .corner-dot {
+    position: absolute;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: rgba(0, 180, 255, 0.5);
+    box-shadow: 0 0 8px rgba(0,180,255,0.6);
+  }
+  .corner-dot.tl { top: 12px; left: 12px; }
+  .corner-dot.tr { top: 12px; right: 12px; }
+  .corner-dot.bl { bottom: 12px; left: 12px; }
+  .corner-dot.br { bottom: 12px; right: 12px; }
+
+  .divider-line {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(0,160,255,0.3), transparent);
+    margin: 0 0 22px;
+  }
+</style>
+</head>
+<body>
+
+<div class="main-container">
+  <div class="corner-dot tl"></div>
+  <div class="corner-dot tr"></div>
+  <div class="corner-dot bl"></div>
+  <div class="corner-dot br"></div>
+
+  <div class="page-title">
+    <span class="title-icon">🏫</span>
+    教師研習時數查詢系統
+  </div>
+
+  <div class="divider-line"></div>
+
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="searchInput"
+           placeholder="請輸入「研習名稱」或「教師姓名」來快速尋找..."
+           onkeyup="filterData()">
+  </div>
+
+  <div class="glass-tabs">
+    <button class="glass-tab-btn active" onclick="switchTab('details', this)">
+      📜 研習時數明細
+    </button>
+    <button class="glass-tab-btn" onclick="switchTab('summary', this)">
+      📊 個別教師統計
+    </button>
+  </div>
+
+  <div id="loading">
+    <div class="spinner-glow"></div>
+    <div>正在從試算表讀取資料，請稍候...</div>
+  </div>
+
+  <div id="mainContent" style="display:none;">
+
+    <div class="tab-pane active" id="tab-details">
+      <div class="table-wrap">
+        <table class="glass-table" id="detailsTable">
+          <thead id="detailsHead"></thead>
+          <tbody id="detailsBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="tab-pane" id="tab-summary">
+      <div class="summary-wrap">
+        <table class="glass-table" id="summaryTable">
+          <thead id="summaryHead"></thead>
+          <tbody id="summaryBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  let globalData = {};
+  let currentTab = 'details';
+
+  function switchTab(name, btn) {
+    currentTab = name;
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.glass-tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  window.onload = function() {
+    if (typeof google !== 'undefined' && google.script) {
+      google.script.run
+        .withSuccessHandler(function(data) {
+          globalData = data;
+          document.getElementById('loading').style.display = 'none';
+          document.getElementById('mainContent').style.display = 'block';
+          renderTables();
+        })
+        .withFailureHandler(function(error) {
+          document.getElementById('loading').innerHTML = '<span style="color:#ff6b6b;">❌ 資料載入失敗：' + error.message + '</span>';
+        })
+        .getSpreadsheetData();
+    } else {
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('mainContent').style.display = 'block';
+      globalData = {
+        headers: ['日期', '研習名稱', '教師姓名', '時數', '主辦單位'],
+        summaryHeaders: ['教師姓名', '累計時數'],
+        details: [
+          ['2024/03/01', 'AI教學應用工作坊', '王小明', '6', '縣府教育局'],
+          ['2024/03/15', '班級經營策略研習', '李美玲', '3', '學校自辦'],
+          ['2024/04/02', '數位素養提升培訓', '張志遠', '8', '教育部'],
+          ['2024/04/20', 'AI教學應用工作坊', '李美玲', '6', '縣府教育局'],
+        ],
+        summary: [
+          ['王小明', '6'],
+          ['李美玲', '9'],
+          ['張志遠', '8'],
+        ]
+      };
+      renderTables();
+    }
+  };
+
+  function renderTables() {
+    if (!globalData.headers) return;
+
+    let dHead = '<tr>' + globalData.headers.map(h => `<th>${h}</th>`).join('') + '</tr>';
+    document.getElementById('detailsHead').innerHTML = dHead;
+
+    let sHead = '<tr>' + globalData.summaryHeaders.map(h => `<th>${h}</th>`).join('') + '</tr>';
+    document.getElementById('summaryHead').innerHTML = sHead;
+
+    filterData();
+  }
+
+  function filterData() {
+    if (!globalData.details) return;
+    let kw = document.getElementById('searchInput').value.toLowerCase().trim();
+
+    let dHtml = '';
+    globalData.details.forEach(row => {
+      if (row.join(' ').toLowerCase().includes(kw)) {
+        dHtml += '<tr>' + row.map(c => `<td>${c}</td>`).join('') + '</tr>';
+      }
+    });
+    document.getElementById('detailsBody').innerHTML = dHtml ||
+      '<tr class="empty-msg"><td colspan="100%">找不到符合的明細資料</td></tr>';
+
+    let sHtml = '';
+    globalData.summary.forEach(row => {
+      if (String(row[0]).toLowerCase().includes(kw)) {
+        sHtml += '<tr>' + row.map(c => `<td>${c}</td>`).join('') + '</tr>';
+      }
+    });
+    document.getElementById('summaryBody').innerHTML = sHtml ||
+      '<tr class="empty-msg"><td colspan="2">找不到符合的教師</td></tr>';
+  }
+</script>
+</body>
+</html>
+</textarea>
+
+        <footer>行政減量—行政數位化（教務處）｜ GAS的應用</footer>
+      </main>
+    </div>
+    <!-- 05. 左側分頁、手風琴與複製提示詞功能 -->
+    <script>
+      document
+        .querySelectorAll(".acc>button")
+        .forEach(
+          (b) => (b.onclick = () => b.parentElement.classList.toggle("open")),
+        );
+      function copyText(b) {
+        navigator.clipboard
+          .writeText(b.parentElement.querySelector("pre").innerText)
+          .then(() => {
+            b.textContent = "已複製 ✓";
+            setTimeout(() => (b.textContent = "複製"), 1400);
+          });
+      }
+      const pagePanels = [
+        ...document.querySelectorAll("main > header[id], main > section[id]"),
+      ];
+      const pageLinks = [...document.querySelectorAll('nav a[href^="#"]')];
+      const sidebar = document.getElementById("side");
+      const pageNav = document.querySelector(".side nav");
+      pageNav.setAttribute("role", "tablist");
+      pagePanels.forEach((panel) => {
+        panel.classList.add("page-panel");
+        panel.setAttribute("role", "tabpanel");
+      });
+      pageLinks.forEach((link) => {
+        link.setAttribute("role", "tab");
+        link.setAttribute("aria-controls", link.hash.slice(1));
+      });
+
+      function showPage(id, updateHistory = false) {
+        if (!pagePanels.some((panel) => panel.id === id)) id = "home";
+        pagePanels.forEach((panel) => {
+          const active = panel.id === id;
+          panel.hidden = !active;
+          panel.classList.toggle("page-enter", active);
+          if (active) {
+            panel.classList.remove("page-enter");
+            void panel.offsetWidth;
+            panel.classList.add("page-enter");
+          }
+        });
+        pageLinks.forEach((link) => {
+          const active = link.hash === "#" + id;
+          link.classList.toggle("active", active);
+          link.setAttribute("aria-selected", String(active));
+          if (active) link.setAttribute("aria-current", "page");
+          else link.removeAttribute("aria-current");
+        });
+        if (updateHistory && location.hash !== "#" + id) {
+          history.pushState({ page: id }, "", "#" + id);
+        }
+        sidebar.classList.remove("show");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+
+      pageLinks.forEach((link) =>
+        link.addEventListener("click", (event) => {
+          event.preventDefault();
+          showPage(link.hash.slice(1), true);
+        }),
+      );
+      window.addEventListener("popstate", () =>
+        showPage(location.hash.slice(1) || "home"),
+      );
+      showPage(location.hash.slice(1) || "home");
+    </script>
+    <!-- =========================================================
+         06. 案例程式碼展示與互動控制
+    ========================================================== -->
+    <script>
+      const CASE_CODE_CONFIGS = [
+        {
+          title: "研習時數統計",
+          note: "試算表自訂選單、教師姓名遮蔽、B／I 欄時數統計，以及玻璃質感 Web App 查詢介面。",
+          gsTemplateId: "replacementTrainingGs",
+          htmlTemplateId: "replacementTrainingHtml",
+        },
+        {
+          title: "試卷上傳通知",
+          note: "將試卷存入 Drive、寫入試算表，並以 Google Chat Webhook 發送通知。",
+          gsTemplateId: "replacementExamUploadGs",
+          htmlTemplateId: "replacementExamUploadHtml",
+        },
+        {
+          title: "前五名與進步獎填寫",
+          note: "一班一列儲存正式與備用名單，送出後透過指令碼屬性 CHAT_WEBHOOK 發送 Google Chat 通知。",
+          gsTemplateId: "replacementAwardsGs",
+          htmlTemplateId: "replacementAwardsHtml",
+        },
+        {
+          title: "唐詩宋詞檢核系統",
+          note: "全校同座號檢核、十二學期詩詞題庫、週次查詢與 Google Chat 統計通知。",
+          gsTemplateId: "replacementPoetryGs",
+          htmlTemplateId: "replacementPoetryHtml",
+        },
+        {
+          title: "校內投稿系統",
+          note: "收集校內文章投稿、選填附件與審核狀態，附件維持受限制權限。",
+          gsTemplateId: "replacementSubmissionGs",
+          htmlTemplateId: "replacementSubmissionHtml",
+        },
+        {
+          title: "教科書費用統計",
+          note: "依各年級人數、選用版本與各版本價格，自動產生五張統計報表，並提供星空玻璃風格的 Web App 查詢及列印功能。",
+          gsTemplateId: "replacementTextbookGs",
+          htmlTemplateId: "replacementTextbookHtml",
+        },
+      ];
+
+      function getTemplateCode(templateId) {
+        return document.getElementById(templateId)?.value.trim() ?? "";
+      }
+
+      function renderCaseCodes() {
+        const root = document.getElementById("caseCodes");
+        root.replaceChildren();
+
+        CASE_CODE_CONFIGS.forEach((config, index) => {
+          const codeByType = {
+            gs: getTemplateCode(config.gsTemplateId),
+            html: getTemplateCode(config.htmlTemplateId),
+          };
+          let activeType = "gs";
+
+          const details = document.createElement("details");
+          details.className = "glass code-case";
+          details.open = index === 0;
+          details.innerHTML = `
+            <summary>${index + 1}. ${config.title}</summary>
+            <div class="code-wrap">
+              <p class="code-meta">${config.note}</p>
+              <div class="tabs" role="tablist" aria-label="${config.title} 程式碼">
+                <button type="button" class="tab active" role="tab">Code.gs</button>
+                <button type="button" class="tab" role="tab">index.html</button>
+              </div>
+              <div class="codebox">
+                <button type="button" class="btn code-copy">複製程式</button>
+                <div class="code-block active" data-type="gs">
+                  <div class="print-label">📄 Code.gs</div>
+                  <pre><code></code></pre>
+                </div>
+                <div class="code-block" data-type="html">
+                  <div class="print-label">📄 index.html</div>
+                  <pre><code></code></pre>
+                </div>
+              </div>
+              <ol class="setup-list">
+                <li>在綁定試算表的 Apps Script 專案建立 Code.gs 與 index.html。</li>
+                <li>依程式註解完成初始設定與授權。</li>
+                <li>部署為「網頁應用程式」，再用測試資料驗證。</li>
+              </ol>
+            </div>
+          `;
+
+          const codeBlocks = details.querySelectorAll(".code-block");
+          const tabs = details.querySelectorAll(".tab");
+          const copyButton = details.querySelector(".code-copy");
+
+          // 兩份程式碼都直接寫進 DOM（畫面上用 CSS 切換顯示/隱藏），
+          // 這樣列印時才能把 Code.gs 與 index.html 都完整印出來，
+          // 而不是只印出目前畫面上正在看的那一個分頁。
+          codeBlocks.forEach((block) => {
+            block.querySelector("code").textContent =
+              codeByType[block.dataset.type] || "";
+          });
+
+          function showCode() {
+            codeBlocks.forEach((block) => {
+              block.classList.toggle("active", block.dataset.type === activeType);
+            });
+            tabs.forEach((tab, tabIndex) => {
+              const isActive = tabIndex === (activeType === "gs" ? 0 : 1);
+              tab.classList.toggle("active", isActive);
+              tab.setAttribute("aria-selected", String(isActive));
+            });
+          }
+
+          tabs[0].addEventListener("click", () => {
+            activeType = "gs";
+            showCode();
+          });
+
+          tabs[1].addEventListener("click", () => {
+            activeType = "html";
+            showCode();
+          });
+
+          copyButton.addEventListener("click", async () => {
+            await navigator.clipboard.writeText(codeByType[activeType]);
+            copyButton.textContent = "已複製 ✓";
+            setTimeout(() => {
+              copyButton.textContent = "複製程式";
+            }, 1400);
+          });
+
+          showCode();
+          root.appendChild(details);
+        });
+      }
+
+      renderCaseCodes();
+    </script>
+  </body>
+</html>
