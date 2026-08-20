@@ -282,7 +282,7 @@
       .go {
         color: var(--cyan);
         font-weight: 800;
-        font-size: 13px;
+        font-size: 14px;
       }
       .search {
         width: min(520px, 100%);
@@ -644,6 +644,7 @@
             <span>Google Sheets</span><i>→</i><span>GAS 自動化</span><i>→</i
             ><span>HTML 網頁</span><i>→</i><span>完整資料應用</span>
           </div>
+		  <p></p>
         </header>
         <section id="path">
           <div class="head">
@@ -769,7 +770,9 @@
 3. 提供兩個頁籤按鈕：「📜 研習時數明細」與「📊 個別教師統計」，點擊可切換顯示不同的表格。
 4. 資料互動：開啟網頁時需顯示 Loading 動畫，透過 google.script.run 獲取資料後渲染表格。
 5. 搜尋功能需使用 JavaScript 即時過濾行資料（包含明細與統計表格）。
-				</pre            >
+-------------------------------------------------------------
+<a href="https://docs.google.com/spreadsheets/d/1jQPQRaK5F213yZQpSERnFTupenw6sgVsqUchTQlZLHo/edit?usp=sharing" target="_blank" rel="noopener" class="go">開啟 Google Sheets(資料由全教網滙出) 範例 ↗</a>
+		  </pre>
           </div>
           <div class="glass prompt">
             <button class="btn copy" onclick="copyText(this)">複製</button>
@@ -831,12 +834,7 @@
 Google Sheets 範例分享連結：
 https://docs.google.com/spreadsheets/d/1JKZb7N0ofUS_AEUJ516ZRdp6KtnKBDRqda1TU38a-sU/edit?usp=sharing</pre>
             <p>
-              <a
-                href="https://docs.google.com/spreadsheets/d/1JKZb7N0ofUS_AEUJ516ZRdp6KtnKBDRqda1TU38a-sU/edit?usp=sharing"
-                target="_blank"
-                rel="noopener"
-                class="go"
-                >開啟 Google Sheets 範例 ↗</a>
+              <a href="https://docs.google.com/spreadsheets/d/1JKZb7N0ofUS_AEUJ516ZRdp6KtnKBDRqda1TU38a-sU/edit?usp=sharing" target="_blank" rel="noopener" class="go">開啟 Google Sheets 範例 ↗</a>
             </p>
           </div>
           <div class="glass prompt">
@@ -892,7 +890,11 @@ https://docs.google.com/spreadsheets/d/1JKZb7N0ofUS_AEUJ516ZRdp6KtnKBDRqda1TU38a
    - 列印功能：右上角放置「列印報表」按鈕 (window.print())。必須包含 @media print 樣式：列印時強制隱藏星空背景、隱藏按鈕與頁籤，將背景轉為純白，文字轉為深黑色以節省墨水，並設定 A4 橫向列印。
 
 【程式碼產出要求】
-請直接提供完整、無省略的 code.gs 與 index.html 程式碼，並在程式碼中加上適當的中文註解說明。</pre>
+請直接提供完整、無省略的 code.gs 與 index.html 程式碼，並在程式碼中加上適當的中文註解說明。
+-------------------------------------------------------------------------------
+<a href="https://docs.google.com/spreadsheets/d/1qogMaCehDlFOO-LqkW4MeSItIvQnpnKnuHswaIpU3RI/edit?usp=sharing" target="_blank" rel="noopener"
+                class="go"> 範例程式碼↗</a>
+</pre>
           </div>
         </section>
         <section id="deploy">
@@ -934,7 +936,7 @@ https://docs.google.com/spreadsheets/d/1JKZb7N0ofUS_AEUJ516ZRdp6KtnKBDRqda1TU38a
             </div>
           </div>
         </section>
-        <section id="office">
+         <section id="office">
           <div class="head">
             <small>07 · GAS Application cases</small>
             <h2>更多GAS的應用案例</h2>
@@ -942,15 +944,48 @@ https://docs.google.com/spreadsheets/d/1JKZb7N0ofUS_AEUJ516ZRdp6KtnKBDRqda1TU38a
               整合教務處常用行政系統，請參考各種實例。
             </p>
           </div>
-          <a class="glass system" target="_blank" rel="noopener" href="https://script.google.com/a/macros/gapp.hcc.edu.tw/s/AKfycbxSdbtDo19g0RsJ4F_gYCD4kRpmb-R4kRMtgNKC57wO-TVWJcZzvGOVyAWTDao6MRfM/exec">
-			 <div class="sysicon">🏫</div>
-            <div>
-              <b>教務處行政數位網</b>
-              <p>開啟教務處行政工具入口。</p>
-              <span class="go">進入行政數位網 ↗</span>
-            </div>
-			 </a>
-			 
+          <div class="grid systems">
+            <a class="glass system" target="_blank" rel="noopener" href="https://script.google.com/a/macros/gapp.hcc.edu.tw/s/AKfycbxSdbtDo19g0RsJ4F_gYCD4kRpmb-R4kRMtgNKC57wO-TVWJcZzvGOVyAWTDao6MRfM/exec">
+              <div class="sysicon">🏫</div>
+              <div>
+                <b>教務處行政數位網</b>
+                <p>開啟教務處行政工具入口。</p>
+                <span class="go">進入教務處行政數位網 ↗</span>
+              </div>
+            </a>
+            <a class="glass system" target="_blank" rel="noopener" href="https://vincent-wang.notion.site/36386acfae518169b536f676d3cb3af2?source=copy_link">
+              <div class="sysicon">💸</div>
+              <div>
+                <b>代課管理系統</b>
+                <p>節省教學組繁雜的代課費計算</p>
+                <span class="go">進入系統介紹 ↗</span>
+              </div>
+            </a>
+            <a class="glass system" target="_blank" rel="noopener" href="https://script.google.com/a/macros/gses.hcc.edu.tw/s/AKfycbxXlRh0FV5ONd6OBopZedHlEmKacjFZnr-kYaD4OLtgaBekGgOK-AIL-RhJoGoMsUeb8w/exec">
+              <div class="sysicon">📚</div>
+              <div>
+                <b>學校活動相簿</b>
+                <p>使用google的共用雲端硬碟空間做為圖床</p>
+                <span class="go">前往相簿 ↗</span>
+              </div>
+            </a>
+			<a class="glass system" target="_blank" rel="noopener" href="https://script.google.com/a/macros/gses.hcc.edu.tw/s/AKfycbxH9iGCDrmlHvAClAuZx3csw5FOa6Qp1M1RrCRp4QE6dWOCNuYIQbuTA8Gp9MNuhUo_Mw/exec">
+              <div class="sysicon">📚</div>
+              <div>
+                <b>社團報名系統</b>
+                <p>自動化報名、抽籤、錄取通知</p>
+                <span class="go">前往報名系統 ↗</span>
+              </div>
+            </a>
+			<a class="glass system" target="_blank" rel="noopener" href="https://script.google.com/a/macros/gses.hcc.edu.tw/s/AKfycbx9LmlTmcpBSElW-mgjiP0TDOj2tY690H4GN8l3ZEZk9vjQruy7qsm97o8lyrYHr6a4/exec">
+              <div class="sysicon">📚</div>
+              <div>
+                <b>教學影片資料庫</b>
+                <p>收錄校內教學影片並提供影片播放器</p>
+                <span class="go">前往影音系統 ↗</span>
+              </div>
+            </a>
+          </div>
         </section>
         <!-- =========================================================
              04. 六個行政案例的原始程式碼
@@ -3455,7 +3490,7 @@ function getSpreadsheetData() {
 </html>
 </textarea>
 
-        <footer>行政減量—行政數位化（教務處）｜ GAS的應用</footer>
+        <footer>行政數位化（教務處）｜ GAS的應用</footer>
       </main>
     </div>
     <!-- 05. 左側分頁、手風琴與複製提示詞功能 -->
@@ -3533,39 +3568,72 @@ function getSpreadsheetData() {
       const CASE_CODE_CONFIGS = [
         {
           title: "研習時數統計",
-          note: "試算表自訂選單、教師姓名遮蔽、B／I 欄時數統計，以及玻璃質感 Web App 查詢介面。",
+          note: "試算表自訂選單、教師姓名遮蔽、B／I 欄時數統計，以及 Web App 查詢介面。",
           gsTemplateId: "replacementTrainingGs",
           htmlTemplateId: "replacementTrainingHtml",
+          htmlFileName: "Index",
+          steps: [
+            "在綁定試算表的 Apps Script 專案建立 Code.gs，並新增一個「檔名為 Index（大寫 I）」的 HTML 檔，貼上對應程式碼。",
+            "確認來源工作表 B 欄＝教師姓名、I 欄＝研習時數，重新整理試算表後工具列會出現「🛠️ 自訂工具」選單，可執行姓名遮蔽與時數統計。",
+            "部署為「網頁應用程式」，即可在 Web App 查詢明細與各教師累計時數、並用搜尋框篩選。",
+			"<a href='https://docs.google.com/spreadsheets/d/1jQPQRaK5F213yZQpSERnFTupenw6sgVsqUchTQlZLHo/edit?usp=sharing' target='_blank' rel='noopener' class='go'>範例試算表(由全教網滙出全校研習時數)</a>",
+          ],
         },
         {
           title: "試卷上傳通知",
           note: "將試卷存入 Drive、寫入試算表，並以 Google Chat Webhook 發送通知。",
           gsTemplateId: "replacementExamUploadGs",
           htmlTemplateId: "replacementExamUploadHtml",
+          steps: [
+            "建立 Code.gs 與 index.html，並把程式碼中的 FOLDER_ID 換成實際存放試卷的 Google Drive 資料夾 ID。",
+            "在「專案設定 → 指令碼屬性」新增 CHAT_WEBHOOK，貼上 Google Chat 群組的 Webhook 網址。",
+            "執行一次 setup() 建立表頭，再部署為「網頁應用程式」，上傳測試檔案（限 PDF／DOCX／JPG／PNG，20MB 內）驗證。",
+          ],
         },
         {
           title: "前五名與進步獎填寫",
           note: "一班一列儲存正式與備用名單，送出後透過指令碼屬性 CHAT_WEBHOOK 發送 Google Chat 通知。",
           gsTemplateId: "replacementAwardsGs",
           htmlTemplateId: "replacementAwardsHtml",
+          steps: [
+            "建立 Code.gs 與 index.html。",
+            "在「專案設定 → 指令碼屬性」新增 CHAT_WEBHOOK，貼上 Google Chat 群組的 Webhook 網址。",
+            "執行一次 setup() 建立表頭，部署為「網頁應用程式」後由各班教師填寫送出，一班僅會寫入一列資料。",
+          ],
         },
         {
           title: "唐詩宋詞檢核系統",
-          note: "全校同座號檢核、十二學期詩詞題庫、週次查詢與 Google Chat 統計通知。",
+          note: "全校同座號抽籤檢核、十二學期詩詞題庫、週次查詢與 Google Chat 統計通知。",
           gsTemplateId: "replacementPoetryGs",
           htmlTemplateId: "replacementPoetryHtml",
+          steps: [
+            "建立 Code.gs 與 index.html。",
+            "執行一次 initPoemSheets()，自動建立十二學期（一上～六下）詩詞工作表與「檢核記錄」表，再自行填入各學期詩文內容。",
+            "在「專案設定 → 指令碼屬性」新增 CHAT_WEBHOOK，部署為「網頁應用程式」即可抽籤、記錄檢核結果，並依週次查詢、發送統計通知。",
+          ],
         },
         {
           title: "校內投稿系統",
-          note: "收集校內文章投稿、選填附件與審核狀態，附件維持受限制權限。",
+          note: "收集校內文章投稿、選填附件，送出後狀態預設為「待審核」。",
           gsTemplateId: "replacementSubmissionGs",
           htmlTemplateId: "replacementSubmissionHtml",
+          steps: [
+            "建立 Code.gs 與 index.html，並把程式碼中的 FOLDER_ID 換成存放附件的 Google Drive 資料夾 ID。",
+            "執行一次 setup() 建立「投稿資料」工作表與表頭。",
+            "部署為「網頁應用程式」，投稿送出後會產生投稿編號並存入試算表，狀態欄請自行改為審核結果。",
+          ],
         },
         {
           title: "教科書費用統計",
-          note: "依各年級人數、選用版本與各版本價格，自動產生五張統計報表，並提供星空玻璃風格的 Web App 查詢及列印功能。",
+          note: "依各年級人數、選用版本與各版本價格，自動產生五張統計報表，並提供 Web App 查詢及列印功能。",
           gsTemplateId: "replacementTextbookGs",
           htmlTemplateId: "replacementTextbookHtml",
+          steps: [
+            "建立 Code.gs 與 index.html，並先備妥「各年級人數」「選用版本」「各版本價格」三張來源工作表（欄位需與程式碼中的欄位順序一致）。",
+            "重新整理試算表後，用工具列「📋 教科書工具」選單依序產生年級費用總表、各版本（康軒／翰林／南一）分類報表與學校用書統計報表。",
+            "部署為「網頁應用程式」，即可查詢五張統計報表，並使用列印／存成 PDF 功能輸出。",
+			" <a href='https://docs.google.com/spreadsheets/d/1qogMaCehDlFOO-LqkW4MeSItIvQnpnKnuHswaIpU3RI/edit?usp=sharing' target='_blank' rel='noopener' class='go'> 範例程式檔↗</a> ",
+          ],
         },
       ];
 
@@ -3583,6 +3651,7 @@ function getSpreadsheetData() {
             html: getTemplateCode(config.htmlTemplateId),
           };
           let activeType = "gs";
+          const htmlFileName = config.htmlFileName || "index";
 
           const details = document.createElement("details");
           details.className = "glass code-case";
@@ -3593,7 +3662,7 @@ function getSpreadsheetData() {
               <p class="code-meta">${config.note}</p>
               <div class="tabs" role="tablist" aria-label="${config.title} 程式碼">
                 <button type="button" class="tab active" role="tab">Code.gs</button>
-                <button type="button" class="tab" role="tab">index.html</button>
+                <button type="button" class="tab" role="tab">${htmlFileName}.html</button>
               </div>
               <div class="codebox">
                 <button type="button" class="btn code-copy">複製程式</button>
@@ -3602,14 +3671,12 @@ function getSpreadsheetData() {
                   <pre><code></code></pre>
                 </div>
                 <div class="code-block" data-type="html">
-                  <div class="print-label">📄 index.html</div>
+                  <div class="print-label">📄 ${htmlFileName}.html</div>
                   <pre><code></code></pre>
                 </div>
               </div>
               <ol class="setup-list">
-                <li>在綁定試算表的 Apps Script 專案建立 Code.gs 與 index.html。</li>
-                <li>依程式註解完成初始設定與授權。</li>
-                <li>部署為「網頁應用程式」，再用測試資料驗證。</li>
+                ${(config.steps || []).map((step) => `<li>${step}</li>`).join("")}
               </ol>
             </div>
           `;
