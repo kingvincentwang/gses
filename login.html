@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<title>登入中…</title>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<style>
+  body{font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;background:#f3f5f9;color:#28303c;}
+  #msg{text-align:center;}
+  #err{color:#c0392b;margin-top:10px;font-size:13px;display:none;}
+</style>
+</head>
+<body>
+<div id="msg">
+  <p>正在開啟 Google 登入視窗…</p>
+  <p id="err"></p>
+</div>
+<script>
+// ⚠️ 這裡要填跟 GAS 端 Code.gs 裡 CONFIG.FIREBASE_CONFIG 完全一樣的設定
+const firebaseConfig = {
+  apiKey: 'AIzaSyBwooMJ0vsEkQTFJ7HDRg8i4ex0nEPa2Tk',
+  authDomain: 'web-login-dd626.firebaseapp.com',
+  projectId: 'web-login-dd626'
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+
+const provider = new firebase.auth.GoogleAuthProvider();
+auth.signInWithPopup(provider).then(result => {
+  return result.user.getIdToken();
+}).then(idToken => {
+  if (window.opener) {
+    window.opener.postMessage({ type: 'FIREBASE_LOGIN_SUCCESS', idToken: idToken }, '*');
+  }
+  window.close();
+}).catch(err => {
+  document.getElementById('err').style.display = 'block';
+  document.getElementById('err').textContent = '登入失敗：' + (err.message || err);
+  if (window.opener) {
+    window.opener.postMessage({ type: 'FIREBASE_LOGIN_ERROR', message: err.message || String(err) }, '*');
+  }
+});
+</script>
+</body>
+</html>
