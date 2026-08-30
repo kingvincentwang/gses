@@ -13,11 +13,12 @@
 </head>
 <body>
 <div id="msg">
-  <p>正在開啟 Google 登入視窗…</p>
+  <p>請點擊下方按鈕完成 Google 登入</p>
+  <button id="btnLogin" style="font-size:15px;padding:10px 20px;border:none;border-radius:8px;background:#2f5fa8;color:#fff;cursor:pointer;">使用 Google 帳號登入</button>
   <p id="err"></p>
 </div>
 <script>
-// ⚠️ 這裡要填跟 GAS 端 Code.gs 裡 CONFIG.FIREBASE_CONFIG 完全一樣的設定
+// ⚠️ 這裡要填跟 GAS 端 Code.gs 裡 CONFIG.FIREBASE_API_KEY 同一個 Firebase 專案的完整設定
 const firebaseConfig = {
   apiKey: 'AIzaSyBwooMJ0vsEkQTFJ7HDRg8i4ex0nEPa2Tk',
   authDomain: 'web-login-dd626.firebaseapp.com',
@@ -26,20 +27,29 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 
-const provider = new firebase.auth.GoogleAuthProvider();
-auth.signInWithPopup(provider).then(result => {
-  return result.user.getIdToken();
-}).then(idToken => {
-  if (window.opener) {
-    window.opener.postMessage({ type: 'FIREBASE_LOGIN_SUCCESS', idToken: idToken }, '*');
-  }
-  window.close();
-}).catch(err => {
-  document.getElementById('err').style.display = 'block';
-  document.getElementById('err').textContent = '登入失敗：' + (err.message || err);
-  if (window.opener) {
-    window.opener.postMessage({ type: 'FIREBASE_LOGIN_ERROR', message: err.message || String(err) }, '*');
-  }
+document.getElementById('btnLogin').addEventListener('click', () => {
+  const btn = document.getElementById('btnLogin');
+  btn.disabled = true;
+  btn.textContent = '登入中…';
+  document.getElementById('err').style.display = 'none';
+
+  const provider = new firebase.auth.GoogleAuthProvider();
+  auth.signInWithPopup(provider).then(result => {
+    return result.user.getIdToken();
+  }).then(idToken => {
+    if (window.opener) {
+      window.opener.postMessage({ type: 'FIREBASE_LOGIN_SUCCESS', idToken: idToken }, '*');
+    }
+    window.close();
+  }).catch(err => {
+    btn.disabled = false;
+    btn.textContent = '使用 Google 帳號登入';
+    document.getElementById('err').style.display = 'block';
+    document.getElementById('err').textContent = '登入失敗：' + (err.message || err);
+    if (window.opener) {
+      window.opener.postMessage({ type: 'FIREBASE_LOGIN_ERROR', message: err.message || String(err) }, '*');
+    }
+  });
 });
 </script>
 </body>
