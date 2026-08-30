@@ -13,7 +13,7 @@
 </head>
 <body>
 <div id="msg">
-  <p>請點擊下方按鈕完成 Google 登入</p>
+  <p id="loginPrompt">請點擊下方按鈕完成 Google 登入</p>
   <button id="btnLogin" style="font-size:15px;padding:10px 20px;border:none;border-radius:8px;background:#2f5fa8;color:#fff;cursor:pointer;">使用 Google 帳號登入</button>
   <p id="err"></p>
 </div>
@@ -27,29 +27,54 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 
+function sendResultAndClose(idToken){
+  if (window.opener) {
+    window.opener.postMessage({ type: 'FIREBASE_LOGIN_SUCCESS', idToken: idToken }, '*');
+  }
+  document.getElementById('loginPrompt').textContent = '登入成功，正在關閉視窗…';
+  document.getElementById('btnLogin').style.display = 'none';
+  window.close();
+}
+
+function showError(message){
+  document.getElementById('btnLogin').disabled = false;
+  document.getElementById('btnLogin').textContent = '使用 Google 帳號登入';
+  document.getElementById('err').style.display = 'block';
+  document.getElementById('err').textContent = '登入失敗：' + message;
+  if (window.opener) {
+    window.opener.postMessage({ type: 'FIREBASE_LOGIN_ERROR', message: message }, '*');
+  }
+}
+
+// 頁面一開啟先檢查是否是「從 Google 登入頁導回來」的狀態
+document.getElementById('loginPrompt').textContent = '正在確認登入狀態…';
+document.getElementById('btnLogin').style.display = 'none';
+
+auth.getRedirectResult().then(result => {
+  if (result && result.user) {
+    return result.user.getIdToken().then(sendResultAndClose);
+  }
+  // 沒有導回結果，代表是第一次開啟，顯示按鈕讓使用者點擊
+  document.getElementById('loginPrompt').textContent = '請點擊下方按鈕完成 Google 登入';
+  document.getElementById('btnLogin').style.display = 'inline-block';
+}).catch(err => {
+  document.getElementById('loginPrompt').textContent = '請點擊下方按鈕完成 Google 登入';
+  document.getElementById('btnLogin').style.display = 'inline-block';
+  showError(err.message || String(err));
+});
+
 document.getElementById('btnLogin').addEventListener('click', () => {
   const btn = document.getElementById('btnLogin');
   btn.disabled = true;
-  btn.textContent = '登入中…';
+  btn.textContent = '正在導向 Google 登入…';
   document.getElementById('err').style.display = 'none';
 
   const provider = new firebase.auth.GoogleAuthProvider();
-  auth.signInWithPopup(provider).then(result => {
-    return result.user.getIdToken();
-  }).then(idToken => {
-    if (window.opener) {
-      window.opener.postMessage({ type: 'FIREBASE_LOGIN_SUCCESS', idToken: idToken }, '*');
-    }
-    window.close();
-  }).catch(err => {
-    btn.disabled = false;
-    btn.textContent = '使用 Google 帳號登入';
-    document.getElementById('err').style.display = 'block';
-    document.getElementById('err').textContent = '登入失敗：' + (err.message || err);
-    if (window.opener) {
-      window.opener.postMessage({ type: 'FIREBASE_LOGIN_ERROR', message: err.message || String(err) }, '*');
-    }
+  auth.signInWithRedirect(provider).catch(err => {
+    showError(err.message || String(err));
   });
+  // 注意：signInWithRedirect 成功時會直接離開此頁面導向 Google，
+  // 回來後由上方的 getRedirectResult() 處理，不會執行到這裡的 .then()
 });
 </script>
 </body>
