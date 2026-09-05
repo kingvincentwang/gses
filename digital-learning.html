@@ -1,712 +1,474 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>校務數位填報系統 v2.2.0｜完整部署手冊</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        /* 深藍科技風滾動條 */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #0f172a; } /* slate-900 */
-        ::-webkit-scrollbar-thumb { background: #0891b2; border-radius: 4px; border: 1px solid #0f172a; } /* cyan-600 */
-        ::-webkit-scrollbar-thumb:hover { background: #06b6d4; shadow: 0 0 10px #06b6d4; } /* cyan-500 */
-        
-        /* 避免內聯程式碼換行破壞版面 */
-        code { word-break: break-word; }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>新竹縣數位推動填報系統｜部署指南</title>
+<style>
+  :root{
+    --bg:#031426;
+    --bg2:#061f38;
+    --panel:rgba(8,34,62,.78);
+    --panel2:rgba(13,47,82,.72);
+    --line:#22d3ee;
+    --line2:#3b82f6;
+    --text:#eef8ff;
+    --muted:#9fd3ef;
+    --cyan:#36e7ff;
+    --blue:#4f8cff;
+    --green:#26e3a6;
+    --yellow:#ffd166;
+    --red:#ff6b7a;
+    --shadow:0 0 24px rgba(34,211,238,.22);
+  }
 
-        /* 科技感發光效果 */
-        .glow-text { text-shadow: 0 0 12px rgba(34, 211, 238, 0.5); }
-        .glow-border { box-shadow: 0 0 15px rgba(6, 182, 212, 0.15), inset 0 0 20px rgba(6, 182, 212, 0.05); }
-        
-        /* 網格背景圖案 */
-        .tech-grid {
-            background-image: 
-                linear-gradient(to right, rgba(34, 211, 238, 0.05) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(34, 211, 238, 0.05) 1px, transparent 1px);
-            background-size: 20px 20px;
-        }
-    </style>
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    font-family:"Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif;
+    color:var(--text);
+    background:
+      radial-gradient(circle at 20% 0%, rgba(37,99,235,.18), transparent 28%),
+      radial-gradient(circle at 100% 20%, rgba(6,182,212,.14), transparent 30%),
+      linear-gradient(180deg,#02101f 0%,#061a31 45%,#03101e 100%);
+    min-height:100vh;
+    overflow-x:hidden;
+  }
+
+  body::before{
+    content:"";
+    position:fixed; inset:0; pointer-events:none; opacity:.28;
+    background-image:
+      linear-gradient(rgba(56,189,248,.08) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(56,189,248,.08) 1px, transparent 1px);
+    background-size:32px 32px;
+    mask-image:linear-gradient(to bottom,black,transparent 92%);
+  }
+
+  .wrap{width:min(1480px,96vw); margin:auto; padding:24px 0 56px}
+
+  header{
+    position:relative;
+    padding:28px 28px 24px;
+    border:1px solid rgba(54,231,255,.38);
+    background:linear-gradient(180deg,rgba(7,31,57,.9),rgba(4,22,42,.74));
+    border-radius:22px;
+    box-shadow:var(--shadow), inset 0 0 30px rgba(43,113,255,.08);
+    overflow:hidden;
+  }
+
+  header::after{
+    content:"";
+    position:absolute; inset:auto -10% -60% 40%; height:220px;
+    background:radial-gradient(circle,rgba(59,130,246,.28),transparent 62%);
+    pointer-events:none;
+  }
+
+  .topline{
+    display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;
+  }
+
+  .brand{display:flex; align-items:center; gap:14px}
+  .badge{
+    width:54px; height:54px; border-radius:16px;
+    display:grid; place-items:center;
+    border:1px solid rgba(54,231,255,.55);
+    background:linear-gradient(145deg,rgba(14,116,144,.6),rgba(37,99,235,.45));
+    box-shadow:0 0 20px rgba(34,211,238,.25);
+    font-weight:900;
+  }
+  h1{margin:0; font-size:clamp(30px,4vw,64px); letter-spacing:.04em; line-height:1.08}
+  .sub{
+    margin-top:10px; color:#b7eaff; font-size:clamp(14px,1.5vw,22px);
+    letter-spacing:.14em;
+  }
+  .version{
+    padding:10px 16px; border-radius:14px;
+    border:1px solid rgba(82,214,255,.65);
+    color:#d9f8ff; font-weight:800;
+    background:rgba(9,46,78,.75);
+    box-shadow:0 0 18px rgba(34,211,238,.18);
+  }
+
+  .nav{
+    display:flex; gap:10px; flex-wrap:wrap; margin:18px 0 0;
+  }
+  .nav a{
+    color:#dff8ff; text-decoration:none; font-size:14px;
+    padding:8px 12px; border-radius:999px;
+    border:1px solid rgba(83,189,255,.26);
+    background:rgba(7,35,61,.62);
+  }
+  .nav a:hover{border-color:var(--cyan); box-shadow:0 0 14px rgba(34,211,238,.22)}
+
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(12,1fr);
+    gap:18px;
+    margin-top:18px;
+  }
+
+  .card{
+    border:1px solid rgba(54,231,255,.34);
+    background:linear-gradient(180deg,var(--panel),rgba(4,22,42,.74));
+    border-radius:20px;
+    box-shadow:var(--shadow), inset 0 0 28px rgba(37,99,235,.05);
+    overflow:hidden;
+  }
+  .card .head{
+    display:flex; align-items:center; gap:12px;
+    padding:16px 18px;
+    border-bottom:1px solid rgba(54,231,255,.18);
+    background:linear-gradient(90deg,rgba(0,170,255,.12),rgba(15,46,79,.18));
+  }
+  .num{
+    flex:0 0 auto; width:42px; height:42px; border-radius:12px;
+    display:grid; place-items:center; font-weight:900; font-size:20px;
+    background:linear-gradient(145deg,#0ea5e9,#2563eb);
+    box-shadow:0 0 18px rgba(37,99,235,.45);
+  }
+  .head h2{font-size:22px; margin:0}
+  .head small{color:var(--muted)}
+  .body{padding:18px}
+
+  .c1{grid-column:span 5}
+  .c2{grid-column:span 7}
+  .c3{grid-column:span 7}
+  .c4{grid-column:span 5}
+  .c5{grid-column:span 7}
+  .c6{grid-column:span 5}
+
+  .service-map{
+    display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px;
+  }
+  .service{
+    border:1px solid rgba(93,204,255,.25);
+    background:rgba(7,38,66,.62);
+    border-radius:15px; padding:13px;
+  }
+  .service b{display:block; margin-bottom:4px}
+  .service span{color:#a9d7ee; font-size:13px}
+
+  .flow{
+    display:flex; align-items:center; justify-content:center;
+    flex-wrap:wrap; gap:8px; margin:18px 0 6px;
+  }
+  .flow .node{
+    padding:10px 14px; border-radius:12px; text-align:center;
+    background:rgba(16,73,115,.62); border:1px solid rgba(54,231,255,.28);
+    min-width:120px;
+  }
+  .arrow{color:var(--cyan); font-size:22px}
+
+  ul,ol{margin:8px 0 0 20px; padding:0}
+  li{margin:7px 0; color:#dcefff}
+  .check{list-style:none; margin-left:0}
+  .check li::before{content:"✓"; color:var(--green); font-weight:900; margin-right:9px}
+
+  .note{
+    margin-top:14px; padding:12px 14px; border-radius:12px;
+    background:rgba(5,26,49,.82); border:1px solid rgba(75,192,255,.22);
+    color:#c9ecff;
+  }
+  .warn{
+    border-color:rgba(255,209,102,.35);
+    background:rgba(80,55,8,.22);
+  }
+
+  pre{
+    margin:10px 0 0; padding:14px; overflow:auto;
+    color:#dffaff; background:#03111f;
+    border:1px solid rgba(72,180,255,.2);
+    border-radius:12px; font-size:13px; line-height:1.55;
+  }
+
+  table{
+    width:100%; border-collapse:collapse; margin-top:8px; font-size:14px;
+    background:rgba(5,26,48,.45);
+  }
+  th,td{padding:9px 10px; border:1px solid rgba(101,197,255,.18); text-align:left}
+  th{background:rgba(26,83,126,.48); color:#eafcff}
+  td{color:#cfeafb}
+
+  .pillrow{display:flex; gap:8px; flex-wrap:wrap}
+  .pill{
+    padding:9px 12px; border-radius:12px;
+    background:rgba(10,60,99,.52); border:1px solid rgba(54,231,255,.2);
+    color:#dff8ff;
+  }
+
+  .role-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:12px}
+  .role{
+    padding:14px; border-radius:14px; border:1px solid rgba(88,197,255,.25);
+    background:rgba(7,36,65,.62);
+  }
+  .role.owner{border-color:rgba(59,130,246,.5)}
+  .role.viewer{border-color:rgba(38,227,166,.45)}
+  .role.admin{border-color:rgba(255,107,122,.45)}
+  .role h3{margin:0 0 8px}
+  .role p{margin:4px 0; color:#cbe7f5}
+
+  footer{
+    margin-top:18px; text-align:center; color:#86cfe8;
+    letter-spacing:.18em; font-size:13px;
+  }
+
+  @media (max-width:980px){
+    .c1,.c2,.c3,.c4,.c5,.c6{grid-column:span 12}
+  }
+  @media (max-width:680px){
+    .wrap{width:min(96vw,96vw); padding-top:10px}
+    header{padding:20px 16px}
+    .service-map,.role-grid{grid-template-columns:1fr}
+    .head h2{font-size:19px}
+    .body{padding:14px}
+    .flow{justify-content:flex-start}
+  }
+
+  @media print{
+    body{background:#fff; color:#111}
+    body::before{display:none}
+    .wrap{width:100%; padding:0}
+    header,.card{box-shadow:none; background:#fff; color:#111; border-color:#999}
+    .sub,.head small,.service span,.note,td,.role p{color:#333}
+    .nav{display:none}
+    .grid{display:block}
+    .card{margin:0 0 14px; break-inside:avoid}
+    footer{color:#333}
+  }
+</style>
 </head>
-<body class="bg-slate-950 text-slate-300 font-sans leading-relaxed selection:bg-cyan-900 selection:text-cyan-50">
 
-    <div class="max-w-5xl mx-auto bg-slate-900/90 glow-border rounded-2xl overflow-hidden my-8 sm:my-12 border border-cyan-900/50 backdrop-blur-sm">
-        
-        <!-- Header -->
-        <div class="relative bg-slate-900 border-b-2 border-cyan-500 text-white px-8 py-10 sm:px-12 sm:py-16 tech-grid">
-            <div class="absolute inset-0 bg-gradient-to-r from-cyan-900/20 to-transparent"></div>
-            <div class="relative z-10">
-                <div class="inline-flex items-center gap-3 mb-2">
-                    <span class="px-2 py-1 text-xs font-mono font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 rounded">SYSTEM_DOC</span>
-                    <span class="px-2 py-1 text-xs font-mono font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 rounded">V2.2.0</span>
-                </div>
-                <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-white glow-text mt-2">校務數位填報系統</h1>
-                <p class="text-cyan-200 text-lg sm:text-xl mt-4 font-light tracking-wide">完整部署手冊_ <span class="animate-pulse">_</span></p>
-            </div>
-        </div>
+<body>
+<div class="wrap">
 
-        <!-- Content -->
-        <div class="px-8 py-10 sm:px-12">
-            
-            <p class="text-lg mb-4 text-slate-200">本手冊依目前程式內容整理，適用架構：</p>
-            <ul class="list-disc list-inside space-y-2 mb-6 ml-2 marker:text-cyan-500">
-                <li><strong class="text-cyan-300">Google Apps Script</strong>：網頁、伺服器端驗證與資料讀寫</li>
-                <li><strong class="text-cyan-300">Google Sheets</strong>：帳號、學校資料、軟體效益、管考資料與操作紀錄</li>
-                <li><strong class="text-cyan-300">Firebase Authentication</strong>：Google 帳號登入</li>
-                <li><strong class="text-cyan-300">Google Drive</strong>：軟體佐證 PDF 與觀議課佐證 PDF</li>
-                <li><strong class="text-cyan-300">MDM 資料</strong>：可放在同一份試算表，也可指定另一份試算表</li>
-            </ul>
-
-            <blockquote class="border-l-4 border-cyan-500 bg-cyan-950/40 p-4 my-6 rounded-r-lg">
-                <p class="text-cyan-100 m-0 font-mono text-sm">💡 <strong class="text-cyan-300">SYSTEM_NOTE：</strong>本系統沒有把填報內容存進 Firestore。Firebase 在本案只負責 Google 登入與 ID Token；正式資料仍由 GAS 寫入 Google Sheets。</p>
-            </blockquote>
-
-            <hr class="my-10 border-slate-800">
-
-            <!-- Section 1 -->
-            <h2 class="text-2xl font-bold text-cyan-400 border-b border-slate-700 pb-2 mb-6 flex items-center gap-2">
-                <span class="text-slate-500 font-mono text-lg">01</span> 一、部署前準備
-            </h2>
-            <p class="mb-4 text-slate-300">請準備：</p>
-            <ol class="list-decimal list-inside space-y-2 mb-6 ml-2 font-mono text-sm text-slate-300 marker:text-cyan-600">
-                <li>一個負責部署的 Google 帳號。</li>
-                <li>一份 Google 試算表。</li>
-                <li>一個 Firebase 專案。</li>
-                <li>系統完整程式檔案。</li>
-                <li>若要指定 PDF 存放位置，預先建立兩個 Google Drive 資料夾。</li>
-            </ol>
-            <p class="mb-4">建議部署帳號長期保留，並擁有以下資源：</p>
-            <ul class="list-disc list-inside space-y-2 mb-6 ml-2 marker:text-cyan-500">
-                <li>系統 Google 試算表的編輯權限。</li>
-                <li>MDM 來源試算表的檢視權限。</li>
-                <li>兩個佐證資料夾的編輯權限。</li>
-                <li>Firebase 專案管理權限。</li>
-            </ul>
-            <p class="text-sm text-pink-300 bg-pink-950/30 border border-pink-900/50 p-3 rounded flex items-start gap-2">
-                <span>⚠️</span> Apps Script 的正式版本部署與部署者帳號綁定；若部署者帳號遭刪除，既有部署可能發生錯誤。
-            </p>
-
-            <!-- Section 2 -->
-            <h2 class="text-2xl font-bold text-cyan-400 border-b border-slate-700 pb-2 mb-6 mt-12 flex items-center gap-2">
-                <span class="text-slate-500 font-mono text-lg">02</span> 二、確認 GAS 專案檔案
-            </h2>
-            <p class="mb-4">在 Google 試算表選擇「擴充功能 → Apps Script」，依下表建立檔案，名稱與大小寫必須完全一致。</p>
-            
-            <div class="overflow-x-auto mb-6 rounded-lg border border-slate-700">
-                <table class="w-full text-left border-collapse min-w-[600px]">
-                    <thead>
-                        <tr class="bg-slate-800/80 text-cyan-300 border-b border-slate-700">
-                            <th class="p-3 font-semibold text-sm tracking-wider uppercase">本機檔名</th>
-                            <th class="p-3 font-semibold text-sm tracking-wider uppercase">Apps Script 檔案類型</th>
-                            <th class="p-3 font-semibold text-sm tracking-wider uppercase">功能</th>
-                        </tr>
-                    </thead>
-                    <tbody class="text-slate-300 divide-y divide-slate-800/50 bg-slate-900/50">
-                        <tr class="hover:bg-slate-800/50 transition-colors"><td class="p-3 font-mono text-sm text-indigo-300">Main.gs</td><td class="p-3">指令碼</td><td class="p-3">主設定、初始化、Firebase Token 驗證、帳號與權限</td></tr>
-                        <tr class="hover:bg-slate-800/50 transition-colors"><td class="p-3 font-mono text-sm text-indigo-300">Units.gs</td><td class="p-3">指令碼</td><td class="p-3">預設學校清單</td></tr>
-                        <tr class="hover:bg-slate-800/50 transition-colors"><td class="p-3 font-mono text-sm text-indigo-300">SchoolBasic.gs</td><td class="p-3">指令碼</td><td class="p-3">學校基本資料讀寫與驗證</td></tr>
-                        <tr class="hover:bg-slate-800/50 transition-colors"><td class="p-3 font-mono text-sm text-indigo-300">SoftwareSurvey.gs</td><td class="p-3">指令碼</td><td class="p-3">軟體效益、品項修改刪除與 PDF 上傳</td></tr>
-                        <tr class="hover:bg-slate-800/50 transition-colors"><td class="p-3 font-mono text-sm text-indigo-300">MdmUsage.gs</td><td class="p-3">指令碼</td><td class="p-3">MDM 期別與資料讀取</td></tr>
-                        <tr class="hover:bg-slate-800/50 transition-colors"><td class="p-3 font-mono text-sm text-indigo-300">Monitoring.gs</td><td class="p-3">指令碼</td><td class="p-3">管考及觀議課資料讀寫</td></tr>
-                        <tr class="hover:bg-slate-800/50 transition-colors"><td class="p-3 font-mono text-sm text-emerald-300">Index.html</td><td class="p-3">HTML</td><td class="p-3">網頁主框架與左側選單</td></tr>
-                        <tr class="hover:bg-slate-800/50 transition-colors"><td class="p-3 font-mono text-sm text-emerald-300">Styles.html</td><td class="p-3">HTML</td><td class="p-3">全站樣式</td></tr>
-                        <tr class="hover:bg-slate-800/50 transition-colors"><td class="p-3 font-mono text-sm text-emerald-300">Scripts.html</td><td class="p-3">HTML</td><td class="p-3">前端登入、權限與互動功能</td></tr>
-                        <tr class="hover:bg-slate-800/50 transition-colors"><td class="p-3 font-mono text-sm text-emerald-300">SchoolBasics.html</td><td class="p-3">HTML</td><td class="p-3">學校基本資料頁</td></tr>
-                        <tr class="hover:bg-slate-800/50 transition-colors"><td class="p-3 font-mono text-sm text-emerald-300">SoftwareSurveys.html</td><td class="p-3">HTML</td><td class="p-3">軟體使用效益頁</td></tr>
-                        <tr class="hover:bg-slate-800/50 transition-colors"><td class="p-3 font-mono text-sm text-emerald-300">MdmUsages.html</td><td class="p-3">HTML</td><td class="p-3">MDM 使用率頁</td></tr>
-                        <tr class="hover:bg-slate-800/50 transition-colors"><td class="p-3 font-mono text-sm text-emerald-300">Monitorings.html</td><td class="p-3">HTML</td><td class="p-3">管考填報頁</td></tr>
-                        <tr class="hover:bg-slate-800/50 transition-colors"><td class="p-3 font-mono text-sm text-pink-300">appsscript.json</td><td class="p-3">資訊清單</td><td class="p-3">時區、V8 與 OAuth scopes</td></tr>
-                    </tbody>
-                </table>
-            </div>
-            
-            <p class="font-semibold text-slate-200 mb-2">注意：</p>
-            <ul class="list-disc list-inside space-y-1 mb-6 ml-2 text-slate-400">
-                <li><code class="bg-slate-800 text-pink-400 border border-slate-700 px-1.5 py-0.5 rounded text-sm font-mono">SchoolBasics.html</code>、<code class="bg-slate-800 text-pink-400 border border-slate-700 px-1.5 py-0.5 rounded text-sm font-mono">SoftwareSurveys.html</code>、<code class="bg-slate-800 text-pink-400 border border-slate-700 px-1.5 py-0.5 rounded text-sm font-mono">MdmUsages.html</code>、<code class="bg-slate-800 text-pink-400 border border-slate-700 px-1.5 py-0.5 rounded text-sm font-mono">Monitorings.html</code> 使用複數名稱。</li>
-                <li><code class="bg-slate-800 text-emerald-400 border border-slate-700 px-1.5 py-0.5 rounded text-sm font-mono">Index.html</code> 的 <code class="bg-slate-800 text-cyan-300 border border-slate-700 px-1.5 py-0.5 rounded text-sm font-mono">include()</code> 名稱必須與 HTML 檔名一致。</li>
-                <li>Apps Script 編輯器建立 HTML 檔時只輸入名稱，例如 <code class="bg-slate-800 text-cyan-300 border border-slate-700 px-1.5 py-0.5 rounded text-sm font-mono">SchoolBasics</code>，系統會顯示為 <code class="bg-slate-800 text-emerald-400 border border-slate-700 px-1.5 py-0.5 rounded text-sm font-mono">SchoolBasics.html</code>。</li>
-            </ul>
-
-            <h3 class="text-xl font-bold text-cyan-200 mb-3 font-mono">appsscript.json</h3>
-            <p class="mb-4">在 Apps Script 左側「專案設定」開啟「在編輯器中顯示 appsscript.json 資訊清單檔案」，再貼入專案提供的 <code class="bg-slate-800 text-pink-400 border border-slate-700 px-1.5 py-0.5 rounded text-sm font-mono">appsscript.json</code>。</p>
-            <p class="mb-2">目前資訊清單重點：</p>
-            <ul class="list-disc list-inside space-y-1 mb-8 ml-2 text-slate-400">
-                <li>時區：<code class="bg-slate-800 text-cyan-400 border border-slate-700 px-1.5 py-0.5 rounded text-sm font-mono">Asia/Taipei</code></li>
-                <li>執行環境：V8</li>
-                <li>權限：Google Sheets、Google Drive、外部連線</li>
-                <li>Web App 執行身分：部署者</li>
-                <li>Web App 存取：任何人</li>
-            </ul>
-
-            <!-- Section 3 -->
-            <h2 class="text-2xl font-bold text-cyan-400 border-b border-slate-700 pb-2 mb-6 mt-12 flex items-center gap-2">
-                <span class="text-slate-500 font-mono text-lg">03</span> 三、建立 Firebase 專案與 Google 登入
-            </h2>
-            
-            <h3 class="text-xl font-bold text-cyan-200 mb-3">3.1 建立 Firebase 專案</h3>
-            <ol class="list-decimal list-inside space-y-1 mb-6 ml-2 text-slate-400 font-mono text-sm marker:text-cyan-600">
-                <li>開啟 Firebase Console。</li>
-                <li>選擇「新增專案」。</li>
-                <li>輸入專案名稱並完成建立。</li>
-                <li>Google Analytics 對本系統不是必要項目，可自行決定是否啟用。</li>
-            </ol>
-
-            <h3 class="text-xl font-bold text-cyan-200 mb-3">3.2 建立 Firebase Web App</h3>
-            <ol class="list-decimal list-inside space-y-1 mb-4 ml-2 text-slate-400 font-mono text-sm marker:text-cyan-600">
-                <li>進入 Firebase 專案總覽。</li>
-                <li>選擇 Web 圖示 <code class="bg-slate-800 text-cyan-300 border border-slate-700 px-1.5 py-0.5 rounded">&lt;/&gt;</code>。</li>
-                <li>輸入應用程式暱稱。</li>
-                <li>不需要為本系統啟用 Firebase Hosting。</li>
-                <li>完成後取得 <code class="bg-slate-800 text-pink-400 border border-slate-700 px-1.5 py-0.5 rounded">firebaseConfig</code>。</li>
-            </ol>
-            <p class="mb-2 text-slate-300">本系統需要其中四個值：</p>
-            <pre class="bg-[#0b1121] text-emerald-400 p-4 rounded-lg overflow-x-auto text-sm mb-8 font-mono leading-relaxed shadow-inner border border-slate-800"><code><span class="text-pink-500">const</span> <span class="text-cyan-300">firebaseConfig</span> <span class="text-slate-400">=</span> {
-  <span class="text-indigo-300">apiKey</span>: <span class="text-amber-300">"..."</span>,
-  <span class="text-indigo-300">authDomain</span>: <span class="text-amber-300">"專案ID.firebaseapp.com"</span>,
-  <span class="text-indigo-300">projectId</span>: <span class="text-amber-300">"..."</span>,
-  <span class="text-indigo-300">appId</span>: <span class="text-amber-300">"..."</span>
-};</code></pre>
-
-            <h3 class="text-xl font-bold text-cyan-200 mb-3">3.3 啟用 Google 登入</h3>
-            <ol class="list-decimal list-inside space-y-1 mb-4 ml-2 text-slate-400 font-mono text-sm marker:text-cyan-600">
-                <li>Firebase Console → Authentication。</li>
-                <li>選擇「開始使用」。</li>
-                <li>開啟「Sign-in method／登入方式」。</li>
-                <li>選擇 Google。</li>
-                <li>設為啟用。</li>
-                <li>選擇專案支援電子郵件。</li>
-                <li>儲存。</li>
-            </ol>
-            <p class="text-sm text-slate-400 bg-slate-900/50 p-3 rounded mb-8 border-l-4 border-slate-600">Firebase 官方說明指出，Web App 可使用 `signInWithPopup` 或 `signInWithRedirect`；本系統桌面優先使用彈出視窗，彈出視窗受阻時會改採重新導向。</p>
-
-            <h3 class="text-xl font-bold text-cyan-200 mb-3">3.4 Firestore 是否需要建立</h3>
-            <p class="mb-6"><strong class="text-cyan-400">不需要。</strong>本系統的資料存放位置是 Google Sheets 與 Google Drive。</p>
-            <p class="mb-8 text-slate-400">專案附帶的 <code class="bg-slate-800 text-pink-400 border border-slate-700 px-1.5 py-0.5 rounded text-sm font-mono">firestore.rules</code> 是「拒絕所有 Firestore 讀寫」的保護規則。如果 Firebase 專案完全沒有建立 Firestore，可以略過；如果已建立 Firestore，則可視需要另外透過 Firebase CLI 部署該規則。</p>
-
-
-            <!-- Section 4 -->
-            <h2 class="text-2xl font-bold text-cyan-400 border-b border-slate-700 pb-2 mb-6 mt-12 flex items-center gap-2">
-                <span class="text-slate-500 font-mono text-lg">04</span> 四、設定 Apps Script 指令碼屬性
-            </h2>
-            <p class="mb-6 font-mono text-sm text-slate-400 bg-slate-900/50 inline-block p-2 rounded border border-slate-800">
-                Apps Script → 左側齒輪「專案設定」→「指令碼屬性」→「新增指令碼屬性」
-            </p>
-
-            <h3 class="text-xl font-bold text-cyan-200 mb-3">4.1 必填屬性</h3>
-            <div class="overflow-x-auto mb-4 rounded-lg border border-slate-700">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-slate-800/80 text-cyan-300 border-b border-slate-700">
-                            <th class="p-3 font-semibold text-sm tracking-wider uppercase">屬性名稱</th>
-                            <th class="p-3 font-semibold text-sm tracking-wider uppercase">內容</th>
-                        </tr>
-                    </thead>
-                    <tbody class="text-slate-300 divide-y divide-slate-800/50 bg-slate-900/50">
-                        <tr class="hover:bg-slate-800/50"><td class="p-3 font-mono text-sm font-bold text-cyan-400">FIREBASE_API_KEY</td><td class="p-3">Firebase Web App 的 <code class="text-amber-300">apiKey</code></td></tr>
-                        <tr class="hover:bg-slate-800/50"><td class="p-3 font-mono text-sm font-bold text-cyan-400">FIREBASE_AUTH_DOMAIN</td><td class="p-3">Firebase Web App 的 <code class="text-amber-300">authDomain</code></td></tr>
-                        <tr class="hover:bg-slate-800/50"><td class="p-3 font-mono text-sm font-bold text-cyan-400">FIREBASE_PROJECT_ID</td><td class="p-3">Firebase Web App 的 <code class="text-amber-300">projectId</code></td></tr>
-                        <tr class="hover:bg-slate-800/50"><td class="p-3 font-mono text-sm font-bold text-cyan-400">FIREBASE_APP_ID</td><td class="p-3">Firebase Web App 的 <code class="text-amber-300">appId</code></td></tr>
-                    </tbody>
-                </table>
-            </div>
-            <p class="mb-8 text-sm text-pink-400">請直接貼值，不要加引號、逗號或 <code class="text-slate-300">apiKey:</code> 等文字。</p>
-
-            <h3 class="text-xl font-bold text-cyan-200 mb-3">4.2 試算表屬性</h3>
-            <div class="overflow-x-auto mb-4 rounded-lg border border-slate-700">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-slate-800/80 text-cyan-300 border-b border-slate-700">
-                            <th class="p-3 font-semibold text-sm tracking-wider uppercase">屬性名稱</th>
-                            <th class="p-3 font-semibold text-sm tracking-wider uppercase">是否必要</th>
-                            <th class="p-3 font-semibold text-sm tracking-wider uppercase">說明</th>
-                        </tr>
-                    </thead>
-                    <tbody class="text-slate-300 divide-y divide-slate-800/50 bg-slate-900/50">
-                        <tr class="hover:bg-slate-800/50"><td class="p-3 font-mono text-sm font-bold text-indigo-400">SPREADSHEET_ID</td><td class="p-3 text-center text-sm text-slate-400">綁定式 GAS 可省略</td><td class="p-3">系統主要試算表 ID</td></tr>
-                        <tr class="hover:bg-slate-800/50"><td class="p-3 font-mono text-sm font-bold text-indigo-400">MDM_SPREADSHEET_ID</td><td class="p-3 text-center text-sm text-amber-300">建議設定</td><td class="p-3">MDM 資料來源試算表 ID；留空則從主要試算表尋找符合格式的分頁</td></tr>
-                    </tbody>
-                </table>
-            </div>
-            <p class="mb-8 text-sm text-slate-500">試算表 ID 是網址中 <code class="text-slate-300">/d/</code> 與 <code class="text-slate-300">/edit</code> 之間的字串。</p>
-
-            <h3 class="text-xl font-bold text-cyan-200 mb-3">4.3 PDF 資料夾屬性</h3>
-            <div class="overflow-x-auto mb-4 rounded-lg border border-slate-700">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-slate-800/80 text-cyan-300 border-b border-slate-700">
-                            <th class="p-3 font-semibold text-sm tracking-wider uppercase">屬性名稱</th>
-                            <th class="p-3 font-semibold text-sm tracking-wider uppercase">用途</th>
-                        </tr>
-                    </thead>
-                    <tbody class="text-slate-300 divide-y divide-slate-800/50 bg-slate-900/50">
-                        <tr class="hover:bg-slate-800/50"><td class="p-3 font-mono text-sm font-bold text-emerald-400">SOFTWARE_EVIDENCE_FOLDER_ID</td><td class="p-3">軟體使用效益佐證 PDF 資料夾</td></tr>
-                        <tr class="hover:bg-slate-800/50"><td class="p-3 font-mono text-sm font-bold text-emerald-400">MONITORING_EVIDENCE_FOLDER_ID</td><td class="p-3">管考觀議課佐證 PDF 資料夾</td></tr>
-                    </tbody>
-                </table>
-            </div>
-            <p class="mb-2 text-sm text-slate-500">資料夾 ID 是 Drive 資料夾網址中 <code class="text-slate-300">/folders/</code> 後面的字串。</p>
-            
-            <p class="mb-2">若不設定：</p>
-            <ul class="list-disc list-inside space-y-1 mb-4 ml-2 text-slate-400">
-                <li>第一次上傳軟體佐證時，自動建立 <code class="bg-slate-800 text-cyan-300 border border-slate-700 px-1.5 py-0.5 rounded text-sm">軟體使用效益調查_佐證資料</code>。</li>
-                <li>第一次上傳觀議課佐證時，自動建立 <code class="bg-slate-800 text-cyan-300 border border-slate-700 px-1.5 py-0.5 rounded text-sm">管考填報_觀議課佐證資料</code>。</li>
-                <li>系統會把自動建立的資料夾 ID 寫回上述指令碼屬性。</li>
-            </ul>
-            <p class="mb-8 text-sm text-amber-400">若要指定資料夾，部署帳號必須具有該資料夾的編輯權限。修改資料夾 ID 只影響之後上傳的檔案，不會自動搬移既有 PDF。</p>
-
-            <!-- Section 5 -->
-            <h2 class="text-2xl font-bold text-cyan-400 border-b border-slate-700 pb-2 mb-6 mt-12 flex items-center gap-2">
-                <span class="text-slate-500 font-mono text-lg">05</span> 五、第一次初始化 Google Sheets
-            </h2>
-            
-            <h3 class="text-xl font-bold text-cyan-200 mb-3">5.1 執行初始化</h3>
-            <ol class="list-decimal list-inside space-y-1 mb-4 ml-2 text-slate-400 marker:text-cyan-600">
-                <li>在 Apps Script 編輯器上方函式下拉選單選擇 <code class="bg-slate-800 text-pink-400 border border-slate-700 px-1.5 py-0.5 rounded text-sm font-mono">initializeSystem</code>。</li>
-                <li>按「執行」。</li>
-                <li>第一次執行會出現 Google 授權畫面。</li>
-                <li>使用部署帳號完成授權。</li>
-                <li>等待執行完成。</li>
-                <li>回到 Google 試算表重新整理。</li>
-            </ol>
-            
-            <p class="mb-2">初始化後會建立或補齊：</p>
-            <div class="flex flex-wrap gap-2 mb-6 font-mono">
-                <span class="bg-cyan-900/50 text-cyan-300 border border-cyan-800 px-2 py-1 rounded text-sm">Settings</span>
-                <span class="bg-cyan-900/50 text-cyan-300 border border-cyan-800 px-2 py-1 rounded text-sm">UNITS</span>
-                <span class="bg-cyan-900/50 text-cyan-300 border border-cyan-800 px-2 py-1 rounded text-sm">Users</span>
-                <span class="bg-indigo-900/50 text-indigo-300 border border-indigo-800 px-2 py-1 rounded text-sm">學校基本資料</span>
-                <span class="bg-indigo-900/50 text-indigo-300 border border-indigo-800 px-2 py-1 rounded text-sm">軟體使用效益調查</span>
-                <span class="bg-indigo-900/50 text-indigo-300 border border-indigo-800 px-2 py-1 rounded text-sm">管考填報</span>
-                <span class="bg-slate-800 text-slate-400 border border-slate-700 px-2 py-1 rounded text-sm">Logs</span>
-            </div>
-            <p class="mb-8 text-slate-400"><code class="bg-slate-800 text-cyan-300 px-1.5 py-0.5 rounded text-sm font-mono">initializeSystem()</code> 的行為是補齊缺少的工作表與欄位，不會清除既有填報資料。</p>
-
-            <h3 class="text-xl font-bold text-cyan-200 mb-3">5.2 特別注意</h3>
-            <p class="mb-2 text-pink-400 font-bold">日常版本升級只需要執行「初始化工作表」。不要隨意執行：</p>
-            <ul class="list-disc list-inside space-y-1 mb-4 ml-2 text-pink-400/80">
-                <li>「更新學校基本資料欄位（自動備份）」</li>
-                <li>「更新軟體調查欄位（自動備份）」</li>
-            </ul>
-            <p class="mb-8 text-slate-400">這兩個功能是舊版資料結構整體轉換工具，會先備份再重建原工作表，不適合一般小版本升級。v2.2.0 新增 <code class="bg-slate-800 text-cyan-300 px-1.5 py-0.5 rounded text-sm font-mono">chargingCartInventoryJson</code> 時，只要執行初始化即可。</p>
-
-            <!-- Section 6 -->
-            <h2 class="text-2xl font-bold text-cyan-400 border-b border-slate-700 pb-2 mb-6 mt-12 flex items-center gap-2">
-                <span class="text-slate-500 font-mono text-lg">06</span> 六、設定 Settings 工作表
-            </h2>
-            <p class="mb-4">初始化後，在 <code class="bg-slate-800 text-cyan-300 border border-slate-700 px-1.5 py-0.5 rounded text-sm font-mono">Settings</code> 工作表調整 <code class="bg-slate-800 text-cyan-300 border border-slate-700 px-1.5 py-0.5 rounded text-sm font-mono">value</code> 欄。</p>
-            
-            <div class="overflow-x-auto mb-6 rounded-lg border border-slate-700">
-                <table class="w-full text-left border-collapse min-w-[700px]">
-                    <thead>
-                        <tr class="bg-slate-800/80 text-cyan-300 border-b border-slate-700">
-                            <th class="p-3 font-semibold text-sm tracking-wider uppercase">key</th>
-                            <th class="p-3 font-semibold text-sm tracking-wider uppercase">建議值／格式</th>
-                            <th class="p-3 font-semibold text-sm tracking-wider uppercase">說明</th>
-                        </tr>
-                    </thead>
-                    <tbody class="text-slate-300 divide-y divide-slate-800/50 bg-slate-900/50 text-sm">
-                        <tr class="hover:bg-slate-800/50"><td class="p-3 font-mono font-bold text-indigo-300">SYSTEM_NAME</td><td class="p-3 font-mono text-amber-300">校務數位填報系統</td><td class="p-3 text-slate-400">網頁系統名稱</td></tr>
-                        <tr class="hover:bg-slate-800/50"><td class="p-3 font-mono font-bold text-indigo-300">ALLOW_REGISTRATION</td><td class="p-3 font-mono text-cyan-400">TRUE</td><td class="p-3 text-slate-400">是否開放新帳號註冊</td></tr>
-                        <tr class="hover:bg-slate-800/50"><td class="p-3 font-mono font-bold text-indigo-300">FIRST_USER_AUTO_ADMIN</td><td class="p-3 font-mono text-pink-400">FALSE</td><td class="p-3 text-slate-400">第一位註冊者是否自動成為系統管理員；正式環境建議 FALSE</td></tr>
-                        <tr class="hover:bg-slate-800/50"><td class="p-3 font-mono font-bold text-indigo-300">ALLOWED_EMAIL_DOMAIN</td><td class="p-3 font-mono text-amber-300">留空或 hcc.edu.tw</td><td class="p-3 text-slate-400">限制登入信箱網域；留空代表不限</td></tr>
-                        <tr class="hover:bg-slate-800/50"><td class="p-3 font-mono font-bold text-indigo-300">REPORT_YEAR</td><td class="p-3 font-mono text-emerald-400">例如 115</td><td class="p-3 text-slate-400">管考填報年度</td></tr>
-                        <tr class="hover:bg-slate-800/50"><td class="p-3 font-mono font-bold text-indigo-300">SOFTWARE_YEARS</td><td class="p-3 font-mono text-amber-300">111年,...,118年</td><td class="p-3 text-slate-400">現行前後端仍使用固定 111～118 年選項</td></tr>
-                        <tr class="hover:bg-slate-800/50"><td class="p-3 font-mono font-bold text-indigo-300">SOFTWARE_GROUPS</td><td class="p-3 font-mono text-slate-500">系統預設值</td><td class="p-3 text-slate-400">現行前後端固定三組</td></tr>
-                        <tr class="hover:bg-slate-800/50"><td class="p-3 font-mono font-bold text-indigo-300">SOFTWARE_METHODS</td><td class="p-3 font-mono text-slate-500">系統預設值</td><td class="p-3 text-slate-400">現行前後端固定三種採購方式</td></tr>
-                        <tr class="hover:bg-slate-800/50"><td class="p-3 font-mono font-bold text-indigo-300">SOFTWARE_MAX_PDF_MB</td><td class="p-3 font-mono text-emerald-400">10</td><td class="p-3 text-slate-400">軟體佐證 PDF 上限，程式限制 1～20 MB</td></tr>
-                        <tr class="hover:bg-slate-800/50"><td class="p-3 font-mono font-bold text-indigo-300">MONITORING_MAX_PDF_MB</td><td class="p-3 font-mono text-emerald-400">10</td><td class="p-3 text-slate-400">觀議課 PDF 上限，程式限制 1～20 MB</td></tr>
-                        <tr class="hover:bg-slate-800/50"><td class="p-3 font-mono font-bold text-indigo-300">FORM_START_AT</td><td class="p-3 font-mono text-amber-300">2026/09/10 08:00</td><td class="p-3 text-slate-400">開始填報時間；留空表示不限制開始</td></tr>
-                        <tr class="hover:bg-slate-800/50"><td class="p-3 font-mono font-bold text-indigo-300">FORM_END_AT</td><td class="p-3 font-mono text-amber-300">2026/09/30 17:00</td><td class="p-3 text-slate-400">結束填報時間；留空表示不限制結束</td></tr>
-                        <tr class="hover:bg-slate-800/50"><td class="p-3 font-mono font-bold text-indigo-300">FORM_TIMEZONE</td><td class="p-3 font-mono text-amber-300">Asia/Taipei</td><td class="p-3 text-slate-400">填報期限時區</td></tr>
-                        <tr class="hover:bg-slate-800/50"><td class="p-3 font-mono font-bold text-indigo-300">ADMIN_BYPASS_FORM_PERIOD</td><td class="p-3 font-mono text-cyan-400">TRUE</td><td class="p-3 text-slate-400">ADMIN 是否不受填報期限限制</td></tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <p class="mb-4 text-sm text-slate-500 italic">時間採 GAS 伺服器判斷，使用者修改電腦時間不會繞過限制。</p>
-            <p class="mb-2 font-semibold text-cyan-200">期限外：</p>
-            <ul class="list-disc list-inside space-y-1 mb-8 ml-2 text-slate-400">
-                <li><code class="bg-cyan-900/30 text-cyan-400 border border-cyan-800 px-1.5 py-0.5 rounded text-sm font-mono">OWNER</code> 只能瀏覽、查看佐證及列印。</li>
-                <li>儲存、送出、新增、修改、刪除及上傳按鈕會隱藏。</li>
-                <li>後端也會拒絕寫入，不只是畫面上的限制。</li>
-                <li><code class="bg-cyan-900/30 text-cyan-400 border border-cyan-800 px-1.5 py-0.5 rounded text-sm font-mono">ADMIN_BYPASS_FORM_PERIOD=TRUE</code> 時，ADMIN 仍可維護資料。</li>
-            </ul>
-
-            <!-- Section 7 -->
-            <h2 class="text-2xl font-bold text-cyan-400 border-b border-slate-700 pb-2 mb-6 mt-12 flex items-center gap-2">
-                <span class="text-slate-500 font-mono text-lg">07</span> 七、設定 UNITS 學校清單
-            </h2>
-            <p class="mb-4"><code class="bg-slate-800 text-cyan-300 border border-slate-700 px-1.5 py-0.5 rounded text-sm font-mono">UNITS</code> 工作表欄位：</p>
-            
-            <div class="overflow-x-auto mb-4 w-full md:w-1/2 rounded-lg border border-slate-700">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-slate-800/80 text-cyan-300 border-b border-slate-700">
-                            <th class="p-3 font-semibold text-sm tracking-wider uppercase">unit</th>
-                            <th class="p-3 font-semibold text-sm tracking-wider uppercase">active</th>
-                        </tr>
-                    </thead>
-                    <tbody class="text-slate-300 bg-slate-900/50">
-                        <tr class="hover:bg-slate-800/50 transition-colors">
-                            <td class="p-3 font-mono text-sm text-indigo-300">p28關西國小</td>
-                            <td class="p-3 font-mono text-sm text-cyan-400">TRUE</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <ul class="list-disc list-inside space-y-2 mb-6 ml-2 text-slate-400 marker:text-cyan-600">
-                <li><strong class="text-cyan-300">unit</strong>：註冊頁顯示的學校簡碼＋名稱，必須唯一。</li>
-                <li><strong class="text-cyan-300">active=TRUE</strong> 或留空：顯示於註冊選單。</li>
-                <li><strong class="text-cyan-300">active=FALSE</strong>：停止提供新帳號選取。</li>
-                <li>可以直接在工作表最後新增學校，不必修改 HTML。</li>
-                <li>再次初始化只會補回缺少的預設學校，不會覆寫原本的 active 狀態。</li>
-            </ul>
-            <p class="mb-8 text-sm text-amber-300 bg-amber-950/30 p-3 border-l-4 border-amber-500 rounded">
-                帳號核准後不能自行更換學校；如需更正，應由管理員處理 <code class="font-mono text-amber-100">Users</code> 工作表，並再次確認該校的 <code class="font-mono text-amber-100">OWNER／VIEWER</code> 配置。
-            </p>
-
-            <!-- Section 8 -->
-            <h2 class="text-2xl font-bold text-cyan-400 border-b border-slate-700 pb-2 mb-6 mt-12 flex items-center gap-2">
-                <span class="text-slate-500 font-mono text-lg">08</span> 八、準備 MDM 載具使用率資料
-            </h2>
-            
-            <h3 class="text-xl font-bold text-cyan-200 mb-3">8.1 可放同一份或另一份試算表</h3>
-            <ul class="list-disc list-inside space-y-2 mb-6 ml-2 text-slate-400 marker:text-cyan-600">
-                <li><strong class="text-cyan-300">同一份：</strong>不設定 <code class="bg-slate-800 text-pink-400 border border-slate-700 px-1.5 py-0.5 rounded text-sm font-mono">MDM_SPREADSHEET_ID</code>，直接在主要試算表增加各期別分頁。</li>
-                <li><strong class="text-cyan-300">另一份：</strong>設定 <code class="bg-slate-800 text-pink-400 border border-slate-700 px-1.5 py-0.5 rounded text-sm font-mono">MDM_SPREADSHEET_ID</code>，系統會從指定試算表讀取期別。</li>
-            </ul>
-
-            <h3 class="text-xl font-bold text-cyan-200 mb-3">8.2 每個期別分頁格式</h3>
-            <p class="mb-2 text-slate-400">每一個工作表分頁代表一個期別，名稱可自訂，例如：</p>
-            <pre class="bg-slate-900 text-emerald-400 p-3 rounded border border-slate-700 mb-4 inline-block font-mono text-sm shadow-inner">2026/8/8～2026/8/18</pre>
-            <p class="mb-4 text-slate-400">系統只列出符合下列表頭的分頁：</p>
-            
-            <div class="overflow-x-auto mb-4 w-full md:w-2/3 rounded-lg border border-slate-700">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-slate-800/80 text-cyan-300 border-b border-slate-700">
-                            <th class="p-3 font-semibold text-center w-16 text-sm tracking-wider uppercase">欄</th>
-                            <th class="p-3 font-semibold text-sm tracking-wider uppercase">必要表頭／內容</th>
-                        </tr>
-                    </thead>
-                    <tbody class="text-slate-300 divide-y divide-slate-800/50 bg-slate-900/50">
-                        <tr class="hover:bg-slate-800/50"><td class="p-3 text-center font-bold text-cyan-500">A</td><td class="p-3">日期</td></tr>
-                        <tr class="hover:bg-slate-800/50"><td class="p-3 text-center font-bold text-cyan-500">B</td><td class="p-3">主管機關</td></tr>
-                        <tr class="hover:bg-slate-800/50"><td class="p-3 text-center font-bold text-cyan-500">C</td><td class="p-3">縣市名稱</td></tr>
-                        <tr class="hover:bg-slate-800/50"><td class="p-3 text-center font-bold text-cyan-500">D</td><td class="p-3">學校代碼</td></tr>
-                        <tr class="hover:bg-slate-800/50"><td class="p-3 text-center font-bold text-cyan-500">E</td><td class="p-3">學校名稱</td></tr>
-                        <tr class="hover:bg-slate-800/50"><td class="p-3 text-center font-bold text-cyan-500">F</td><td class="p-3">使用率</td></tr>
-                        <tr class="hover:bg-slate-800/50"><td class="p-3 text-center font-bold text-cyan-500">G</td><td class="p-3">總使用時間</td></tr>
-                    </tbody>
-                </table>
-            </div>
-            <p class="mb-8 text-slate-500">前端只顯示 A、D、E、F、G。未指定期別時，使用最右邊的有效期別分頁。</p>
-
-            <!-- Section 9 -->
-            <h2 class="text-2xl font-bold text-cyan-400 border-b border-slate-700 pb-2 mb-6 mt-12 flex items-center gap-2">
-                <span class="text-slate-500 font-mono text-lg">09</span> 九、第一次部署 GAS Web App
-            </h2>
-            <p class="mb-4 text-slate-300">Apps Script 官方流程為「部署 → 新增部署作業 → 網頁應用程式」。本專案部署設定如下：</p>
-            <ol class="list-decimal list-inside space-y-2 mb-6 ml-2 text-slate-400 marker:text-cyan-600 font-mono text-sm">
-                <li>按右上角「部署」。</li>
-                <li>選擇「新增部署作業」。</li>
-                <li>類型選「網頁應用程式」。</li>
-                <li>說明輸入版本，例如 <code class="bg-slate-800 text-cyan-300 border border-slate-700 px-1.5 py-0.5 rounded text-sm">v2.2.0 初次部署</code>。</li>
-                <li>執行身分選「<strong class="text-cyan-400">我</strong>」。</li>
-                <li>誰可以存取選「<strong class="text-cyan-400">任何人</strong>」。</li>
-                <li>按「部署」。</li>
-                <li>完成必要授權。</li>
-                <li>複製結尾為 <code class="bg-slate-800 text-pink-400 border border-slate-700 px-1.5 py-0.5 rounded text-sm">/exec</code> 的正式網址。</li>
-            </ol>
-            
-            <p class="mb-2 font-semibold text-cyan-200">為何選「執行身分：我」：</p>
-            <ul class="list-disc list-inside space-y-1 mb-6 ml-2 text-slate-400">
-                <li>所有學校共用同一份 Sheets 與 Drive 資料夾。</li>
-                <li>使用者不必逐一授權 Google Sheets 與 Drive。</li>
-                <li>Firebase ID Token、Users 狀態、OWNER／VIEWER 與填報期限會在 GAS 後端驗證。</li>
-            </ul>
-            <p class="mb-4 text-slate-400">雖然網址設定為任何人可開啟，但除了公開設定與學校選單，資料讀寫函式都需要有效 Firebase Token；填報資料不是公開讀取。</p>
-            
-            <blockquote class="border-l-4 border-indigo-500 bg-indigo-950/40 p-4 my-6 rounded-r-lg">
-                <p class="text-indigo-200 m-0 font-mono text-sm">💡 <strong class="text-indigo-300">備註：</strong> <code class="text-indigo-100">/dev</code> 是測試部署，只供有 Apps Script 編輯權限的人使用；正式分享必須使用 <code class="text-indigo-100">/exec</code>。</p>
-            </blockquote>
-
-            <!-- Section 10 -->
-            <h2 class="text-2xl font-bold text-cyan-400 border-b border-slate-700 pb-2 mb-6 mt-12 flex items-center gap-2">
-                <span class="text-slate-500 font-mono text-lg">10</span> 十、加入 Firebase 授權網域
-            </h2>
-            <ol class="list-decimal list-inside space-y-2 mb-6 ml-2 text-slate-400 marker:text-cyan-600 font-mono text-sm">
-                <li>使用無痕視窗開啟 GAS <code class="bg-slate-800 text-cyan-300 border border-slate-700 px-1.5 py-0.5 rounded text-sm">/exec</code> 網址。</li>
-                <li>開啟瀏覽器開發者工具 Console，或嘗試登入。</li>
-                <li>記下 Firebase 提示的「目前網域」。</li>
-                <li>Firebase Console → Authentication → Settings → Authorized domains。</li>
-                <li>新增 GAS 實際執行頁面的完整主機名稱。</li>
-            </ol>
-            
-            <p class="mb-2 text-slate-300">可能需要加入：</p>
-            <pre class="bg-[#0b1121] text-emerald-400 p-4 rounded-lg overflow-x-auto text-sm mb-4 font-mono shadow-inner border border-slate-800"><code>script.google.com
-script.googleusercontent.com</code></pre>
-
-            <p class="mb-2 text-slate-300">如果錯誤訊息顯示更完整的子網域，例如：</p>
-            <pre class="bg-[#0b1121] text-emerald-400 p-4 rounded-lg overflow-x-auto text-sm mb-4 font-mono shadow-inner border border-slate-800"><code>n-xxxxxxxxxxxxxxxx-0lu-script.googleusercontent.com</code></pre>
-            
-            <p class="mb-8 text-slate-400 bg-slate-900/50 p-3 rounded border-l-4 border-slate-600 font-sm">
-                請把錯誤訊息中的完整主機名稱也加入，不要包含 <code class="font-mono text-slate-300">https://</code>、路徑、斜線或參數。Firebase 官方說明要求加入 Web App 主機的完整網域名稱；只加入父網域不一定能涵蓋子網域。<br><br>完成後等待片刻，再重新整理頁面測試。
-            </p>
-
-            <!-- Section 11 -->
-            <h2 class="text-2xl font-bold text-cyan-400 border-b border-slate-700 pb-2 mb-6 mt-12 flex items-center gap-2">
-                <span class="text-slate-500 font-mono text-lg">11</span> 十一、Google Workspace 管理員封鎖 OAuth 的處理
-            </h2>
-            <p class="mb-2 text-slate-300">如果登入畫面顯示：</p>
-            <pre class="bg-[#0b1121] text-pink-400 p-4 rounded-lg overflow-x-auto text-sm mb-4 font-mono shadow-inner border border-pink-900/50"><code>已封鎖存取權
-必須通過貴機構管理員的審查
-錯誤 400：access_not_configured</code></pre>
-            
-            <p class="mb-4 text-slate-400">這不是 Firebase Authorized domains 設錯，而是登入者所屬 Google Workspace 管理員封鎖了 Firebase Google 登入使用的 OAuth 應用程式。</p>
-            
-            <p class="font-semibold text-cyan-200 mb-2">處理方式：</p>
-            <ol class="list-decimal list-inside space-y-2 mb-8 ml-2 text-slate-400 marker:text-cyan-600">
-                <li>請該網域管理員在 Google Admin Console 的 API 控制／應用程式存取控制中審核並允許該 Firebase OAuth 應用程式。</li>
-                <li>提供錯誤畫面中的應用程式名稱及 Firebase <code class="bg-slate-800 text-cyan-300 border border-slate-700 px-1.5 py-0.5 rounded text-sm font-mono">authDomain</code> 給管理員。</li>
-                <li>個人 Gmail 通常不受學校 Workspace 的第三方應用程式政策限制，因此可能可以登入；這不代表學校帳號設定已完成。</li>
-            </ol>
-            <p class="mb-8 text-sm text-amber-300 bg-amber-950/20 p-3 rounded border border-amber-900/30">即使 GAS Web App 本身選擇「任何人」，Firebase Google 登入仍然是 OAuth 流程，所以仍可能被對方網域政策阻擋。</p>
-
-            <!-- Section 12 -->
-            <h2 class="text-2xl font-bold text-cyan-400 border-b border-slate-700 pb-2 mb-6 mt-12 flex items-center gap-2">
-                <span class="text-slate-500 font-mono text-lg">12</span> 十二、首次註冊、審核及校級權限
-            </h2>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-                <div class="bg-slate-900/50 p-6 rounded-lg border border-slate-800">
-                    <h3 class="text-xl font-bold text-indigo-400 mb-3 font-mono">12.1 註冊</h3>
-                    <ol class="list-decimal list-inside space-y-2 text-slate-400 marker:text-indigo-500">
-                        <li>使用者開啟 <code class="bg-slate-800 text-indigo-300 border border-slate-700 px-1.5 py-0.5 rounded text-sm font-mono">/exec</code> 網址。</li>
-                        <li>按「使用 Google 帳號登入」。</li>
-                        <li>第一次登入選擇學校。</li>
-                        <li>帳號寫入 <code class="bg-slate-800 text-indigo-300 border border-slate-700 px-1.5 py-0.5 rounded text-sm font-mono">Users</code>，預設狀態為 <code class="bg-amber-900/50 text-amber-400 border border-amber-700 px-1.5 py-0.5 rounded text-sm font-mono font-bold">PENDING</code>。</li>
-                    </ol>
-                </div>
-                <div class="bg-slate-900/50 p-6 rounded-lg border border-slate-800">
-                    <h3 class="text-xl font-bold text-indigo-400 mb-3 font-mono">12.2 核准</h3>
-                    <ol class="list-decimal list-inside space-y-2 text-slate-400 marker:text-indigo-500">
-                        <li>管理員回到 Google 試算表。</li>
-                        <li>開啟 <code class="bg-slate-800 text-indigo-300 border border-slate-700 px-1.5 py-0.5 rounded text-sm font-mono">Users</code> 工作表。</li>
-                        <li>點選使用者所在列任一儲存格。</li>
-                        <li>選擇「📋 填報系統工具 → 核准選取的使用者」。</li>
-                        <li>使用者回到等待頁按「重新檢查」。</li>
-                    </ol>
-                </div>
-            </div>
-
-            <h3 class="text-xl font-bold text-cyan-200 mb-3">12.3 OWNER／VIEWER</h3>
-            <ul class="list-disc list-inside space-y-2 mb-6 ml-2 text-slate-400 marker:text-cyan-500">
-                <li>同校第一位通過審核者：<span class="bg-cyan-900/50 text-cyan-300 border border-cyan-800 px-2 py-0.5 rounded text-sm font-bold font-mono">OWNER</span></li>
-                <li>同校後續核准者：<span class="bg-emerald-900/50 text-emerald-300 border border-emerald-800 px-2 py-0.5 rounded text-sm font-bold font-mono">VIEWER</span></li>
-                <li><strong class="text-cyan-300">OWNER</strong>：在開放期間可新增、修改、刪除與上傳。</li>
-                <li><strong class="text-emerald-300">VIEWER</strong>：只能瀏覽、查看佐證與列印。</li>
-                <li>前端會隱藏操作按鈕，後端也會再次驗證。</li>
-            </ul>
-
-            <p class="font-semibold text-cyan-200 mb-2">如需更換學校管理者：</p>
-            <ol class="list-decimal list-inside space-y-2 mb-6 ml-2 text-slate-400 marker:text-cyan-600">
-                <li>在 <code class="bg-slate-800 text-cyan-300 border border-slate-700 px-1.5 py-0.5 rounded text-sm font-mono">Users</code> 選取新的已核准帳號。</li>
-                <li>選擇「📋 填報系統工具 → 指定為該校填報管理者」。</li>
-                <li>同校其他已核准帳號會成為 <code class="bg-slate-800 text-emerald-400 border border-slate-700 px-1.5 py-0.5 rounded text-sm font-mono">VIEWER</code>。</li>
-            </ol>
-            <p class="mb-8 text-slate-300 bg-slate-900/50 border border-slate-800 p-3 rounded">
-                <strong class="text-pink-400">停用使用者：</strong>選取該列後執行「停用選取的使用者」。若停用的是 OWNER，系統會將管理權交給同校其他已核准帳號。
-            </p>
-
-            <!-- Section 13 -->
-            <h2 class="text-2xl font-bold text-cyan-400 border-b border-slate-700 pb-2 mb-6 mt-12 flex items-center gap-2">
-                <span class="text-slate-500 font-mono text-lg">13</span> 十三、資料存放位置
-            </h2>
-            
-            <div class="overflow-x-auto mb-6 rounded-lg border border-slate-700">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-slate-800/80 text-cyan-300 border-b border-slate-700">
-                            <th class="p-3 font-semibold text-sm tracking-wider uppercase w-1/3">資料</th>
-                            <th class="p-3 font-semibold text-sm tracking-wider uppercase w-2/3">存放位置</th>
-                        </tr>
-                    </thead>
-                    <tbody class="text-slate-300 divide-y divide-slate-800/50 bg-slate-900/50">
-                        <tr class="hover:bg-slate-800/50"><td class="p-3">帳號與審核狀態</td><td class="p-3 font-mono font-bold text-indigo-400">Users</td></tr>
-                        <tr class="hover:bg-slate-800/50"><td class="p-3">學校基本資料、載具、行動充電車</td><td class="p-3 font-mono font-bold text-indigo-400">學校基本資料</td></tr>
-                        <tr class="hover:bg-slate-800/50"><td class="p-3">軟體效益品項</td><td class="p-3 font-mono font-bold text-indigo-400">軟體使用效益調查</td></tr>
-                        <tr class="hover:bg-slate-800/50"><td class="p-3">管考與觀議課統計</td><td class="p-3 font-mono font-bold text-indigo-400">管考填報</td></tr>
-                        <tr class="hover:bg-slate-800/50"><td class="p-3">操作紀錄</td><td class="p-3 font-mono font-bold text-slate-400">Logs</td></tr>
-                        <tr class="hover:bg-slate-800/50"><td class="p-3">軟體佐證 PDF</td><td class="p-3 text-slate-400">Google Drive 軟體佐證資料夾</td></tr>
-                        <tr class="hover:bg-slate-800/50"><td class="p-3">觀議課佐證 PDF</td><td class="p-3 text-slate-400">Google Drive 觀議課資料夾</td></tr>
-                        <tr class="hover:bg-slate-800/50"><td class="p-3">MDM 使用率</td><td class="p-3 text-slate-400">MDM 來源試算表的有效期別分頁</td></tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <p class="font-semibold text-cyan-200 mb-2">學校基本資料目前包含：</p>
-            <ul class="list-disc list-inside space-y-1 mb-4 ml-2 text-slate-400 marker:text-cyan-600">
-                <li>識別資料與行政區</li>
-                <li>三類填報聯絡人</li>
-                <li>班級數、學生數、教師數與資訊人力</li>
-                <li>校內載具型號與數量</li>
-                <li>校內行動充電車型號與數量</li>
-                <li>網路概況與備註</li>
-            </ul>
-            <p class="mb-8 text-sm text-slate-500">多筆載具與充電車會以 JSON 儲存在 <code class="bg-slate-800 text-indigo-300 border border-slate-700 px-1.5 py-0.5 rounded text-sm font-mono">deviceInventoryJson</code> 與 <code class="bg-slate-800 text-indigo-300 border border-slate-700 px-1.5 py-0.5 rounded text-sm font-mono">chargingCartInventoryJson</code>，不會因新增型號而無限增加試算表欄位。</p>
-
-
-            <!-- Section 14 -->
-            <h2 class="text-2xl font-bold text-cyan-400 border-b border-slate-700 pb-2 mb-6 mt-12 flex items-center gap-2">
-                <span class="text-slate-500 font-mono text-lg">14</span> 十四、部署後驗收清單
-            </h2>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-                <div class="bg-slate-900/40 p-6 rounded-xl border border-slate-800/80">
-                    <h3 class="text-xl font-bold text-cyan-300 mb-4 border-b border-slate-700 pb-2">基本啟動</h3>
-                    <ul class="space-y-3 text-slate-400">
-                        <li class="flex items-start"><input type="checkbox" disabled checked class="mt-1 mr-3 h-4 w-4 accent-cyan-500 opacity-70"> <span class="flex-1"><code class="bg-slate-800 text-cyan-300 px-1 rounded text-sm font-mono mr-1">/exec</code> 網址可開啟。</span></li>
-                        <li class="flex items-start"><input type="checkbox" disabled checked class="mt-1 mr-3 h-4 w-4 accent-cyan-500 opacity-70"> <span class="flex-1">首頁沒有「Firebase 尚未設定完成」。</span></li>
-                        <li class="flex items-start"><input type="checkbox" disabled checked class="mt-1 mr-3 h-4 w-4 accent-cyan-500 opacity-70"> <span class="flex-1">Google 登入視窗可正常開啟。</span></li>
-                        <li class="flex items-start"><input type="checkbox" disabled checked class="mt-1 mr-3 h-4 w-4 accent-cyan-500 opacity-70"> <span class="flex-1">iPad／手機可登入；彈出視窗失敗時可改走重新導向。</span></li>
-                    </ul>
-                </div>
-                
-                <div class="bg-slate-900/40 p-6 rounded-xl border border-slate-800/80">
-                    <h3 class="text-xl font-bold text-cyan-300 mb-4 border-b border-slate-700 pb-2">註冊與權限</h3>
-                    <ul class="space-y-3 text-slate-400">
-                        <li class="flex items-start"><input type="checkbox" disabled checked class="mt-1 mr-3 h-4 w-4 accent-cyan-500 opacity-70"> <span class="flex-1">新帳號只能從 UNITS 選擇學校。</span></li>
-                        <li class="flex items-start"><input type="checkbox" disabled checked class="mt-1 mr-3 h-4 w-4 accent-cyan-500 opacity-70"> <span class="flex-1">新帳號進入等待核准頁。</span></li>
-                        <li class="flex items-start"><input type="checkbox" disabled checked class="mt-1 mr-3 h-4 w-4 accent-cyan-500 opacity-70"> <span class="flex-1">核准後可以進入系統。</span></li>
-                        <li class="flex items-start"><input type="checkbox" disabled checked class="mt-1 mr-3 h-4 w-4 accent-cyan-500 opacity-70"> <span class="flex-1">同校第一位核准者為 OWNER。</span></li>
-                        <li class="flex items-start"><input type="checkbox" disabled checked class="mt-1 mr-3 h-4 w-4 accent-cyan-500 opacity-70"> <span class="flex-1">同校第二位核准者為 VIEWER。</span></li>
-                        <li class="flex items-start"><input type="checkbox" disabled checked class="mt-1 mr-3 h-4 w-4 accent-cyan-500 opacity-70"> <span class="flex-1">VIEWER 看不到送出、修改、刪除及上傳按鈕。</span></li>
-                        <li class="flex items-start"><input type="checkbox" disabled checked class="mt-1 mr-3 h-4 w-4 accent-cyan-500 opacity-70"> <span class="flex-1">VIEWER 仍可瀏覽與列印。</span></li>
-                    </ul>
-                </div>
-
-                <div class="bg-slate-900/40 p-6 rounded-xl border border-slate-800/80">
-                    <h3 class="text-xl font-bold text-cyan-300 mb-4 border-b border-slate-700 pb-2">填報期限</h3>
-                    <ul class="space-y-3 text-slate-400">
-                        <li class="flex items-start"><input type="checkbox" disabled checked class="mt-1 mr-3 h-4 w-4 accent-cyan-500 opacity-70"> <span class="flex-1">開放期間 OWNER 可以儲存。</span></li>
-                        <li class="flex items-start"><input type="checkbox" disabled checked class="mt-1 mr-3 h-4 w-4 accent-cyan-500 opacity-70"> <span class="flex-1">尚未開始或截止後 OWNER 只能瀏覽。</span></li>
-                        <li class="flex items-start"><input type="checkbox" disabled checked class="mt-1 mr-3 h-4 w-4 accent-cyan-500 opacity-70"> <span class="flex-1">期限外直接呼叫後端也會被拒絕。</span></li>
-                        <li class="flex items-start"><input type="checkbox" disabled checked class="mt-1 mr-3 h-4 w-4 accent-cyan-500 opacity-70"> <span class="flex-1">ADMIN 是否繞過期限符合 Settings 設定。</span></li>
-                    </ul>
-                </div>
-
-                <div class="bg-slate-900/40 p-6 rounded-xl border border-slate-800/80">
-                    <h3 class="text-xl font-bold text-cyan-300 mb-4 border-b border-slate-700 pb-2">資料功能</h3>
-                    <ul class="space-y-3 text-slate-400">
-                        <li class="flex items-start"><input type="checkbox" disabled checked class="mt-1 mr-3 h-4 w-4 accent-cyan-500 opacity-70"> <span class="flex-1">學校基本資料可儲存並再次帶回。</span></li>
-                        <li class="flex items-start"><input type="checkbox" disabled checked class="mt-1 mr-3 h-4 w-4 accent-cyan-500 opacity-70"> <span class="flex-1">可新增多筆載具與行動充電車。</span></li>
-                        <li class="flex items-start"><input type="checkbox" disabled checked class="mt-1 mr-3 h-4 w-4 accent-cyan-500 opacity-70"> <span class="flex-1">軟體品項可新增、修改、刪除與列印。</span></li>
-                        <li class="flex items-start"><input type="checkbox" disabled checked class="mt-1 mr-3 h-4 w-4 accent-cyan-500 opacity-70"> <span class="flex-1">軟體與觀議課 PDF 上傳到正確資料夾。</span></li>
-                        <li class="flex items-start"><input type="checkbox" disabled checked class="mt-1 mr-3 h-4 w-4 accent-cyan-500 opacity-70"> <span class="flex-1">管考資料可更新同校同年度紀錄。</span></li>
-                        <li class="flex items-start"><input type="checkbox" disabled checked class="mt-1 mr-3 h-4 w-4 accent-cyan-500 opacity-70"> <span class="flex-1">MDM 期別下拉選單有資料。</span></li>
-                    </ul>
-                </div>
-            </div>
-
-            <!-- Section 15 -->
-            <h2 class="text-2xl font-bold text-cyan-400 border-b border-slate-700 pb-2 mb-6 mt-12 flex items-center gap-2">
-                <span class="text-slate-500 font-mono text-lg">15</span> 十五、日後更新程式的正確方式
-            </h2>
-            <p class="mb-4 text-slate-300">為維持同一個網址：</p>
-            <ol class="list-decimal list-inside space-y-2 mb-6 ml-2 text-slate-400 marker:text-cyan-600 font-mono text-sm">
-                <li>先備份目前 GAS 程式或建立版本紀錄。</li>
-                <li>只替換新版指定的檔案。</li>
-                <li>儲存全部程式。</li>
-                <li>如果新版增加工作表欄位，執行一次 <code class="bg-slate-800 text-cyan-300 border border-slate-700 px-1.5 py-0.5 rounded text-sm">initializeSystem()</code>。</li>
-                <li>Apps Script →「部署 → 管理部署作業」。</li>
-                <li>選取目前使用中的 Web App。</li>
-                <li>按編輯圖示。</li>
-                <li>版本選「<strong class="text-cyan-400">新版本</strong>」。</li>
-                <li>填入版本說明。</li>
-                <li>按「部署」。</li>
-            </ol>
-            
-            <div class="bg-amber-950/30 border-l-4 border-amber-500 p-4 mb-6 rounded-r">
-                <p class="text-amber-300 m-0"><strong class="text-amber-400">強烈建議：</strong>使用「管理部署作業」更新原部署，可保留原 <code class="font-mono text-amber-100">/exec</code> 網址。不要每次都建立另一個全新部署網址。</p>
-            </div>
-            
-            <p class="font-semibold text-cyan-200 mb-2">更新完成後建議：</p>
-            <ul class="list-disc list-inside space-y-1 mb-8 ml-2 text-slate-400 marker:text-cyan-600">
-                <li>使用無痕視窗重新登入。</li>
-                <li>桌面與 iPad 各測試一次。</li>
-                <li>測試 OWNER 與 VIEWER 各一個帳號。</li>
-                <li>確認 PDF 資料夾與 Logs。</li>
-            </ul>
-
-            <!-- Section 16 -->
-            <h2 class="text-2xl font-bold text-cyan-400 border-b border-slate-700 pb-2 mb-6 mt-12 flex items-center gap-2">
-                <span class="text-slate-500 font-mono text-lg">16</span> 十六、常見錯誤排除
-            </h2>
-            
-            <div class="overflow-x-auto mb-6 rounded-lg border border-slate-700 shadow-[0_0_15px_rgba(236,72,153,0.05)]">
-                <table class="w-full text-left border-collapse min-w-[700px]">
-                    <thead>
-                        <tr class="bg-slate-800/80 text-cyan-300 border-b border-slate-700">
-                            <th class="p-3 font-semibold text-sm tracking-wider uppercase w-1/4">錯誤／現象</th>
-                            <th class="p-3 font-semibold text-sm tracking-wider uppercase w-1/4">原因</th>
-                            <th class="p-3 font-semibold text-sm tracking-wider uppercase w-2/4">處理方式</th>
-                        </tr>
-                    </thead>
-                    <tbody class="text-slate-300 divide-y divide-slate-800/50 bg-slate-900/50 text-sm">
-                        <tr class="hover:bg-slate-800/50"><td class="p-3 font-bold text-pink-400">找不到 SchoolBasics HTML</td><td class="p-3 text-slate-400">HTML 名稱與 include 不一致</td><td class="p-3">確認複數檔名及大小寫</td></tr>
-                        <tr class="hover:bg-slate-800/50"><td class="p-3 font-bold text-pink-400">Firebase 尚未設定完成</td><td class="p-3 text-slate-400">缺少 Firebase 指令碼屬性</td><td class="p-3">補齊四個 Firebase 值</td></tr>
-                        <tr class="hover:bg-slate-800/50"><td class="p-3 font-mono font-bold text-pink-400">auth/unauthorized-domain</td><td class="p-3 text-slate-400">GAS 執行網域未加入 Firebase</td><td class="p-3">加入錯誤訊息顯示的完整 hostname</td></tr>
-                        <tr class="hover:bg-slate-800/50"><td class="p-3 font-mono font-bold text-pink-400">access_not_configured</td><td class="p-3 text-slate-400">登入者的 Workspace 管理員封鎖 OAuth App</td><td class="p-3">請網域管理員核准；不是 GAS 分享設定問題</td></tr>
-                        <tr class="hover:bg-slate-800/50"><td class="p-3 font-bold text-cyan-300">帳號一直等待審核</td><td class="p-3 text-slate-400">Users 狀態仍為 PENDING</td><td class="p-3">在 Users 選取該列後執行核准</td></tr>
-                        <tr class="hover:bg-slate-800/50"><td class="p-3 font-bold text-cyan-300">只有瀏覽、不能送出</td><td class="p-3 text-slate-400">VIEWER 或不在填報期間</td><td class="p-3">檢查 schoolRole 與 Settings 時間</td></tr>
-                        <tr class="hover:bg-slate-800/50"><td class="p-3 font-mono font-bold text-pink-400">FORM_START_AT 格式錯誤</td><td class="p-3 text-slate-400">日期格式不符</td><td class="p-3">使用 <code class="bg-slate-800 text-cyan-300 border border-slate-700 px-1.5 py-0.5 rounded">yyyy/MM/dd HH:mm</code></td></tr>
-                        <tr class="hover:bg-slate-800/50"><td class="p-3 font-bold text-cyan-300">PDF 無法上傳</td><td class="p-3 text-slate-400">檔案格式、大小或資料夾權限問題</td><td class="p-3">確認 PDF、MB 上限及部署者資料夾權限</td></tr>
-                        <tr class="hover:bg-slate-800/50"><td class="p-3 font-bold text-pink-400">SOFTWARE_EVIDENCE_FOLDER_ID 無法存取</td><td class="p-3 text-slate-400">ID 錯誤或部署者無權限</td><td class="p-3">修正 ID 或分享資料夾給部署者</td></tr>
-                        <tr class="hover:bg-slate-800/50"><td class="p-3 font-bold text-cyan-300">MDM 找不到有效期別</td><td class="p-3 text-slate-400">表頭或欄位不足</td><td class="p-3">確認 A、D、E、F、G 表頭及至少一列資料</td></tr>
-                        <tr class="hover:bg-slate-800/50"><td class="p-3 font-bold text-cyan-300">修改程式後網頁沒變</td><td class="p-3 text-slate-400">正式部署仍指向舊版本</td><td class="p-3">管理部署作業並改用新版本</td></tr>
-                        <tr class="hover:bg-slate-800/50"><td class="p-3 font-mono font-bold text-cyan-300">/dev 別人打不開</td><td class="p-3 text-slate-400">測試網址只供編輯者</td><td class="p-3">分享 <code class="bg-slate-800 text-cyan-300 border border-slate-700 px-1.5 py-0.5 rounded">/exec</code> 正式網址</td></tr>
-                    </tbody>
-                </table>
-            </div>
-            <p class="mb-8 text-sm text-slate-500 bg-slate-900/50 border border-slate-800 p-3 rounded">瀏覽器顯示 <code class="font-mono text-pink-400">Blocked autofocusing on an input element in a cross-origin subframe</code> 通常只是跨網域 iframe 的自動聚焦警告，不是登入失敗的主要原因；應優先查看是否另有 <code class="font-mono text-slate-300">unauthorized-domain</code>、彈出視窗阻擋或 OAuth 管理政策錯誤。</p>
-
-
-            <!-- Section 17 -->
-            <h2 class="text-2xl font-bold text-cyan-400 border-b border-slate-700 pb-2 mb-6 mt-12 flex items-center gap-2">
-                <span class="text-slate-500 font-mono text-lg">17</span> 十七、正式上線前建議值
-            </h2>
-            
-            <pre class="bg-[#0b1121] text-emerald-400 p-4 rounded-lg overflow-x-auto text-sm mb-6 font-mono shadow-inner border border-slate-800 leading-relaxed"><code>ALLOW_REGISTRATION = TRUE
-FIRST_USER_AUTO_ADMIN = FALSE
-ALLOWED_EMAIL_DOMAIN = （依政策設定或留空）
-FORM_TIMEZONE = Asia/Taipei
-ADMIN_BYPASS_FORM_PERIOD = TRUE
-SOFTWARE_MAX_PDF_MB = 10
-MONITORING_MAX_PDF_MB = 10</code></pre>
-            
-            <p class="mb-2 text-slate-300">帳號註冊完成後，如果不再接受新帳號，可將：</p>
-            <pre class="bg-[#0b1121] text-pink-400 p-4 rounded-lg overflow-x-auto text-sm mb-4 font-mono shadow-inner border border-slate-800"><code>ALLOW_REGISTRATION = FALSE</code></pre>
-            <p class="mb-8 text-slate-400">既有已核准帳號仍可登入。</p>
-
-            <hr class="my-10 border-slate-800">
-
-            <!-- Footer / Refs -->
-            <h2 class="text-xl font-bold text-cyan-300 mb-4">官方參考資料 <span class="animate-pulse">_</span></h2>
-            <ul class="list-disc list-inside space-y-2 mb-10 ml-2 text-indigo-400 marker:text-cyan-500">
-                <li><a href="https://developers.google.com/apps-script/guides/web" target="_blank" class="hover:text-cyan-300 hover:underline transition-colors">Google Apps Script Web App</a></li>
-                <li><a href="https://developers.google.com/apps-script/concepts/deployments" target="_blank" class="hover:text-cyan-300 hover:underline transition-colors">Apps Script 版本與部署管理</a></li>
-                <li><a href="https://firebase.google.com/docs/auth/web/google-signin" target="_blank" class="hover:text-cyan-300 hover:underline transition-colors">Firebase Google 登入</a></li>
-                <li><a href="https://support.google.com/firebase/answer/6400741" target="_blank" class="hover:text-cyan-300 hover:underline transition-colors">Firebase OAuth 授權網域</a></li>
-            </ul>
-
-            <div class="text-right text-slate-500 text-sm mt-12 font-mono flex flex-col items-end gap-1">
-                <p class="bg-slate-900/80 px-2 py-1 rounded border border-slate-800 inline-block">DOC_VERSION: v2.2.0</p>
-                <p class="bg-slate-900/80 px-2 py-1 rounded border border-slate-800 inline-block">COMPILE_DATE: 2026-09-05</p>
-            </div>
-
-        </div>
+<header>
+  <div class="topline">
+    <div class="brand">
+      <div class="badge">新竹縣</div>
+      <div>
+        <h1>新竹縣數位推動填報系統</h1>
+        <div class="sub">部署流程 × 系統架構 × 快速上手</div>
+      </div>
     </div>
+    <div class="version">v2.2.0｜完整部署指南</div>
+  </div>
+
+  <div class="nav">
+    <a href="#s1">系統架構</a>
+    <a href="#s2">部署準備</a>
+    <a href="#s3">Firebase</a>
+    <a href="#s4">GAS 檔案</a>
+    <a href="#s5">指令碼屬性</a>
+    <a href="#s6">初始化</a>
+  </div>
+</header>
+
+<section class="grid">
+
+  <article class="card c1" id="s1">
+    <div class="head">
+      <div class="num">1</div>
+      <div><h2>系統架構與資料流</h2><small>Google 服務整合、權限與資料分工</small></div>
+    </div>
+    <div class="body">
+      <div class="service-map">
+        <div class="service"><b>Google Apps Script</b><span>網頁、後端驗證、資料讀寫</span></div>
+        <div class="service"><b>Google Sheets</b><span>帳號、學校資料、軟體效益、管考、Logs</span></div>
+        <div class="service"><b>Firebase Authentication</b><span>Google 帳號登入與 ID Token</span></div>
+        <div class="service"><b>Google Drive</b><span>軟體佐證 PDF、觀議課佐證 PDF</span></div>
+        <div class="service"><b>MDM 資料</b><span>可放同一份或另一份試算表</span></div>
+      </div>
+
+      <div class="flow">
+        <div class="node">使用者</div><div class="arrow">→</div>
+        <div class="node">Firebase 登入</div><div class="arrow">→</div>
+        <div class="node">GAS 驗證</div><div class="arrow">→</div>
+        <div class="node">Sheets / Drive</div>
+      </div>
+
+      <div class="note">
+        本系統不把正式填報內容存入 Firestore。Firebase 只負責 Google 登入與 ID Token，正式資料由 GAS 寫入 Google Sheets。
+      </div>
+    </div>
+  </article>
+
+  <article class="card c2" id="s2">
+    <div class="head">
+      <div class="num">2</div>
+      <div><h2>部署前準備</h2><small>先準備好帳號、專案與資料來源</small></div>
+    </div>
+    <div class="body">
+      <ol>
+        <li>一個負責部署的 Google 帳號。</li>
+        <li>一份 Google 試算表。</li>
+        <li>一個 Firebase 專案。</li>
+        <li>完整系統程式檔案。</li>
+        <li>若要指定 PDF 存放位置，預先建立兩個 Google Drive 資料夾。</li>
+      </ol>
+
+      <div class="note">
+        <b>部署帳號建議長期保留：</b>需具備系統試算表編輯權、MDM 來源試算表檢視權、兩個佐證資料夾編輯權，以及 Firebase 專案管理權。
+      </div>
+    </div>
+  </article>
+
+  <article class="card c3" id="s3">
+    <div class="head">
+      <div class="num">3</div>
+      <div><h2>建立 Firebase 專案與 Google 登入</h2><small>Firebase 僅作身分驗證</small></div>
+    </div>
+    <div class="body">
+      <div class="pillrow">
+        <div class="pill">3.1 建立 Firebase 專案</div>
+        <div class="pill">3.2 建立 Web App</div>
+        <div class="pill">3.3 啟用 Google 登入</div>
+        <div class="pill">3.4 Firestore 非必要</div>
+      </div>
+
+      <h3>Firebase Web App 需取得四個值</h3>
+      <pre>const firebaseConfig = {
+  apiKey: "...",
+  authDomain: "專案ID.firebaseapp.com",
+  projectId: "...",
+  appId: "..."
+};</pre>
+
+      <ul class="check">
+        <li>Authentication → Sign-in method → Google → 啟用</li>
+        <li>桌機優先使用 Popup，受阻時可改 Redirect</li>
+        <li>本系統不需 Firebase Hosting</li>
+        <li>本系統不需建立 Firestore</li>
+      </ul>
+    </div>
+  </article>
+
+  <article class="card c4" id="s4">
+    <div class="head">
+      <div class="num">4</div>
+      <div><h2>確認 GAS 專案檔案</h2><small>檔名與大小寫必須一致</small></div>
+    </div>
+    <div class="body">
+      <table>
+        <thead><tr><th>檔名</th><th>類型</th></tr></thead>
+        <tbody>
+          <tr><td>Main.gs</td><td>指令碼</td></tr>
+          <tr><td>Units.gs</td><td>指令碼</td></tr>
+          <tr><td>SchoolBasic.gs</td><td>指令碼</td></tr>
+          <tr><td>SoftwareSurvey.gs</td><td>指令碼</td></tr>
+          <tr><td>MdmUsage.gs</td><td>指令碼</td></tr>
+          <tr><td>Monitoring.gs</td><td>指令碼</td></tr>
+          <tr><td>Index.html</td><td>HTML</td></tr>
+          <tr><td>Styles.html</td><td>HTML</td></tr>
+          <tr><td>Scripts.html</td><td>HTML</td></tr>
+          <tr><td>SchoolBasics.html</td><td>HTML</td></tr>
+          <tr><td>SoftwareSurveys.html</td><td>HTML</td></tr>
+          <tr><td>MdmUsages.html</td><td>HTML</td></tr>
+          <tr><td>Monitorings.html</td><td>HTML</td></tr>
+          <tr><td>appsscript.json</td><td>資訊清單</td></tr>
+        </tbody>
+      </table>
+
+      <div class="note warn">
+        <b>注意：</b>SchoolBasics、SoftwareSurveys、MdmUsages、Monitorings 為複數名稱；Index.html 的 include() 必須完全一致。
+      </div>
+    </div>
+  </article>
+
+  <article class="card c5" id="s5">
+    <div class="head">
+      <div class="num">5</div>
+      <div><h2>設定 Apps Script 指令碼屬性</h2><small>專案設定 → 指令碼屬性</small></div>
+    </div>
+    <div class="body">
+      <h3>Firebase 必填屬性</h3>
+      <table>
+        <thead><tr><th>屬性名稱</th><th>內容</th></tr></thead>
+        <tbody>
+          <tr><td>FIREBASE_API_KEY</td><td>Firebase Web App apiKey</td></tr>
+          <tr><td>FIREBASE_AUTH_DOMAIN</td><td>Firebase authDomain</td></tr>
+          <tr><td>FIREBASE_PROJECT_ID</td><td>Firebase projectId</td></tr>
+          <tr><td>FIREBASE_APP_ID</td><td>Firebase appId</td></tr>
+        </tbody>
+      </table>
+
+      <h3>試算表 / PDF 屬性</h3>
+      <table>
+        <thead><tr><th>屬性</th><th>用途</th></tr></thead>
+        <tbody>
+          <tr><td>SPREADSHEET_ID</td><td>主要試算表 ID（綁定式 GAS 可省略）</td></tr>
+          <tr><td>MDM_SPREADSHEET_ID</td><td>MDM 來源試算表 ID</td></tr>
+          <tr><td>SOFTWARE_EVIDENCE_FOLDER_ID</td><td>軟體效益佐證 PDF</td></tr>
+          <tr><td>MONITORING_EVIDENCE_FOLDER_ID</td><td>管考觀議課佐證 PDF</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </article>
+
+  <article class="card c6" id="s6">
+    <div class="head">
+      <div class="num">6</div>
+      <div><h2>第一次初始化 Google Sheets</h2><small>執行 initializeSystem()</small></div>
+    </div>
+    <div class="body">
+      <ol>
+        <li>在 Apps Script 函式下拉選單選擇 <b>initializeSystem</b>。</li>
+        <li>按「執行」。</li>
+        <li>第一次執行完成 Google 授權。</li>
+        <li>等待執行完成。</li>
+        <li>回到 Google 試算表重新整理。</li>
+      </ol>
+
+      <h3>初始化後建立 / 補齊</h3>
+      <div class="pillrow">
+        <div class="pill">Settings</div>
+        <div class="pill">UNITS</div>
+        <div class="pill">Users</div>
+        <div class="pill">學校基本資料</div>
+        <div class="pill">軟體使用效益調查</div>
+        <div class="pill">管考填報</div>
+        <div class="pill">Logs</div>
+      </div>
+
+      <div class="note warn">
+        日常版本升級只需執行初始化工作表。不要隨意執行舊版資料結構整體轉換工具，以免重建工作表。
+      </div>
+    </div>
+  </article>
+
+  <article class="card" style="grid-column:span 12">
+    <div class="head">
+      <div class="num">★</div>
+      <div><h2>帳號與填報權限重點</h2><small>確保同校資料不互相覆蓋</small></div>
+    </div>
+    <div class="body">
+      <div class="role-grid">
+        <div class="role admin">
+          <h3>ADMIN</h3>
+          <p>系統管理</p>
+          <p>可依設定繞過填報期限</p>
+        </div>
+        <div class="role owner">
+          <h3>OWNER</h3>
+          <p>同校第一位核准者</p>
+          <p>開放期間可新增、修改、刪除、上傳</p>
+        </div>
+        <div class="role viewer">
+          <h3>VIEWER</h3>
+          <p>同校後續核准者</p>
+          <p>只能瀏覽、查看佐證與列印</p>
+        </div>
+      </div>
+    </div>
+  </article>
+
+</section>
+
+<footer>
+  新竹縣數位教育 × 智慧校務 × 科技治理
+</footer>
+
+</div>
 </body>
 </html>
