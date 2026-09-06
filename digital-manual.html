@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>新竹縣數位推動填報系統｜操作手冊</title>
+<style>
+:root{
+  --bg:#03111f;--panel:#08233f;--panel2:#0c3156;--line:#35e9ff;
+  --text:#eef8ff;--muted:#a7d4ea;--green:#33e2a0;--yellow:#ffd166;
+}
+*{box-sizing:border-box} html{scroll-behavior:smooth}
+body{margin:0;font-family:"Microsoft JhengHei","Noto Sans TC",sans-serif;color:var(--text);
+background:radial-gradient(circle at 15% 0%,#123b78 0,transparent 28%),linear-gradient(180deg,#020d18,#06182d 55%,#020c16);}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.15;
+background-image:linear-gradient(#38bdf81a 1px,transparent 1px),linear-gradient(90deg,#38bdf81a 1px,transparent 1px);background-size:34px 34px}
+.layout{width:min(1560px,96vw);margin:auto;padding:18px 0 48px;display:grid;grid-template-columns:290px 1fr;gap:18px}
+.sidebar{position:sticky;top:16px;height:calc(100vh - 32px);overflow:auto;border:1px solid #35e9ff55;
+background:#071f37ee;border-radius:20px;padding:18px;box-shadow:0 0 22px #35e9ff22}
+.logo{padding:16px;border:1px solid #35e9ff55;border-radius:16px;background:linear-gradient(145deg,#0e749055,#2563eb33);margin-bottom:14px}
+.logo h1{font-size:20px;margin:0 0 8px}.logo p{margin:0;color:var(--muted);font-size:13px}
+nav a{display:block;text-decoration:none;color:#d8f3ff;padding:9px 12px;border-radius:10px;margin:3px 0;font-size:14px}
+nav a:hover{background:#10436d88}
+main{min-width:0}.hero,.section{border:1px solid #35e9ff44;background:linear-gradient(180deg,#082440ee,#051629dd);
+border-radius:20px;box-shadow:0 0 22px #35e9ff20;overflow:hidden}
+.hero{padding:28px}.hero h2{font-size:clamp(30px,4vw,58px);margin:0}.hero p{color:#b9eaff;font-size:18px}
+.tags{display:flex;gap:8px;flex-wrap:wrap}.tag{padding:8px 12px;border-radius:999px;border:1px solid #35e9ff44;background:#072a48}
+.section{margin-top:18px}.head{display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid #35e9ff22;background:linear-gradient(90deg,#0e749033,#2563eb11)}
+.num{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-weight:900;background:linear-gradient(145deg,#0ea5e9,#2563eb)}
+.head h3{margin:0;font-size:22px}.body{padding:20px}p,li{line-height:1.75}h4{color:#e7fbff}
+.note,.warn,.ok{padding:13px 15px;margin-top:14px;border-radius:12px;border:1px solid #35e9ff33;background:#04182ccc}
+.warn{border-color:#ffd16666;background:#49390d55}.ok{border-color:#33e2a055;background:#0b4a3555}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.card{padding:14px;border-radius:14px;border:1px solid #35e9ff33;background:#061f37cc}
+.card h5{font-size:17px;margin:0 0 8px}.card p{font-size:14px;color:#d5ecf7}
+table{width:100%;border-collapse:collapse;margin-top:10px;font-size:14px}th,td{padding:10px;border:1px solid #6ac5ff2c;text-align:left}
+th{background:#174d7766}.flow{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.step{padding:10px 13px;border-radius:11px;border:1px solid #35e9ff44;background:#0a375a99;font-weight:700}.arrow{color:var(--line)}
+code{background:#02101c;border:1px solid #4ab8ff33;border-radius:7px;padding:2px 6px;color:#bdf3ff}
+details{border:1px solid #35e9ff2c;border-radius:12px;margin:9px 0;background:#051c32aa}summary{cursor:pointer;padding:13px 15px;font-weight:700}.detail{padding:0 15px 14px}
+.check{list-style:none;padding-left:0}.check li:before{content:"□";color:var(--line);font-weight:900;margin-right:8px}
+footer{text-align:center;color:#84cbe6;padding:24px 0 0;letter-spacing:.12em;font-size:13px}
+.top{position:fixed;right:22px;bottom:22px;width:48px;height:48px;border-radius:50%;display:grid;place-items:center;text-decoration:none;
+border:1px solid #35e9ff66;background:#062844ee;box-shadow:0 0 18px #35e9ff33}
+@media(max-width:1050px){.layout{grid-template-columns:1fr}.sidebar{position:relative;top:0;height:auto}.cards{grid-template-columns:1fr}nav{display:grid;grid-template-columns:repeat(3,1fr)}}
+@media(max-width:680px){.layout{width:94vw}.hero{padding:20px}.body{padding:16px}nav{grid-template-columns:1fr 1fr}.arrow{display:none}.step{width:100%}}
+@media print{body{background:white;color:#111}body:before,.sidebar,.top{display:none}.layout{display:block;width:100%;padding:0}.hero,.section,.card,.note,.warn,.ok{background:white;color:#111;box-shadow:none;border-color:#999}p,td{color:#333}.section{break-inside:avoid}}
+</style>
+</head>
+<body id="top">
+<div class="layout">
+<aside class="sidebar">
+  <div class="logo"><h1>新竹縣數位推動填報系統</h1><p>使用者操作手冊｜v2.2.0</p></div>
+  <nav>
+    <a href="#intro">系統簡介</a><a href="#before">使用前準備</a><a href="#login">登入與註冊</a>
+    <a href="#role">帳號權限</a><a href="#period">填報期限</a><a href="#basic">學校基本資料</a>
+    <a href="#software">軟體使用效益</a><a href="#pdf">PDF 佐證</a><a href="#mdm">MDM 使用率</a>
+    <a href="#monitor">管考填報</a><a href="#print">列印</a><a href="#admin">管理員操作</a>
+    <a href="#faq">常見問題</a><a href="#flow">建議流程</a><a href="#check">完成前檢查</a>
+  </nav>
+</aside>
+
+<main>
+<section class="hero">
+  <h2>新竹縣數位推動填報系統</h2>
+  <p>HTML 網頁操作說明｜學校端承辦人、查閱者與系統管理員</p>
+  <div class="tags"><span class="tag">Google 登入</span><span class="tag">OWNER / VIEWER</span><span class="tag">PDF 佐證</span><span class="tag">MDM 查詢</span><span class="tag">可列印</span></div>
+</section>
+
+<section class="section" id="intro"><div class="head"><div class="num">1</div><h3>系統簡介</h3></div><div class="body">
+<p>本系統提供學校進行數位教育相關資料填報、查詢、佐證文件上傳及統計資料檢視。</p>
+<div class="cards">
+<div class="card"><h5>Google Apps Script</h5><p>網頁、伺服器端驗證與資料處理。</p></div>
+<div class="card"><h5>Google Sheets</h5><p>帳號、學校資料、軟體效益、管考與 Logs。</p></div>
+<div class="card"><h5>Firebase Authentication</h5><p>Google 帳號登入與 ID Token。</p></div>
+<div class="card"><h5>Google Drive</h5><p>軟體及觀議課 PDF 佐證。</p></div>
+<div class="card"><h5>MDM</h5><p>載具使用率與總使用時間查詢。</p></div>
+</div>
+<div class="note">正式填報資料主要儲存在 Google Sheets；Firebase 僅負責 Google 登入與身分驗證。</div>
+</div></section>
+
+<section class="section" id="before"><div class="head"><div class="num">2</div><h3>使用前準備</h3></div><div class="body">
+<ol><li>準備可正常登入的 Google 帳號。</li><li>使用管理單位提供的正式網址。</li><li>第一次登入時選擇所屬學校。</li><li>註冊後等待系統管理員核准。</li><li>建議使用最新版 Chrome、Edge 或 Safari。</li></ol>
+</div></section>
+
+<section class="section" id="login"><div class="head"><div class="num">3</div><h3>登入、註冊與審核</h3></div><div class="body">
+<h4>登入</h4><ol><li>開啟正式網址，正式網址通常以 <code>/exec</code> 結尾。</li><li>點選「使用 Google 帳號登入」。</li><li>選擇 Google 帳號並完成驗證。</li></ol>
+<div class="warn">請勿使用 <code>/dev</code> 測試網址；/dev 僅供 Apps Script 編輯者使用。</div>
+<h4>第一次註冊</h4><ol><li>從下拉清單選擇所屬學校。</li><li>確認學校名稱後送出。</li><li>帳號狀態先為 <code>PENDING</code>。</li><li>等待管理員核准後，回到等待頁按「重新檢查」。</li></ol>
+</div></section>
+
+<section class="section" id="role"><div class="head"><div class="num">4</div><h3>帳號權限</h3></div><div class="body">
+<div class="cards">
+<div class="card"><h5>ADMIN</h5><p>系統管理、帳號核准、指定 OWNER、停用帳號。</p></div>
+<div class="card"><h5>OWNER</h5><p>同校第一位核准者；開放期間可新增、修改、刪除、上傳、儲存與送出。</p></div>
+<div class="card"><h5>VIEWER</h5><p>同校後續核准者；只能瀏覽、查看佐證與列印。</p></div>
+</div>
+<table><thead><tr><th>功能</th><th>ADMIN</th><th>OWNER</th><th>VIEWER</th></tr></thead><tbody>
+<tr><td>瀏覽 / 查看佐證 / 列印</td><td>✓</td><td>✓</td><td>✓</td></tr>
+<tr><td>新增 / 修改 / 刪除</td><td>✓</td><td>✓*</td><td>✕</td></tr>
+<tr><td>儲存 / 送出 / 上傳 PDF</td><td>✓</td><td>✓*</td><td>✕</td></tr>
+<tr><td>帳號核准 / 指定 OWNER</td><td>✓</td><td>✕</td><td>✕</td></tr>
+</tbody></table>
+<div class="note">＊ OWNER 必須在填報開放期間才能寫入資料。</div>
+</div></section>
+
+<section class="section" id="period"><div class="head"><div class="num">5</div><h3>填報時間限制</h3></div><div class="body">
+<p>系統由 GAS 伺服器判斷開始與截止時間；修改個人裝置時間無法繞過限制。</p>
+<ul><li>開放期間：OWNER 可儲存、送出、新增、修改、刪除與上傳。</li><li>尚未開始或已截止：OWNER 只能瀏覽、查看佐證與列印。</li><li>ADMIN 若系統設定允許，可不受期限限制。</li></ul>
+</div></section>
+
+<section class="section" id="basic"><div class="head"><div class="num">6</div><h3>學校基本資料</h3></div><div class="body">
+<ul><li>學校識別資料與行政區</li><li>三類填報聯絡人</li><li>班級數、學生數、教師數與資訊人力</li><li>校內載具型號與數量</li><li>校內行動充電車型號與數量</li><li>網路概況與備註</li></ul>
+<div class="ok">完成資料輸入後請執行儲存，並建議重新進入頁面確認資料是否正確帶回。</div>
+</div></section>
+
+<section class="section" id="software"><div class="head"><div class="num">7</div><h3>軟體使用效益調查</h3></div><div class="body">
+<p>主要欄位包含採購年度、產品序號、品項名稱、組別、採購方式、使用人次、使用時數、質性效益、AI 導入效益與 PDF 佐證。</p>
+<h4>新增品項</h4><ol><li>進入「軟體使用效益調查」。</li><li>點選新增品項。</li><li>填寫各欄位。</li><li>確認內容後儲存或送出。</li></ol>
+<div class="warn">若有多項軟體，可逐筆新增；刪除前請再次確認資料內容。</div>
+</div></section>
+
+<section class="section" id="pdf"><div class="head"><div class="num">8</div><h3>PDF 佐證資料</h3></div><div class="body">
+<ul><li>檔案格式須為 PDF。</li><li>檔案大小不得超過系統限制，建議值為 10 MB。</li><li>只有 OWNER 在填報開放期間可上傳。</li></ul>
+<ol><li>點選佐證資料上傳欄位。</li><li>選擇 PDF。</li><li>確認檔案正確。</li><li>執行上傳。</li><li>完成後確認是否可以查看。</li></ol>
+</div></section>
+
+<section class="section" id="mdm"><div class="head"><div class="num">9</div><h3>MDM 載具使用率</h3></div><div class="body">
+<p>主要顯示日期、學校代碼、學校名稱、使用率及總使用時間。</p>
+<div class="note">每個工作表分頁可代表一個統計期別；若未指定，系統使用最右側的有效期別。</div>
+</div></section>
+
+<section class="section" id="monitor"><div class="head"><div class="num">10</div><h3>管考填報與觀議課佐證</h3></div><div class="body">
+<ol><li>進入「管考填報」。</li><li>確認填報年度。</li><li>依欄位填寫資料。</li><li>確認後儲存或更新。</li><li>需要時上傳觀議課 PDF 佐證。</li></ol>
+</div></section>
+
+<section class="section" id="print"><div class="head"><div class="num">11</div><h3>資料列印</h3></div><div class="body">
+<p>OWNER 與 VIEWER 均可使用列印功能。列印前請確認學校名稱、年度、品項、資料內容與佐證狀態。</p>
+<div class="ok">即使超過填報期限，只要資料仍可瀏覽，仍可依系統功能列印。</div>
+</div></section>
+
+<section class="section" id="admin"><div class="head"><div class="num">12</div><h3>管理員操作</h3></div><div class="body">
+<h4>核准使用者</h4><ol><li>開啟 Google 試算表。</li><li>進入 <code>Users</code> 工作表。</li><li>選取使用者所在列。</li><li>執行「📋 填報系統工具 → 核准選取的使用者」。</li></ol>
+<h4>指定 OWNER</h4><ol><li>在 <code>Users</code> 選取新的管理者。</li><li>執行「指定為該校填報管理者」。</li><li>同校其他已核准帳號改為 VIEWER。</li></ol>
+<h4>停用帳號</h4><p>選取帳號後執行停用功能；若停用 OWNER，系統會將管理權交給同校其他已核准帳號。</p>
+</div></section>
+
+<section class="section" id="faq"><div class="head"><div class="num">13</div><h3>常見問題</h3></div><div class="body">
+<details><summary>出現 auth/unauthorized-domain</summary><div class="detail"><p>Firebase 尚未允許目前 GAS 執行網域，請回報系統管理員調整 Authorized domains。</p></div></details>
+<details><summary>出現 access_not_configured</summary><div class="detail"><p>通常是 Google Workspace 管理員封鎖 OAuth 應用程式，需由管理員審核。</p></div></details>
+<details><summary>登入後一直等待審核</summary><div class="detail"><p>帳號仍為 <code>PENDING</code>，請聯絡管理員核准。</p></div></details>
+<details><summary>可以看資料，但不能修改</summary><div class="detail"><p>可能是 VIEWER，或目前不在填報期間。</p></div></details>
+<details><summary>儲存、送出按鈕不見了</summary><div class="detail"><p>通常代表使用者是 VIEWER，或已超過 / 尚未進入填報期間。</p></div></details>
+<details><summary>PDF 無法上傳</summary><div class="detail"><p>請確認 PDF 格式、檔案大小、OWNER 權限、填報期間及網路狀況。</p></div></details>
+<details><summary>MDM 沒有資料</summary><div class="detail"><p>可能尚未建立有效期別、資料來源未更新，或試算表格式不符。</p></div></details>
+<details><summary>iPad 或手機登入後沒有反應</summary><div class="detail"><p>建議使用 Chrome 或 Safari，並允許彈出視窗或重新導向。</p></div></details>
+</div></section>
+
+<section class="section" id="flow"><div class="head"><div class="num">14</div><h3>建議操作流程</h3></div><div class="body">
+<div class="flow">
+<span class="step">1 開啟正式網址</span><span class="arrow">→</span>
+<span class="step">2 Google 登入</span><span class="arrow">→</span>
+<span class="step">3 選擇學校</span><span class="arrow">→</span>
+<span class="step">4 等待核准</span><span class="arrow">→</span>
+<span class="step">5 確認權限</span><span class="arrow">→</span>
+<span class="step">6 學校基本資料</span><span class="arrow">→</span>
+<span class="step">7 軟體效益</span><span class="arrow">→</span>
+<span class="step">8 PDF 佐證</span><span class="arrow">→</span>
+<span class="step">9 MDM 查詢</span><span class="arrow">→</span>
+<span class="step">10 管考填報</span><span class="arrow">→</span>
+<span class="step">11 檢查與列印</span>
+</div>
+</div></section>
+
+<section class="section" id="check"><div class="head"><div class="num">15</div><h3>填報完成前檢查</h3></div><div class="body">
+<h4>帳號</h4><ul class="check"><li>登入帳號正確</li><li>學校名稱正確</li><li>OWNER / VIEWER 權限正確</li></ul>
+<h4>學校基本資料</h4><ul class="check"><li>聯絡人資料正確</li><li>班級、學生、教師數正確</li><li>載具與行動充電車資料完整</li></ul>
+<h4>軟體與管考</h4><ul class="check"><li>各品項資料完整</li><li>使用人次與時數正確</li><li>PDF 佐證可正常查看</li><li>管考年度與內容正確</li></ul>
+<h4>最後確認</h4><ul class="check"><li>資料已成功儲存</li><li>重新載入後資料仍存在</li><li>已完成列印或留存</li></ul>
+</div></section>
+
+<footer>新竹縣數位教育 × 智慧校務 × 科技治理</footer>
+</main>
+</div>
+<a class="top" href="#top" title="回到頂端">↑</a>
+</body></html>
