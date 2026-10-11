@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="vendor/gsap.min.js"></script>
+    <style>
+      @font-face {
+        font-family: "Iansui";
+        src: url("assets/iansui-subset.ttf") format("truetype");
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: #fffaf0;
+      }
+      #root {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        font-family: "Iansui", serif;
+      }
+      .layer {
+        position: absolute;
+        inset: 0;
+      }
+      #camera {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1920px;
+        height: 1080px;
+        transform-origin: 0 0;
+      }
+      #poster {
+        display: block;
+        width: 1920px;
+        height: 1080px;
+        object-fit: cover;
+      }
+      #flash {
+        background: #ffffff;
+      }
+      #dim {
+        background: rgba(20, 30, 60, 1);
+        opacity: 0;
+      }
+      .card-wrap {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 28px;
+        padding: 64px 110px;
+        background: #fffaf0;
+        border: 8px solid #d62839;
+        border-radius: 40px;
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
+        opacity: 0;
+      }
+      .card .big {
+        color: #d62839;
+        font-size: 150px;
+        line-height: 1.1;
+        letter-spacing: 0.06em;
+      }
+      .card .small {
+        color: #1b3a8a;
+        font-size: 64px;
+        line-height: 1.2;
+        letter-spacing: 0.08em;
+      }
+      .card .names {
+        color: #d62839;
+        font-size: 104px;
+        line-height: 1.2;
+        letter-spacing: 0.04em;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="23"
+      data-width="1920"
+      data-height="1080"
+    >
+      <div id="scene" class="layer clip" data-start="0" data-duration="23" data-track-index="0">
+        <div id="camera">
+          <img id="poster" src="assets/poster.webp" alt="115學年度校內硬筆書法比賽得獎名單" />
+        </div>
+        <div id="flash" class="layer"></div>
+      </div>
+
+      <div id="overlay" class="layer clip" data-start="13" data-duration="10" data-track-index="1">
+        <div id="dim" class="layer"></div>
+        <div class="layer card-wrap">
+          <div id="congrats" class="card">
+            <div class="big">恭喜得獎同學！</div>
+            <div class="small">關西國小全體師生同賀</div>
+          </div>
+        </div>
+        <div class="layer card-wrap">
+          <div id="thanks" class="card">
+            <div class="small">感謝</div>
+            <div class="names">校長、玉君老師、德如老師</div>
+            <div class="small">的協助與指導，讓比賽順利完成</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      // Camera framing on the 1920x1080 poster: centre (cx, cy) at zoom s, clamped so the
+      // poster always covers the frame.
+      function shot(cx, cy, s) {
+        const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+        return {
+          x: clamp(960 - cx * s, 1920 - 1920 * s, 0),
+          y: clamp(540 - cy * s, 1080 - 1080 * s, 0),
+          scale: s,
+        };
+      }
+      const TITLE = [937, 160];
+      const MID = [615, 595];
+      const HIGH = [1281, 595];
+
+      const tl = gsap.timeline({ paused: true });
+
+      // 0–3s: title, gentle pull-back while fading in from white
+      tl.set("#camera", shot(...TITLE, 1.75), 0);
+      tl.to("#flash", { opacity: 0, duration: 0.7, ease: "power1.out" }, 0);
+      tl.to("#camera", { ...shot(...TITLE, 1.6), duration: 3, ease: "sine.out" }, 0);
+
+      // 3–8s: move to 中年級組 and push in
+      tl.addLabel("mid", 3);
+      tl.to("#camera", { ...shot(...MID, 1.75), duration: 1.3, ease: "power2.inOut" }, "mid");
+      tl.to("#camera", { ...shot(...MID, 1.8), duration: 3.7, ease: "sine.inOut" }, "mid+=1.3");
+
+      // 8–13s: move to 高年級組 and push in
+      tl.addLabel("high", 8);
+      tl.to("#camera", { ...shot(...HIGH, 1.75), duration: 1.3, ease: "power2.inOut" }, "high");
+      tl.to("#camera", { ...shot(...HIGH, 1.8), duration: 3.7, ease: "sine.inOut" }, "high+=1.3");
+
+      // 13–14.5s: pull back to the full poster
+      tl.addLabel("full", 13);
+      tl.to("#camera", { ...shot(960, 540, 1), duration: 1.5, ease: "power2.inOut" }, "full");
+
+      // 15–18s: congratulations card
+      tl.to("#dim", { opacity: 0.45, duration: 0.6, ease: "power1.out" }, 15);
+      tl.fromTo(
+        "#congrats",
+        { opacity: 0, scale: 0.8 },
+        { opacity: 1, scale: 1, duration: 0.7, ease: "back.out(1.6)" },
+        15.2,
+      );
+      tl.to("#congrats", { opacity: 0, scale: 0.95, duration: 0.5, ease: "power1.in" }, 18.4);
+
+      // 19–23s: thanks card, held to the end
+      tl.fromTo(
+        "#thanks",
+        { opacity: 0, scale: 0.8 },
+        { opacity: 1, scale: 1, duration: 0.7, ease: "back.out(1.6)", immediateRender: false },
+        19,
+      );
+
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>
