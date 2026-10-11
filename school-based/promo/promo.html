@@ -273,22 +273,22 @@ function render(t) {
     set(el, prog(t, a, a + 0.25), `scale(${0.3 + 0.7 * p}) rotate(${(1 - p) * (i % 2 ? 8 : -8)}deg)`);
   });
 
-  // ===== 鏡頭 5：27–30 秒 =====
+  // ===== 鏡頭 5：27–32 秒 =====
   set($("#s5"), prog(t, 26.8, 27.3));
-  $("#poster").style.transform = `scale(${1.25 - 0.25 * easeOut(prog(t, 26.8, 29.0))})`;
+  $("#poster").style.transform = `scale(${1.25 - 0.25 * easeOut(prog(t, 26.8, 30.0))})`;
   set($("#veil"), prog(t, 27.8, 28.3));
   set($("#slogan1"), prog(t, 28.0, 28.4), `scale(${0.8 + 0.2 * easeBack(prog(t, 28.0, 28.5))})`);
   set($("#slogan2"), prog(t, 28.4, 28.8));
 
   // 頭尾淡入淡出
-  set($("#black"), Math.max(1 - prog(t, 0, 0.4), prog(t, 29.5, 30)));
+  set($("#black"), Math.max(1 - prog(t, 0, 0.4), prog(t, 31.3, 32)));
 }
 
 window.render = render;
 // 直接開檔時自動播放預覽
 if (!location.search.includes("capture")) {
   const t0 = performance.now();
-  (function loop() { render(((performance.now() - t0) / 1000) % 30); requestAnimationFrame(loop); })();
+  (function loop() { render(((performance.now() - t0) / 1000) % 32); requestAnimationFrame(loop); })();
 }
 </script>
 </body>
