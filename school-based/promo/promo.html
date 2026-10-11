@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>濱海綠寶石 宣傳短片</title>
+<style>
+@font-face { font-family: "Iansui"; src: url("../../Iansui-Regular.ttf"); }
+:root {
+  --bg: #04122e;
+  --cyan: #6fe3ff;
+  --green: #3fbf5a;
+  --teal: #1fb3a8;
+  --gold: #f0b928;
+  --red: #e0444a;
+  --pink: #e0347e;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 1920px; height: 1080px; overflow: hidden; background: var(--bg); }
+body { font-family: "WenQuanYi Zen Hei", sans-serif; color: #fff; }
+#stage { position: relative; width: 1920px; height: 1080px; overflow: hidden;
+  background: radial-gradient(ellipse at 50% 55%, #0d3f86 0%, #072258 40%, #04122e 80%); }
+#fx { position: absolute; inset: 0; }
+.abs { position: absolute; }
+.hand { font-family: "Iansui", serif; }
+.glow { text-shadow: 0 0 18px rgba(111,227,255,.8), 0 0 40px rgba(111,227,255,.4); }
+
+/* 鏡頭 1 */
+#logo { left: 810px; top: 150px; width: 300px; height: 300px; border-radius: 50%;
+  background: url(logo_raw.png) center/cover; box-shadow: 0 0 60px rgba(111,227,255,.8), 0 0 0 6px rgba(111,227,255,.35); }
+#title { left: 0; width: 1920px; top: 500px; text-align: center; font-size: 150px; font-weight: bold; letter-spacing: 10px; }
+#title span { display: inline-block; }
+#subtitle { left: 0; width: 1920px; top: 700px; text-align: center; font-size: 60px; letter-spacing: 30px; color: var(--cyan); }
+#tagline { left: 0; width: 1920px; top: 830px; text-align: center; font-size: 64px; color: #dff7ff; }
+
+/* 鏡頭 2 */
+.vword { top: 330px; width: 340px; text-align: center; }
+.vword b { display: block; font-size: 130px; }
+.vword i { display: block; font-style: normal; font-size: 44px; margin-top: 18px; color: #ffe9a8; letter-spacing: 4px; }
+#vtitle { left: 0; width: 1920px; top: 140px; text-align: center; font-size: 56px; letter-spacing: 12px; color: var(--cyan); }
+#globe { left: 810px; top: 390px; width: 300px; height: 300px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #8ff0ff 0%, #2a8fd6 30%, #145a3a 55%, #0b2c6b 80%);
+  box-shadow: 0 0 80px rgba(111,227,255,.7), inset -30px -30px 60px rgba(0,0,0,.5); }
+#globeText { left: 810px; top: 500px; width: 300px; text-align: center; font-size: 46px; font-weight: bold; }
+.orb { width: 210px; height: 210px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-size: 46px; font-weight: bold; background: radial-gradient(circle, #1550c8 0%, #0a2a7a 70%);
+  border: 4px solid var(--cyan); box-shadow: 0 0 40px rgba(111,227,255,.7); }
+#orbit { left: 560px; top: 140px; width: 800px; height: 800px; border-radius: 50%; border: 3px dashed rgba(111,227,255,.45); }
+
+/* 鏡頭 3 */
+#core { left: 790px; top: 380px; width: 340px; height: 340px; border-radius: 50%; text-align: center;
+  background: radial-gradient(circle at 40% 35%, #3fa9ff 0%, #0c4fae 45%, #062a6e 100%);
+  border: 5px solid var(--cyan); box-shadow: 0 0 90px rgba(111,227,255,.8);
+  display: flex; flex-direction: column; justify-content: center; }
+#core b { font-size: 70px; }
+#core i { font-style: normal; font-size: 40px; color: var(--cyan); margin-top: 8px; }
+.quad { width: 640px; height: 360px; border-radius: 28px; padding: 30px 40px; border: 4px solid; }
+.quad h2 { font-size: 62px; }
+.quad h3 { font-size: 36px; font-weight: normal; opacity: .9; margin: 4px 0 18px; }
+.quad ul { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 12px 24px; }
+.quad li { font-size: 34px; line-height: 1.25; }
+.quad li small { display: block; font-size: 24px; opacity: .8; }
+#bar { left: 260px; width: 1400px; top: 960px; height: 90px; border-radius: 45px; text-align: center; line-height: 90px;
+  font-size: 48px; font-weight: bold; letter-spacing: 4px; background: rgba(4,18,46,.85); border: 3px solid var(--cyan); }
+
+/* 鏡頭 4 */
+#outTitle { left: 0; width: 1920px; top: 110px; text-align: center; font-size: 64px; letter-spacing: 16px; color: var(--cyan); }
+.out { width: 820px; height: 300px; border-radius: 36px; padding: 40px 50px;
+  background: linear-gradient(135deg, #f0408c, #a81a5e); box-shadow: 0 0 50px rgba(240,64,140,.6); border: 4px solid #ffc2dc; }
+.out b { display: block; font-size: 68px; }
+.out i { display: block; font-style: normal; font-size: 46px; margin-top: 26px; color: #ffe9f3; }
+.out em { position: absolute; right: 40px; bottom: 34px; font-style: normal; font-size: 30px; padding: 6px 18px; border-radius: 20px;
+  background: #0a2a7a; border: 2px solid var(--cyan); }
+
+/* 鏡頭 5 */
+#poster { left: 0; top: 0; width: 1920px; height: 1080px; background: url(poster.jpg) center/cover; transform-origin: 50% 50%; }
+#veil { left: 0; top: 0; width: 1920px; height: 1080px; background: rgba(2,10,30,.72); }
+#slogan1 { left: 0; width: 1920px; top: 360px; text-align: center; font-size: 130px; }
+#slogan2 { left: 0; width: 1920px; top: 560px; text-align: center; font-size: 76px; color: #ffe9a8; }
+#black { left: 0; top: 0; width: 1920px; height: 1080px; background: #000; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="fx" width="1920" height="1080"></canvas>
+
+  <!-- 鏡頭 1 -->
+  <div id="s1">
+    <div id="logo" class="abs"></div>
+    <div id="title" class="abs glow"></div>
+    <div id="subtitle" class="abs">校訂課程</div>
+    <div id="tagline" class="abs hand glow">從土地出發，讓孩子看見更大的世界</div>
+  </div>
+
+  <!-- 鏡頭 2 -->
+  <div id="s2">
+    <div id="vtitle" class="abs">學校願景</div>
+    <div class="abs vword" style="left:200px;color:#ffb347"><b>快樂</b><i>樂在學習</i></div>
+    <div class="abs vword" style="left:600px;color:#ff8fb1"><b>溫馨</b><i>溫馨關懷</i></div>
+    <div class="abs vword" style="left:1000px;color:#9df07a"><b>感恩</b><i>感恩惜福</i></div>
+    <div class="abs vword" style="left:1400px;color:#7fdcff"><b>健康</b><i>健康成長</i></div>
+    <div id="orbit" class="abs"></div>
+    <div id="globe" class="abs"></div>
+    <div id="globeText" class="abs glow">五力培養</div>
+    <div class="abs orb">學習力</div>
+    <div class="abs orb">互動力</div>
+    <div class="abs orb">合作力</div>
+    <div class="abs orb">包容力</div>
+    <div class="abs orb">品賞力</div>
+  </div>
+
+  <!-- 鏡頭 3 -->
+  <div id="s3">
+    <svg id="links" class="abs" width="1920" height="1080" style="left:0;top:0"></svg>
+    <div class="abs quad" style="left:110px;top:60px;border-color:var(--green);background:linear-gradient(135deg,rgba(63,191,90,.95),rgba(20,90,40,.95))">
+      <h2>環境倫理</h2><h3>樹的全印象</h3>
+      <ul><li>樹勇棟樑<small>一年級</small></li><li>海與大麻黃<small>三年級</small></li><li>水生植物<small>五年級</small></li><li>紅樹林<small>六年級</small></li></ul>
+    </div>
+    <div class="abs quad" style="left:1170px;top:60px;border-color:var(--teal);background:linear-gradient(135deg,rgba(31,179,168,.95),rgba(10,85,90,.95))">
+      <h2>永續發展</h2><h3>好吃的樹</h3>
+      <ul><li>黑豆大家族<small>一年級</small></li><li>長命百歲菜<small>二年級</small></li><li>零食黑糖糖<small>四年級</small></li><li>玫瑰<small>五年級</small></li></ul>
+    </div>
+    <div class="abs quad" style="left:110px;top:570px;border-color:var(--gold);background:linear-gradient(135deg,rgba(240,185,40,.95),rgba(150,95,10,.95))">
+      <h2>能資源永續</h2><h3>節能減碳・再生利用</h3>
+      <ul><li>節能有一套<small>三年級</small></li><li>碳權價值高<small>四年級</small></li><li>綠能源<small>五年級</small></li><li>百變廢木趣<small>一至四年級</small></li></ul>
+    </div>
+    <div class="abs quad" style="left:1170px;top:570px;border-color:var(--red);background:linear-gradient(135deg,rgba(224,68,74,.95),rgba(120,20,30,.95))">
+      <h2>閱讀教育</h2><h3>樹教我們的事・樹送我們的書</h3>
+      <ul><li>小樹苗大世界</li><li>一顆橡實</li><li>上山種下一棵樹</li><li>數位閱讀</li></ul>
+    </div>
+    <div id="core" class="abs"><b>環境教育</b><i>濱海綠寶石</i></div>
+    <div id="bar" class="abs">環境倫理 ✕ 永續發展 ✕ 能資源永續 ✕ 閱讀教育</div>
+  </div>
+
+  <!-- 鏡頭 4 -->
+  <div id="s4">
+    <div id="outTitle" class="abs">學習產出・多元展能</div>
+    <div class="abs out" style="left:120px;top:250px"><em>環境倫理</em><b>綜藝劇場</b><i>站上舞台</i></div>
+    <div class="abs out" style="left:980px;top:250px"><em>永續發展</em><b>辦桌小師傅</b><i>掌廚辦桌</i></div>
+    <div class="abs out" style="left:120px;top:640px"><em>能資源永續</em><b>國際小公民・小魯班</b><i>動手創作</i></div>
+    <div class="abs out" style="left:980px;top:640px"><em>閱讀教育</em><b>閱讀高手・說書小達人</b><i>開口說書</i></div>
+  </div>
+
+  <!-- 鏡頭 5 -->
+  <div id="s5">
+    <div id="poster" class="abs"></div>
+    <div id="veil" class="abs"></div>
+    <div id="slogan1" class="abs hand glow">愛海洋・護家園</div>
+    <div id="slogan2" class="abs hand">培育永續的未來公民</div>
+  </div>
+
+  <div id="black" class="abs"></div>
+</div>
+
+<script>
+const $ = (s) => document.querySelector(s);
+const $$ = (s) => Array.from(document.querySelectorAll(s));
+const clamp = (x) => Math.max(0, Math.min(1, x));
+const prog = (t, a, b) => clamp((t - a) / (b - a));
+const easeOut = (x) => 1 - Math.pow(1 - x, 3);
+const easeBack = (x) => { const c = 1.70158; return 1 + (c + 1) * Math.pow(x - 1, 3) + c * Math.pow(x - 1, 2); };
+// 進場 a→a+d，退場 b→b+d 的可見度
+const life = (t, a, b, d = 0.4) => Math.min(prog(t, a, a + d), 1 - prog(t, b, b + d));
+function set(el, o, tf) { el.style.opacity = o; el.style.transform = tf || ""; }
+
+// 標題逐字
+const TITLE = "「濱海綠寶石」";
+$("#title").innerHTML = [...TITLE].map((c) => `<span>${c}</span>`).join("");
+
+// 粒子（固定亂數種子，逐格可重現）
+let seed = 7;
+const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+const parts = Array.from({ length: 140 }, () => ({ x: rnd() * 1920, y: rnd() * 1080, r: 1 + rnd() * 3, v: 10 + rnd() * 40, p: rnd() * 6.28 }));
+const ctx = $("#fx").getContext("2d");
+
+function drawFx(t) {
+  ctx.clearRect(0, 0, 1920, 1080);
+  // 網格
+  ctx.strokeStyle = "rgba(111,227,255,0.07)"; ctx.lineWidth = 1;
+  const off = (t * 20) % 80;
+  for (let x = -80 + off; x < 1920; x += 80) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 1080); ctx.stroke(); }
+  for (let y = -80 + off; y < 1080; y += 80) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(1920, y); ctx.stroke(); }
+  // 同心光環
+  for (let i = 0; i < 4; i++) {
+    ctx.strokeStyle = `rgba(111,227,255,${0.12 - i * 0.02})`; ctx.lineWidth = 2;
+    ctx.setLineDash([30 + i * 10, 20]); ctx.lineDashOffset = t * (i % 2 ? 40 : -40);
+    ctx.beginPath(); ctx.arc(960, 560, 260 + i * 110, 0, Math.PI * 2); ctx.stroke();
+  }
+  ctx.setLineDash([]);
+  // 海浪
+  for (let k = 0; k < 3; k++) {
+    ctx.fillStyle = `rgba(30,140,220,${0.10 + k * 0.05})`;
+    ctx.beginPath(); ctx.moveTo(0, 1080);
+    for (let x = 0; x <= 1920; x += 20) ctx.lineTo(x, 990 + k * 25 + Math.sin(x / 140 + t * (1.2 + k * 0.4) + k) * 18);
+    ctx.lineTo(1920, 1080); ctx.fill();
+  }
+  // 粒子
+  for (const p of parts) {
+    const y = (p.y - t * p.v + 1080 * 10) % 1080;
+    const a = 0.35 + 0.35 * Math.sin(t * 2 + p.p);
+    ctx.fillStyle = `rgba(160,240,255,${a})`;
+    ctx.beginPath(); ctx.arc(p.x + Math.sin(t + p.p) * 10, y, p.r, 0, Math.PI * 2); ctx.fill();
+  }
+}
+
+function render(t) {
+  drawFx(t);
+
+  // ===== 鏡頭 1：0–4 秒 =====
+  const s1 = life(t, 0, 3.6, 0.5);
+  set($("#s1"), s1);
+  const lg = easeBack(prog(t, 0.1, 0.9));
+  set($("#logo"), prog(t, 0.1, 0.6), `scale(${0.3 + 0.7 * lg}) rotate(${(1 - lg) * -90}deg)`);
+  $$("#title span").forEach((el, i) => {
+    const p = easeBack(prog(t, 0.6 + i * 0.12, 1.1 + i * 0.12));
+    set(el, prog(t, 0.6 + i * 0.12, 0.9 + i * 0.12), `translateY(${(1 - p) * 80}px) scale(${0.6 + 0.4 * p})`);
+  });
+  set($("#subtitle"), prog(t, 1.5, 2.0), `translateY(${(1 - easeOut(prog(t, 1.5, 2.0))) * 30}px)`);
+  const tg = prog(t, 1.9, 2.6);
+  $("#tagline").style.clipPath = `inset(0 ${(1 - tg) * 100}% 0 0)`;
+  set($("#tagline"), tg > 0 ? 1 : 0);
+
+  // ===== 鏡頭 2：4–10 秒 =====
+  set($("#s2"), life(t, 3.8, 9.6, 0.5));
+  // 4–6.6 願景四詞
+  const vOut = 1 - prog(t, 6.4, 6.8);
+  set($("#vtitle"), prog(t, 4.0, 4.4) * vOut);
+  $$(".vword").forEach((el, i) => {
+    const a = 4.3 + i * 0.4, p = easeBack(prog(t, a, a + 0.5));
+    set(el, prog(t, a, a + 0.3) * vOut, `scale(${0.5 + 0.5 * p})`);
+  });
+  // 6.6–10 地球與五力
+  const gIn = easeBack(prog(t, 6.6, 7.2));
+  set($("#globe"), prog(t, 6.6, 6.9), `scale(${gIn}) rotate(${t * 20}deg)`);
+  set($("#globeText"), prog(t, 7.0, 7.4));
+  set($("#orbit"), prog(t, 6.8, 7.3), `rotate(${t * 15}deg)`);
+  $$(".orb").forEach((el, i) => {
+    const a = 7.0 + i * 0.25, p = easeOut(prog(t, a, a + 0.6));
+    const ang = -Math.PI / 2 + i * (2 * Math.PI / 5) + (t - 7) * 0.25;
+    const R = 400 * p;
+    el.style.left = (960 + Math.cos(ang) * R - 105) + "px";
+    el.style.top = (540 + Math.sin(ang) * R - 105) + "px";
+    set(el, prog(t, a, a + 0.3), `scale(${0.4 + 0.6 * p})`);
+  });
+
+  // ===== 鏡頭 3：10–22 秒 =====
+  set($("#s3"), life(t, 9.8, 21.6, 0.5));
+  set($("#core"), prog(t, 10.0, 10.5), `scale(${0.5 + 0.5 * easeBack(prog(t, 10.0, 10.7))})`);
+  const quads = $$(".quad");
+  const centers = [[430, 240], [1490, 240], [430, 750], [1490, 750]];
+  let svg = "";
+  quads.forEach((el, i) => {
+    const a = 10.6 + i * 2.6;         // 依序點亮，每區約 2.6 秒
+    const inP = easeBack(prog(t, a, a + 0.6));
+    const focus = t >= a && t < a + 2.6 ? 1 : 0;
+    const dim = t >= a + 2.6 && t < 21.0 ? 0.55 : 1;
+    set(el, prog(t, a, a + 0.3) * (focus ? 1 : dim), `scale(${(0.6 + 0.4 * inP) * (focus ? 1.04 : 1)})`);
+    el.style.boxShadow = focus ? "0 0 60px rgba(255,255,255,.55)" : "none";
+    el.querySelectorAll("li").forEach((li, j) => { li.style.opacity = prog(t, a + 0.5 + j * 0.25, a + 0.8 + j * 0.25); });
+    const lp = prog(t, a - 0.2, a + 0.3);
+    if (lp > 0) {
+      const [x, y] = centers[i], x2 = 960 + (x - 960) * lp, y2 = 550 + (y - 550) * lp;
+      svg += `<line x1="960" y1="550" x2="${x2}" y2="${y2}" stroke="#6fe3ff" stroke-width="4" stroke-dasharray="12 10" stroke-dashoffset="${-t * 60}" opacity=".8"/>`;
+    }
+  });
+  $("#links").innerHTML = svg;
+  set($("#bar"), prog(t, 20.9, 21.2), `translateY(${(1 - easeOut(prog(t, 20.9, 21.3))) * 60}px)`);
+
+  // ===== 鏡頭 4：22–27 秒 =====
+  set($("#s4"), life(t, 21.8, 26.7, 0.4));
+  set($("#outTitle"), prog(t, 22.0, 22.4));
+  $$(".out").forEach((el, i) => {
+    const a = 22.3 + i * 1.05, p = easeBack(prog(t, a, a + 0.5));
+    set(el, prog(t, a, a + 0.25), `scale(${0.3 + 0.7 * p}) rotate(${(1 - p) * (i % 2 ? 8 : -8)}deg)`);
+  });
+
+  // ===== 鏡頭 5：27–30 秒 =====
+  set($("#s5"), prog(t, 26.8, 27.3));
+  $("#poster").style.transform = `scale(${1.25 - 0.25 * easeOut(prog(t, 26.8, 29.0))})`;
+  set($("#veil"), prog(t, 27.8, 28.3));
+  set($("#slogan1"), prog(t, 28.0, 28.4), `scale(${0.8 + 0.2 * easeBack(prog(t, 28.0, 28.5))})`);
+  set($("#slogan2"), prog(t, 28.4, 28.8));
+
+  // 頭尾淡入淡出
+  set($("#black"), Math.max(1 - prog(t, 0, 0.4), prog(t, 29.5, 30)));
+}
+
+window.render = render;
+// 直接開檔時自動播放預覽
+if (!location.search.includes("capture")) {
+  const t0 = performance.now();
+  (function loop() { render(((performance.now() - t0) / 1000) % 30); requestAnimationFrame(loop); })();
+}
+</script>
+</body>
+</html>
