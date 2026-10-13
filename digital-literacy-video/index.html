@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>115年度數位素養宣導活動</title>
+<style>
+@font-face{font-family:"Iansui";src:url("../Iansui-Regular.ttf") format("truetype");font-display:block}
+:root{
+  --ink:#4a2f4f;--pink:#ff7eb6;--pink2:#ffd6e8;--blue:#5ab8f5;--blue2:#d6efff;
+  --yellow:#ffd54a;--mint:#7fe0c2;--purple:#b48cff;--white:#fff;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#1d1530;overflow:hidden;font-family:"Iansui","Noto Color Emoji",sans-serif;color:var(--ink)}
+#wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+#stage{position:relative;width:1280px;height:720px;overflow:hidden;transform-origin:center center;flex:none;
+  background:linear-gradient(180deg,#bfe6ff,#fff3fb)}
+.layer{position:absolute;inset:0}
+.scene{position:absolute;inset:0;opacity:0}
+.scene .bg{position:absolute;inset:0}
+.abs{position:absolute}
+.actor svg{width:100%;height:auto;display:block;overflow:visible}
+
+/* 背景裝飾 */
+.cloud{position:absolute;background:#fff;border-radius:999px;opacity:.85;filter:drop-shadow(0 6px 0 rgba(120,150,200,.12))}
+.cloud::before,.cloud::after{content:"";position:absolute;background:#fff;border-radius:50%}
+.cloud::before{width:55%;height:150%;left:15%;bottom:30%}
+.cloud::after{width:40%;height:120%;right:12%;bottom:35%}
+.spark{position:absolute;font-size:28px;color:#fff;text-shadow:0 0 12px rgba(255,255,255,.9)}
+
+/* 標題與卡片 */
+.chip{display:inline-block;padding:8px 22px;border-radius:999px;font-size:30px;background:var(--white);
+  box-shadow:0 5px 0 rgba(74,47,79,.15)}
+.h1{font-size:58px;text-align:center;color:var(--ink);text-shadow:4px 4px 0 #fff,-2px -2px 0 #fff,2px -2px 0 #fff,-2px 2px 0 #fff}
+.card{background:#fff;border-radius:28px;box-shadow:0 8px 0 rgba(74,47,79,.13),0 14px 30px rgba(74,47,79,.10);
+  display:flex;align-items:center;gap:14px;padding:16px 20px;font-size:31px;border:4px solid #fff;white-space:nowrap}
+.card .ic{font-size:46px;line-height:1;flex:none;width:66px;height:66px;border-radius:22px;display:flex;align-items:center;justify-content:center}
+.card small{display:block;font-size:22px;opacity:.7;margin-top:2px}
+.badge{width:150px;height:150px;border-radius:50%;background:#fff;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;font-size:28px;box-shadow:0 8px 0 rgba(74,47,79,.13);border:6px solid var(--c)}
+.badge .ic{font-size:56px;line-height:1.1}
+
+/* 字幕 */
+#sub{position:absolute;left:90px;right:90px;bottom:22px;min-height:84px;background:rgba(255,255,255,.95);border-radius:26px;
+  box-shadow:0 6px 0 rgba(74,47,79,.18);display:flex;align-items:center;gap:18px;padding:12px 28px 12px 18px;opacity:0;border:4px solid #ffe0ef}
+#sub .who{flex:none;padding:6px 16px;border-radius:999px;color:#fff;font-size:26px}
+#sub .txt{font-size:31px;line-height:1.3;white-space:nowrap}
+#corner{position:absolute;left:22px;top:18px;font-size:22px;background:rgba(255,255,255,.85);padding:6px 16px;border-radius:999px;opacity:0}
+#dots{position:absolute;right:24px;top:24px;display:flex;gap:8px;opacity:0}
+#dots i{width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,.6);display:block}
+#dots i.on{background:var(--pink);transform:scale(1.3)}
+
+/* 播放器（render 模式隱藏） */
+#ui{position:fixed;left:0;right:0;bottom:0;padding:10px 16px;display:flex;gap:12px;align-items:center;
+  background:linear-gradient(transparent,rgba(0,0,0,.6));opacity:0;transition:opacity .3s;font-family:sans-serif}
+body:hover #ui,#ui.show{opacity:1}
+#ui button{background:#fff;border:0;border-radius:999px;width:44px;height:44px;font-size:20px;cursor:pointer}
+#bar{flex:1;height:8px;background:rgba(255,255,255,.35);border-radius:4px;cursor:pointer;position:relative}
+#bar b{position:absolute;left:0;top:0;bottom:0;background:var(--pink);border-radius:4px}
+#time{color:#fff;font-size:14px;min-width:90px;text-align:right}
+#start{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(29,21,48,.55);cursor:pointer}
+#start div{background:#fff;padding:22px 46px;border-radius:999px;font-size:34px;box-shadow:0 8px 0 var(--pink)}
+body.render #ui,body.render #start{display:none}
+</style>
+</head>
+<body>
+<div id="wrap"><div id="stage">
+  <div class="layer" id="bgs"></div>
+  <div class="layer" id="clouds"></div>
+  <div class="layer" id="scenes"></div>
+  <div class="layer" id="fx"></div>
+  <div id="corner">✨ 115年度 數位素養宣導活動</div>
+  <div id="dots"></div>
+  <div id="sub"><span class="who"></span><span class="txt"></span></div>
+</div></div>
+<div id="start"><div>▶ 開始播放</div></div>
+<div id="ui"><button id="pp">⏸</button><div id="bar"><b></b></div><span id="time"></span><button id="fs">⛶</button></div>
+
+<script src="clips.js"></script>
+<script>
+/* ========== 角色 ========== */
+const SKIN = "#ffe3d3";
+function chibi(o){
+  o = Object.assign({hair:"#ff9cc8",hair2:"#e86aa6",eye:"#7a4bd1",eye2:"#b78cff",outfit:"#4f6fd6",accent:"#ff5d8f",style:"twin",glasses:false,clip:true},o);
+  const eye = cx => `
+    <ellipse cx="${cx}" cy="130" rx="13" ry="17" fill="${o.eye}"/>
+    <ellipse cx="${cx}" cy="136" rx="10" ry="10" fill="${o.eye2}"/>
+    <ellipse cx="${cx}" cy="128" rx="6" ry="8" fill="#22122e"/>
+    <circle cx="${cx-5}" cy="121" r="5" fill="#fff"/><circle cx="${cx+5}" cy="138" r="2.4" fill="#fff"/>
+    <path d="M${cx-14} 117 Q${cx} 108 ${cx+14} 117" stroke="#2b1a2e" stroke-width="3.5" fill="none" stroke-linecap="round"/>`;
+  const back = {
+    twin:`<path d="M46 96 C6 120 8 205 34 238 C40 200 52 160 66 130Z" fill="${o.hair}"/><path d="M174 96 C214 120 212 205 186 238 C180 200 168 160 154 130Z" fill="${o.hair}"/>
+          <circle cx="52" cy="100" r="9" fill="${o.accent}"/><circle cx="168" cy="100" r="9" fill="${o.accent}"/>`,
+    long:`<path d="M36 112 Q26 215 60 246 L160 246 Q194 215 184 112Z" fill="${o.hair}"/>`,
+    bun:`<circle cx="110" cy="38" r="27" fill="${o.hair}"/><circle cx="110" cy="38" r="27" fill="none" stroke="${o.hair2}" stroke-width="3"/>`,
+    short:``
+  }[o.style];
+  return `<svg viewBox="0 0 220 300">
+  <ellipse cx="110" cy="290" rx="58" ry="8" fill="rgba(74,47,79,.15)"/>
+  <g class="bob">
+    <g class="hb">${back}</g>
+    <rect x="92" y="250" width="14" height="32" rx="7" fill="${SKIN}"/><rect x="114" y="250" width="14" height="32" rx="7" fill="${SKIN}"/>
+    <ellipse cx="98" cy="284" rx="13" ry="7" fill="#6b4a3c"/><ellipse cx="122" cy="284" rx="13" ry="7" fill="#6b4a3c"/>
+    <path d="M72 205 Q110 192 148 205 L162 262 Q110 276 58 262Z" fill="${o.outfit}"/>
+    <path d="M88 200 L110 230 L132 200 Q110 211 88 200Z" fill="#fff"/>
+    <path d="M110 226 L96 218 L96 236Z M110 226 L124 218 L124 236Z" fill="${o.accent}"/><circle cx="110" cy="227" r="4.5" fill="${o.accent}"/>
+    <g class="armL"><rect x="62" y="204" width="15" height="44" rx="7.5" fill="${o.outfit}"/><circle cx="69.5" cy="249" r="8.5" fill="${SKIN}"/></g>
+    <g class="armR"><rect x="143" y="204" width="15" height="44" rx="7.5" fill="${o.outfit}"/><circle cx="150.5" cy="249" r="8.5" fill="${SKIN}"/></g>
+    <g class="head">
+      <circle cx="110" cy="112" r="80" fill="${o.hair}"/>
+      <ellipse cx="110" cy="124" rx="68" ry="63" fill="${SKIN}"/>
+      <path d="M36 118 Q34 40 110 34 Q186 40 184 118 Q172 92 158 100 Q150 74 128 92 Q116 66 100 92 Q84 70 72 100 Q58 84 36 118Z" fill="${o.hair}"/>
+      <path d="M42 108 Q36 160 50 188 Q62 150 60 112Z" fill="${o.hair}"/><path d="M178 108 Q184 160 170 188 Q158 150 160 112Z" fill="${o.hair}"/>
+      <path d="M108 37 Q98 8 124 6 Q108 18 116 37Z" fill="${o.hair}"/>
+      <path d="M72 58 Q110 40 148 58" stroke="#fff" stroke-opacity=".4" stroke-width="6" fill="none" stroke-linecap="round"/>
+      <path d="M74 104 Q84 98 94 102 M126 102 Q136 98 146 104" stroke="${o.hair2}" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+      <g class="eyes">${eye(84)}${eye(136)}</g>
+      ${o.glasses?`<g stroke="#5a3d5c" stroke-width="3.5" fill="rgba(255,255,255,.18)"><circle cx="84" cy="130" r="20"/><circle cx="136" cy="130" r="20"/><path d="M104 128 Q110 124 116 128" fill="none"/></g>`:""}
+      <ellipse cx="68" cy="152" rx="12" ry="6.5" fill="#ff8fb1" opacity=".55"/><ellipse cx="152" cy="152" rx="12" ry="6.5" fill="#ff8fb1" opacity=".55"/>
+      <path d="M62 150 l-4 6 M69 150 l-4 6 M76 150 l-4 6 M144 150 l-4 6 M151 150 l-4 6 M158 150 l-4 6" stroke="#ff7aa3" stroke-width="2" stroke-linecap="round"/>
+      <path class="smile" d="M102 154 Q110 161 118 154" stroke="#a3324f" stroke-width="3.2" fill="none" stroke-linecap="round"/>
+      <ellipse class="mopen" cx="110" cy="157" rx="7" ry="0" fill="#c2405a"/>
+      ${o.clip?`<path d="M152 52 l5 10 11 1 -8 7 3 11 -11 -6 -10 6 3 -11 -8 -7 11 -1z" fill="#ffd54a" stroke="#f4a823" stroke-width="2" stroke-linejoin="round"/>`:""}
+    </g>
+  </g></svg>`;
+}
+function robocat(){
+  return `<svg viewBox="0 0 220 300">
+  <ellipse cx="110" cy="290" rx="58" ry="8" fill="rgba(74,47,79,.15)"/>
+  <g class="bob">
+    <path class="tail" d="M150 245 Q205 238 198 192 Q194 168 176 178" stroke="#7cc8f7" stroke-width="13" fill="none" stroke-linecap="round"/>
+    <rect x="82" y="250" width="22" height="32" rx="11" fill="#7cc8f7"/><rect x="116" y="250" width="22" height="32" rx="11" fill="#7cc8f7"/>
+    <rect x="66" y="188" width="88" height="76" rx="36" fill="#a8e0ff"/>
+    <ellipse cx="110" cy="230" rx="28" ry="25" fill="#fff"/>
+    <circle cx="110" cy="230" r="13" fill="#ffd54a"/>
+    <path d="M102 230 Q110 222 118 230 M105 234 Q110 229 115 234" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <g class="armL"><rect x="54" y="200" width="20" height="40" rx="10" fill="#8fd3ff"/></g>
+    <g class="armR"><rect x="146" y="200" width="20" height="40" rx="10" fill="#8fd3ff"/></g>
+    <g class="head">
+      <line x1="110" y1="52" x2="110" y2="24" stroke="#5aa9e6" stroke-width="5" stroke-linecap="round"/>
+      <circle class="bulb" cx="110" cy="19" r="10" fill="#ff7aa8"/>
+      <path d="M40 92 L50 28 L96 62Z" fill="#a8e0ff"/><path d="M52 78 L57 44 L82 62Z" fill="#ff9cc0"/>
+      <path d="M180 92 L170 28 L124 62Z" fill="#a8e0ff"/><path d="M168 78 L163 44 L138 62Z" fill="#ff9cc0"/>
+      <rect x="28" y="50" width="164" height="142" rx="64" fill="#c4ecff" stroke="#7cc8f7" stroke-width="5"/>
+      <rect x="50" y="80" width="120" height="88" rx="36" fill="#26406e"/>
+      <path d="M62 92 Q80 84 98 88" stroke="#fff" stroke-opacity=".25" stroke-width="5" fill="none" stroke-linecap="round"/>
+      <g class="eyes">
+        <ellipse cx="84" cy="120" rx="11" ry="14" fill="#7ff7ff"/><circle cx="80" cy="114" r="4" fill="#fff"/>
+        <ellipse cx="136" cy="120" rx="11" ry="14" fill="#7ff7ff"/><circle cx="132" cy="114" r="4" fill="#fff"/>
+      </g>
+      <ellipse cx="66" cy="148" rx="9" ry="5" fill="#ff9cc0" opacity=".9"/><ellipse cx="154" cy="148" rx="9" ry="5" fill="#ff9cc0" opacity=".9"/>
+      <path class="smile" d="M98 144 Q104 151 110 144 Q116 151 122 144" stroke="#7ff7ff" stroke-width="3.2" fill="none" stroke-linecap="round"/>
+      <ellipse class="mopen" cx="110" cy="148" rx="7" ry="0" fill="#7ff7ff"/>
+      <path d="M30 140 L8 134 M30 150 L6 152 M190 140 L212 134 M190 150 L214 152" stroke="#5aa9e6" stroke-width="3" stroke-linecap="round"/>
+    </g>
+  </g></svg>`;
+}
+const CH = {
+  shu: () => chibi({}),
+  wei: () => robocat(),
+  tch: () => chibi({hair:"#8a5a44",hair2:"#5e3a2b",eye:"#4a6b3a",eye2:"#86b36b",outfit:"#9a6bd8",accent:"#ffd54a",style:"bun",glasses:true,clip:false}),
+  par: () => chibi({hair:"#3d3a5c",hair2:"#26243d",eye:"#a0522d",eye2:"#e09a5f",outfit:"#3fb58f",accent:"#ff9b54",style:"long",clip:false}),
+  stu: () => chibi({hair:"#4b3b36",hair2:"#2e231f",eye:"#2d6cdf",eye2:"#76a8ff",outfit:"#ff9b54",accent:"#4f6fd6",style:"short",clip:false}),
+};
+const WHO = {shu:["小數","#ff6fae"],wei:["位位","#3fa7ee"],both:["小數＆位位","#b07cff"]};
+
+/* ========== 劇本 ========== */
+// at: 秒數（相對場景開始）或 "L行號+秒"（相對該句旁白開始）
+const A = (who,x,y,w,at,fx="drop",extra="") => `<div class="abs actor" data-who="${who}" data-at="${at}" data-fx="${fx}" ${extra} style="left:${x}px;top:${y}px;width:${w}px">${CH[who]()}</div>`;
+const card = (ic,col,txt,sm,at,x,y,w,fx="up") => `<div class="abs card" data-at="${at}" data-fx="${fx}" style="left:${x}px;top:${y}px;width:${w}px"><span class="ic bob-i" style="background:${col}">${ic}</span><div>${txt}${sm?`<small>${sm}</small>`:""}</div></div>`;
+const header = (chip,title,at=0.2,y=36) => `<div class="abs" data-at="${at}" data-fx="pop" style="left:0;right:0;top:${y}px;text-align:center"><span class="chip">${chip}</span><div class="h1" style="margin-top:8px">${title}</div></div>`;
+
+const SCENES = [
+ { bg:"linear-gradient(180deg,#a9dcff 0%,#ffe1f0 100%)", lines:[
+     ["s01_01","shu","大家好！我是小數！"],["s01_02","wei","我是位位喵！"],["s01_03","shu","歡迎來到「115年度數位素養宣導活動」！"]],
+   html:()=>`
+    <div class="abs" data-at="0.3" data-fx="pop" style="left:330px;top:90px;width:620px;height:400px;background:#fff;border-radius:48px;
+       box-shadow:0 12px 0 #ffb3d4,0 0 0 10px #fff,0 0 0 18px #ffd6e8;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px">
+      <span class="chip" style="background:#ffd54a;font-size:34px">115 年度</span>
+      <div style="font-size:108px;line-height:1.15;background:linear-gradient(90deg,#ff6fae,#b07cff,#3fa7ee);-webkit-background-clip:text;color:transparent">數位素養</div>
+      <div style="font-size:72px;line-height:1.1">宣導活動</div>
+      <div style="font-size:30px;margin-top:10px;color:#9a6bd8">教師 ✦ 學生 ✦ 家長　一起來！</div>
+    </div>
+    ${A("shu",40,160,300,0.1,"left",'data-wave="1"')}
+    ${A("wei",950,170,290,"L1-0.4","right",'data-wave="1"')}` },
+
+ { bg:"linear-gradient(180deg,#c9f2e6 0%,#fff6d9 100%)", lines:[
+     ["s02_01","wei","小數，什麼是數位素養呀？"],["s02_02","shu","就是正確使用科技、判斷資訊真假、保護自己，還要尊重別人喔！"]],
+   html:()=>`
+    ${header("💡 認識一下","什麼是數位素養？")}
+    ${A("wei",30,250,250,0.1,"left")}
+    ${A("shu",1000,230,260,0.3,"right")}
+    ${card("💻","#d6efff","正確使用科技","","L1+0.3",285,200,355)}
+    ${card("🔍","#fff1c2","判斷資訊真假","","L1+1.5",655,200,355)}
+    ${card("🛡️","#d9f7ea","保護自己","","L1+3.0",285,340,355)}
+    ${card("🤝","#ffe0ef","尊重他人","","L1+4.4",655,340,355)}` },
+
+ { bg:"linear-gradient(180deg,#ffd9ec 0%,#fff3d6 100%)", lines:[
+     ["s03_01","shu","同學們，個人資料和密碼不能隨便給別人！"],["s03_02","wei","看到網路訊息要先查證，不要亂轉傳喵！"],["s03_03","shu","拒絕網路霸凌，3C 也要適度使用喔！"]],
+   html:()=>`
+    ${header("🎒 學生篇","聰明上網・保護自己")}
+    ${A("shu",30,230,260,0.1,"left")}
+    ${A("wei",1000,250,250,0.2,"right")}
+    ${card("🔐","#ffe0ef","個資密碼不外流","不給陌生人","L0+0.6",285,190,355)}
+    ${card("🔍","#d6efff","先查證不亂傳","假訊息停看聽","L1+0.3",655,190,355)}
+    ${card("🚫","#ffe1d1","拒絕網路霸凌","友善留言","L2+0.3",285,330,355)}
+    ${card("⏰","#d9f7ea","3C 適度使用","休息護眼睛","L2+2.6",655,330,355)}` },
+
+ { bg:"linear-gradient(180deg,#e4dcff 0%,#dff4ff 100%)", lines:[
+     ["s04_01","wei","老師們要注意資訊安全，定期更新密碼喵！"],["s04_02","shu","尊重著作權，合理使用 AI 工具，讓科技融入教學！"]],
+   html:()=>`
+    ${header("👩‍🏫 教師篇","安全・合法・創新教學")}
+    ${A("tch",215,310,160,0.4,"pop")}
+    ${A("shu",30,230,240,0.1,"left")}
+    ${A("wei",1010,250,240,0.2,"right")}
+    ${card("🔑","#fff1c2","資訊安全","定期更新密碼","L0+0.4",370,190,320)}
+    ${card("©️","#ffe0ef","尊重著作權","引用註明出處","L1+0.2",705,190,320)}
+    ${card("🤖","#d6efff","合理使用 AI","查核再使用","L1+2.0",370,330,320)}
+    ${card("📚","#d9f7ea","科技融入教學","提升學習","L1+4.0",705,330,320)}` },
+
+ { bg:"linear-gradient(180deg,#fff0c9 0%,#ffe0ef 100%)", lines:[
+     ["s05_01","shu","爸爸媽媽，請陪伴孩子一起上網，約定好使用時間。"],["s05_02","wei","家長以身作則，就是最好的榜樣喵！"]],
+   html:()=>`
+    ${header("🏠 家長篇","陪伴是最好的保護")}
+    ${A("shu",30,230,250,0.1,"left")}
+    ${A("wei",1000,250,250,0.2,"right")}
+    ${A("par",330,250,200,"L0+0.2","pop")}
+    ${A("stu",470,330,140,"L0+0.6","pop")}
+    ${card("💞","#ffe0ef","陪伴孩子上網","","L0+0.4",655,170,355)}
+    ${card("📅","#d6efff","約定使用時間","","L0+3.6",655,290,355)}
+    ${card("🌟","#fff1c2","家長以身作則","","L1+0.3",655,410,355)}` },
+
+ { bg:"linear-gradient(180deg,#bfe9ff 0%,#e9ffe6 100%)", lines:[
+     ["s06_01","wei","宣導活動可以在哪裡辦呢？"],["s06_02","shu","晨會、校務會議、導師會議、家長日和班親會都可以喔！"]],
+   html:()=>`
+    ${header("📍 宣導場合","在哪裡辦理呢？")}
+    ${A("wei",20,270,230,0.1,"left")}
+    ${A("shu",1030,260,230,0.3,"right")}
+    ${[["☀️","晨會","#ffb347"],["🏫","校務會議","#5ab8f5"],["👩‍🏫","導師會議","#b48cff"],["🏠","家長日","#ff7eb6"],["🎈","班親會","#3fc59a"]]
+      .map((b,i)=>`<div class="abs badge" data-at="L1+${[0.3,1.1,2.5,3.9,5.0][i]}" data-fx="pop" style="--c:${b[2]};left:${245+i*162}px;top:${i%2?330:220}px"><span class="ic bob-i">${b[0]}</span>${b[1]}</div>`).join("")}` },
+
+ { bg:"linear-gradient(180deg,#ffdff0 0%,#e0e9ff 100%)", lines:[
+     ["s07_01","shu","宣導對象有教師、學生和家長，每個對象至少要辦理一場！"]],
+   html:()=>`
+    ${header("🎯 宣導對象","每個對象至少辦理一場")}
+    ${A("shu",20,250,230,0.1,"left")}
+    ${A("wei",1030,270,220,0.2,"right")}
+    ${[["tch","教師","#b48cff",1.0],["stu","學生","#ff9b54",1.7],["par","家長","#3fc59a",2.6]].map((p,i)=>`
+      <div class="abs" data-at="L0+${p[3]}" data-fx="up" style="left:${280+i*245}px;top:180px;width:225px;height:330px;background:#fff;border-radius:32px;
+        box-shadow:0 8px 0 rgba(74,47,79,.13);border-top:14px solid ${p[2]};text-align:center;padding-top:6px">
+        <div class="actor" data-who="${p[0]}" style="width:150px;margin:0 auto">${CH[p[0]]()}</div>
+        <div style="font-size:38px">${p[1]}</div>
+      </div>
+      <div class="abs" data-at="L0+${4.6+i*0.35}" data-fx="stamp" style="left:${380+i*245}px;top:160px;width:130px;height:130px;border-radius:50%;
+        border:6px solid #ff4d6d;color:#ff4d6d;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:24px;background:rgba(255,255,255,.85);rotate:-14deg">
+        至少<b style="font-size:46px;line-height:1">1 場</b></div>`).join("")}` },
+
+ { bg:"linear-gradient(180deg,#fff2c4 0%,#ffd9e6 100%)", tail:3.5, lines:[
+     ["s08_01","wei","繳交期限是115年10月15日喵！"],["s08_02","shu","辦理完成後，請記得把報告結果上傳到表單喔！"]],
+   html:()=>`
+    ${header("⏰ 重要提醒","繳交期限與上傳方式",0.2,26)}
+    ${A("wei",20,280,220,0.1,"left")}
+    ${A("shu",1040,270,220,0.2,"right")}
+    <div class="abs" data-at="L0+0.2" data-fx="drop" style="left:260px;top:170px;width:330px;height:400px;background:#fff;border-radius:30px;overflow:hidden;
+      box-shadow:0 10px 0 rgba(74,47,79,.15);text-align:center">
+      <div style="background:#ff5d7a;color:#fff;font-size:34px;padding:12px 0">📅 繳交期限</div>
+      <div style="font-size:40px;margin-top:14px">115 年</div>
+      <div style="font-size:64px;line-height:1.1">10 月</div>
+      <div style="position:relative;display:inline-block;font-size:120px;line-height:1.1;color:#ff4d6d">15<span style="font-size:48px">日</span>
+        <svg class="abs" data-at="L0+1.6" data-fx="fade" viewBox="0 0 200 120" style="left:-30px;top:-6px;width:240px;height:150px;overflow:visible">
+          <path d="M100 8 C180 6 196 60 170 96 C140 124 50 122 18 92 C-6 66 20 14 110 12" fill="none" stroke="#ffb400" stroke-width="7" stroke-linecap="round"/></svg>
+      </div>
+      <div style="font-size:30px">（星期四）</div>
+    </div>
+    <div class="abs" data-at="L1+0.2" data-fx="up" style="left:620px;top:170px;width:400px;height:400px;background:#fff;border-radius:30px;
+      box-shadow:0 10px 0 rgba(74,47,79,.15);text-align:center;overflow:hidden">
+      <div style="background:#3fa7ee;color:#fff;font-size:34px;padding:12px 0">📤 上傳報告結果</div>
+      <img src="qr.svg" style="width:200px;height:200px;margin-top:16px;image-rendering:pixelated" alt="表單 QR Code">
+      <div style="font-size:24px;margin-top:6px">掃描 QR Code 或輸入網址</div>
+      <div style="font-family:monospace,sans-serif;font-size:21px;color:#2a6fb0;margin-top:4px">forms.gle/TeuMPAQrugKdW4s57</div>
+    </div>` },
+
+ { bg:"linear-gradient(180deg,#b9e3ff 0%,#ffd6ec 60%,#fff4c2 100%)", tail:3, confetti:true, lines:[
+     ["s09_01","both","一起成為數位好公民！掰掰～"]],
+   html:()=>`
+    <div class="abs" data-at="0.2" data-fx="pop" style="left:0;right:0;top:70px;text-align:center">
+      <div style="font-size:92px;color:#fff;text-shadow:0 6px 0 #ff6fae,0 0 0 #fff,4px 4px 0 #ff6fae,-4px 4px 0 #ff6fae,4px -2px 0 #ff6fae,-4px -2px 0 #ff6fae">一起成為</div>
+      <div style="font-size:104px;color:#fff;text-shadow:4px 6px 0 #3fa7ee,-4px 6px 0 #3fa7ee,4px -2px 0 #3fa7ee,-4px -2px 0 #3fa7ee">數位好公民！</div>
+    </div>
+    ${A("shu",300,300,250,0.4,"drop",'data-wave="1" data-jump="1"')}
+    ${A("wei",730,310,240,0.6,"drop",'data-wave="1" data-jump="1"')}
+    <div class="abs" data-at="L0+3.5" data-fx="fade" style="left:0;right:0;top:660px;text-align:center;font-size:26px;opacity:.8">115年度數位素養宣導活動</div>` },
+];
+
+/* ========== 時間軸 ========== */
+const LEAD = 0.9, GAP = 0.45, TAIL = 1.3, XFADE = 0.6;
+const CLIPS = window.CLIPS || {};
+const estimate = s => 0.6 + s.length * 0.2;
+let cursor = 0;
+const TIMELINE = [];
+SCENES.forEach((sc, i) => {
+  sc.start = i ? cursor - XFADE : 0;
+  let c = sc.start + LEAD;
+  sc.lineObjs = sc.lines.map(([id, who, text]) => {
+    const clip = CLIPS[id];
+    const L = {id, who, text, start: c, dur: clip ? clip.dur : estimate(text), clip};
+    c += L.dur + GAP;
+    TIMELINE.push(L);
+    return L;
+  });
+  sc.end = c - GAP + (sc.tail || TAIL);
+  cursor = sc.end;
+});
+const TOTAL = cursor;
+window.TOTAL = TOTAL;
+window.AUDIO_CUES = TIMELINE.filter(l => l.clip).map(l => ({file: l.clip.file, start: +l.start.toFixed(3)}));
+
+/* ========== 建立 DOM ========== */
+const $ = s => document.querySelector(s);
+const scenesEl = $("#scenes");
+SCENES.forEach((sc, i) => {
+  const d = document.createElement("div");
+  d.className = "scene";
+  d.innerHTML = sc.html();
+  scenesEl.appendChild(d);
+  sc.bgEl = document.createElement("div");
+  sc.bgEl.className = "layer"; sc.bgEl.style.background = sc.bg;
+  $("#bgs").appendChild(sc.bgEl);
+  sc.el = d;
+  sc.anim = [...d.querySelectorAll("[data-at]")].map(el => {
+    const at = el.dataset.at;
+    let tt;
+    const m = at.match(/^L(\d+)([+-][\d.]+)?$/);
+    tt = m ? sc.lineObjs[+m[1]].start - sc.start + (+m[2] || 0) : +at;
+    return {el, at: tt, fx: el.dataset.fx || "up"};
+  });
+  sc.actors = [...d.querySelectorAll(".actor")].map((el, k) => ({
+    el, who: el.dataset.who, wave: !!el.dataset.wave, jump: !!el.dataset.jump, seed: i * 7 + k * 1.7,
+    bob: el.querySelector(".bob"), eyes: el.querySelector(".eyes"), smile: el.querySelector(".smile"),
+    mopen: el.querySelector(".mopen"), armR: el.querySelector(".armR"), armL: el.querySelector(".armL"),
+    bulb: el.querySelector(".bulb"), tail: el.querySelector(".tail"), head: el.querySelector(".head")
+  }));
+  sc.icons = [...d.querySelectorAll(".bob-i")];
+  $("#dots").insertAdjacentHTML("beforeend", "<i></i>");
+});
+
+// 背景雲朵與星星
+const fx = $("#fx");
+let seed = 7;
+const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+const clouds = [0,1,2,3,4].map(i => {
+  const c = document.createElement("div");
+  c.className = "cloud";
+  const w = 120 + rnd() * 110;
+  Object.assign(c.style, {width: w + "px", height: w * 0.32 + "px", top: 30 + rnd() * 130 + "px"});
+  $("#clouds").appendChild(c);
+  return {el: c, x: rnd() * 1400, v: 8 + rnd() * 14, w};
+});
+const sparks = [...Array(12)].map(() => {
+  const s = document.createElement("div");
+  s.className = "spark"; s.textContent = rnd() > .5 ? "✦" : "♥";
+  s.style.color = ["#fff","#ffd54a","#ff9cc8","#9fdcff"][Math.floor(rnd()*4)];
+  fx.appendChild(s);
+  return {el: s, x: rnd() * 1280, y: rnd() * 560, p: rnd() * 6.28, sz: 16 + rnd() * 18};
+});
+const confetti = [...Array(70)].map(() => {
+  const c = document.createElement("div");
+  c.className = "abs";
+  Object.assign(c.style, {width: 10 + rnd()*8 + "px", height: 14 + rnd()*10 + "px", borderRadius: rnd() > .5 ? "50%" : "3px",
+    background: ["#ff6fae","#ffd54a","#3fa7ee","#7fe0c2","#b48cff","#ff9b54"][Math.floor(rnd()*6)], opacity: 0});
+  fx.appendChild(c);
+  return {el: c, x: rnd() * 1280, d: rnd() * 2.5, v: 120 + rnd() * 160, r: rnd() * 720, sw: 20 + rnd() * 40};
+});
+
+/* ========== 繪製 ========== */
+const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
+const outBack = p => { const c = 1.9; return 1 + (c + 1) * Math.pow(p - 1, 3) + c * Math.pow(p - 1, 2); };
+const outCubic = p => 1 - Math.pow(1 - p, 3);
+function entry(a, lt) {
+  const p = clamp((lt - a.at) / 0.6);
+  const e = outCubic(p), b = outBack(p);
+  let tr = "", op = clamp(p * 2.5);
+  switch (a.fx) {
+    case "pop": tr = `scale(${0.3 + 0.7 * b})`; break;
+    case "stamp": tr = `scale(${2.2 - 1.2 * outCubic(p)})`; op = clamp(p * 3); break;
+    case "drop": tr = `translateY(${(1 - b) * -120}px)`; break;
+    case "left": tr = `translateX(${(1 - b) * -260}px)`; break;
+    case "right": tr = `translateX(${(1 - b) * 260}px)`; break;
+    case "fade": tr = ""; break;
+    default: tr = `translateY(${(1 - e) * 60}px)`;
+  }
+  a.el.style.transform = tr;
+  a.el.style.opacity = op;
+}
+function speechAt(t) {
+  for (const L of TIMELINE) {
+    if (t >= L.start && t < L.start + L.dur) {
+      let amp;
+      if (L.clip) amp = L.clip.env[Math.floor((t - L.start) * window.CLIP_ENV_HZ)] || 0;
+      else amp = Math.abs(Math.sin((t - L.start) * 11));
+      return {L, amp};
+    }
+  }
+  return null;
+}
+function drawActor(a, t, sp, sc) {
+  const who = sp && (sp.L.who === a.who || (sp.L.who === "both" && (a.who === "shu" || a.who === "wei")));
+  const amp = who ? sp.amp : 0;
+  const talkStart = who ? t - sp.L.start : 99;
+  let by = Math.sin(t * 3 + a.seed) * 3 - amp * 5;
+  if (a.jump) by -= Math.abs(Math.sin(t * 4.2 + a.seed)) * 26;
+  a.bob.setAttribute("transform", `translate(0 ${by.toFixed(2)})`);
+  if (a.head) a.head.setAttribute("transform", `rotate(${(Math.sin(t * 1.7 + a.seed) * 2.5 + (who ? Math.sin(t * 6) * 2 : 0)).toFixed(2)} 110 190)`);
+  // 眨眼
+  const bp = (t + a.seed * 0.37) % 3.4;
+  const s = bp < 0.14 ? Math.abs(bp - 0.07) / 0.07 * 0.9 + 0.1 : 1;
+  const ey = a.who === "wei" ? 120 : 130;
+  a.eyes.setAttribute("transform", `translate(0 ${ey}) scale(1 ${s.toFixed(2)}) translate(0 ${-ey})`);
+  // 嘴型
+  a.mopen.setAttribute("ry", (amp * 9).toFixed(1));
+  a.smile.style.opacity = amp > 0.12 ? 0 : 1;
+  // 手臂：揮手
+  const waving = a.wave || talkStart < 1.8;
+  const rr = waving ? -150 + Math.sin(t * 10) * 22 : 14 + Math.sin(t * 2 + a.seed) * 4;
+  a.armR.setAttribute("transform", `rotate(${rr.toFixed(1)} ${a.who === "wei" ? 156 : 150} 208)`);
+  a.armL.setAttribute("transform", `rotate(${(-14 - Math.sin(t * 2 + a.seed) * 4).toFixed(1)} ${a.who === "wei" ? 64 : 70} 208)`);
+  if (a.bulb) a.bulb.setAttribute("fill", `hsl(${330 + Math.sin(t * 4) * 30},100%,${70 + amp * 15}%)`);
+  if (a.tail) a.tail.setAttribute("transform", `rotate(${(Math.sin(t * 3) * 8).toFixed(1)} 150 245)`);
+}
+function render(t) {
+  t = clamp(t, 0, TOTAL);
+  const sp = speechAt(t);
+  let cur = 0;
+  SCENES.forEach((sc, i) => {
+    const vis = t >= sc.start && t <= sc.end;
+    if (!vis) { sc.el.style.display = sc.bgEl.style.display = "none"; return; }
+    sc.el.style.display = sc.bgEl.style.display = "";
+    const lt = t - sc.start;
+    const fin = clamp(lt / XFADE), fout = i === SCENES.length - 1 ? 1 : clamp((sc.end - t) / XFADE);
+    sc.el.style.opacity = Math.min(fin, fout);
+    sc.bgEl.style.opacity = i ? fin : 1;
+    if (fin >= 1) cur = i;
+    sc.anim.forEach(a => entry(a, lt));
+    sc.actors.forEach(a => drawActor(a, t, sp, sc));
+    sc.icons.forEach((ic, k) => ic.style.transform = `translateY(${(Math.sin(t * 3 + k) * 4).toFixed(1)}px) rotate(${(Math.sin(t * 2 + k) * 6).toFixed(1)}deg)`);
+  });
+  // 字幕
+  let L = null;
+  for (const x of TIMELINE) if (t >= x.start - 0.1 && t < x.start + x.dur + GAP * 0.9) L = x;
+  const sub = $("#sub");
+  if (L) {
+    if (sub.dataset.id !== L.id) {
+      sub.dataset.id = L.id;
+      sub.querySelector(".who").textContent = WHO[L.who][0];
+      sub.querySelector(".who").style.background = WHO[L.who][1];
+      sub.querySelector(".txt").textContent = L.text;
+      sub.style.borderColor = WHO[L.who][1] + "55";
+    }
+    const p = clamp((t - L.start + 0.1) / 0.25);
+    sub.style.opacity = p; sub.style.transform = `translateY(${(1 - p) * 16}px)`;
+  } else sub.style.opacity = 0;
+  // 角落標籤與進度點
+  $("#corner").style.opacity = clamp((t - SCENES[1].start) / 0.5) * (t < SCENES.at(-1).start ? 1 : 0);
+  $("#dots").style.opacity = $("#corner").style.opacity;
+  [...$("#dots").children].forEach((d, i) => d.className = i === cur ? "on" : "");
+  // 雲朵、星星、彩帶
+  clouds.forEach(c => c.el.style.transform = `translateX(${((c.x + t * c.v) % (1280 + c.w * 2)) - c.w}px)`);
+  sparks.forEach(s => {
+    const o = (Math.sin(t * 2 + s.p) + 1) / 2;
+    Object.assign(s.el.style, {left: s.x + "px", top: s.y + Math.sin(t + s.p) * 10 + "px", opacity: o * 0.9, fontSize: s.sz + "px", transform: `scale(${0.6 + o * 0.5})`});
+  });
+  const last = SCENES.at(-1), ct = t - last.start - 0.3;
+  confetti.forEach(c => {
+    const lt = ct - c.d;
+    if (lt < 0) { c.el.style.opacity = 0; return; }
+    const y = -40 + lt * c.v;
+    c.el.style.opacity = y < 760 ? 1 : 0;
+    c.el.style.transform = `translate(${c.x + Math.sin(lt * 3) * c.sw}px,${y}px) rotate(${c.r + lt * 300}deg)`;
+  });
+}
+window.seek = render;
+
+/* ========== 播放器 ========== */
+const RENDER = new URLSearchParams(location.search).has("render");
+if (RENDER) { document.body.classList.add("render"); render(0); }
+else {
+  const stage = $("#stage");
+  const fit = () => stage.style.transform = `scale(${Math.min(innerWidth / 1280, innerHeight / 720)})`;
+  addEventListener("resize", fit); fit();
+  const audios = TIMELINE.filter(l => l.clip).map(l => ({L: l, a: new Audio(l.clip.file)}));
+  const bgm = new Audio("bgm.mp3"); bgm.loop = true; bgm.volume = 0.18;
+  let playing = false, t0 = 0, pos = 0;
+  const now = () => playing ? (performance.now() - t0) / 1000 : pos;
+  function syncAudio(t) {
+    audios.forEach(({L, a}) => {
+      const inside = t >= L.start && t < L.start + L.dur;
+      if (playing && inside) {
+        if (a.paused) { a.currentTime = t - L.start; a.play().catch(() => {}); }
+      } else if (!a.paused) a.pause();
+    });
+    if (playing && bgm.paused) bgm.play().catch(() => {});
+    if (!playing && !bgm.paused) bgm.pause();
+  }
+  function play() { if (pos >= TOTAL) pos = 0; t0 = performance.now() - pos * 1000; playing = true; $("#pp").textContent = "⏸"; }
+  function pause() { pos = now(); playing = false; $("#pp").textContent = "▶"; syncAudio(pos); }
+  function seekTo(t) { audios.forEach(({a}) => a.pause()); pos = t; t0 = performance.now() - t * 1000; }
+  const fmt = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
+  function loop() {
+    let t = now();
+    if (t >= TOTAL && playing) { pause(); pos = TOTAL; t = TOTAL; }
+    render(t); syncAudio(t);
+    $("#bar b").style.width = (t / TOTAL * 100) + "%";
+    $("#time").textContent = `${fmt(t)} / ${fmt(TOTAL)}`;
+    requestAnimationFrame(loop);
+  }
+  $("#start").onclick = () => { $("#start").remove(); play(); };
+  $("#pp").onclick = () => playing ? pause() : play();
+  $("#bar").onclick = e => { const r = e.currentTarget.getBoundingClientRect(); seekTo(clamp((e.clientX - r.left) / r.width) * TOTAL); };
+  $("#fs").onclick = () => document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen();
+  addEventListener("keydown", e => { if (e.code === "Space") { e.preventDefault(); playing ? pause() : play(); } });
+  render(0); loop();
+}
+</script>
+</body>
+</html>
