@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>社交工程演練動畫</title>
+<style>
+@font-face{font-family:"Iansui";src:url("Iansui-Regular.ttf") format("truetype");font-display:swap;}
+:root{
+  --sky1:#7ec8ff;--sky2:#c9ecff;--pink:#ff6fa5;--pink2:#ffd1e3;--navy:#22305f;
+  --ink:#1d2340;--yellow:#ffd84d;--green:#2fbf71;--red:#ff4d5e;--card:#ffffff;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#14182e;font-family:"Iansui","Noto Sans TC","Microsoft JhengHei",sans-serif;color:var(--ink);
+  min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;gap:12px}
+.player{width:min(100%,1100px);}
+.stage{position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;overflow:clip;border-radius:18px;
+  background:linear-gradient(180deg,var(--sky1),var(--sky2) 70%,#fff3fa);box-shadow:0 18px 50px rgba(0,0,0,.5);container-type:inline-size}
+/* 背景裝飾 */
+.cloud{position:absolute;background:#fff;border-radius:999px;opacity:.85;animation:drift linear infinite}
+.cloud::before,.cloud::after{content:"";position:absolute;background:#fff;border-radius:50%}
+.cloud::before{width:55%;height:160%;left:15%;top:-70%}
+.cloud::after{width:40%;height:130%;left:50%;top:-45%}
+@keyframes drift{from{transform:translateX(-30cqw)}to{transform:translateX(130cqw)}}
+.sparkle{position:absolute;width:2cqw;height:2cqw;background:radial-gradient(circle,#fff 20%,transparent 70%);
+  clip-path:polygon(50% 0,60% 40%,100% 50%,60% 60%,50% 100%,40% 60%,0 50%,40% 40%);animation:twinkle 2.4s ease-in-out infinite}
+@keyframes twinkle{0%,100%{transform:scale(.3) rotate(0);opacity:.2}50%{transform:scale(1) rotate(45deg);opacity:1}}
+.ground{position:absolute;left:0;right:0;bottom:0;height:16%;background:linear-gradient(180deg,#9be08f,#6cc46a)}
+.ground::before{content:"";position:absolute;left:0;right:0;top:-2.2cqw;height:4cqw;
+  background:radial-gradient(circle at 2cqw 2.5cqw,#9be08f 2.2cqw,transparent 2.3cqw) 0 0/4cqw 4cqw repeat-x}
+/* 集中線 */
+.speedlines{position:absolute;inset:-20%;opacity:0;pointer-events:none;
+  background:repeating-conic-gradient(from 0deg at 50% 50%,rgba(255,255,255,.75) 0 1.2deg,transparent 1.2deg 7deg);
+  -webkit-mask:radial-gradient(circle,transparent 28%,#000 60%);mask:radial-gradient(circle,transparent 28%,#000 60%)}
+.speedlines.flash{animation:lines .9s ease-out}
+@keyframes lines{0%{opacity:0;transform:scale(1.3)}25%{opacity:1}100%{opacity:0;transform:scale(1)}}
+
+/* 場景 */
+.scene{position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .6s}
+.scene.active{opacity:1}
+.badge{position:absolute;left:3cqw;top:3cqw;background:var(--navy);color:#fff;font-size:1.9cqw;padding:.6cqw 1.6cqw;border-radius:999px;
+  box-shadow:0 .4cqw 0 rgba(0,0,0,.2);letter-spacing:.1em;z-index:5}
+.step{position:absolute;right:3cqw;top:2.4cqw;font-size:5cqw;color:#fff;-webkit-text-stroke:.35cqw var(--pink);paint-order:stroke fill;
+  font-weight:900;transform:rotate(-6deg)}
+
+/* 角色 */
+.girl{position:absolute;bottom:2%;left:2%;width:28cqw;z-index:4}
+.girl svg{width:100%;height:auto;overflow:visible}
+.scene.active .girl{animation:popin .7s cubic-bezier(.3,1.6,.5,1) both,bob 3s ease-in-out .7s infinite}
+@keyframes popin{from{transform:translateY(30%) scale(.8);opacity:0}to{transform:none;opacity:1}}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-1.2%)}}
+.eyes{transform-box:fill-box;transform-origin:center;animation:blink 4s infinite}
+@keyframes blink{0%,46%,50%,100%{transform:scaleY(1)}48%{transform:scaleY(.08)}}
+.mouth-open{opacity:0}
+.talking .mouth-open{animation:talk .28s steps(1) infinite}
+.talking .mouth-closed{animation:talk2 .28s steps(1) infinite}
+@keyframes talk{0%{opacity:1}50%{opacity:0}}
+@keyframes talk2{0%{opacity:0}50%{opacity:1}}
+.arm-wave{transform-box:fill-box;transform-origin:15% 90%;animation:wave 1.2s ease-in-out infinite}
+@keyframes wave{0%,100%{transform:rotate(0)}50%{transform:rotate(-14deg)}}
+
+.mascot{position:absolute;width:10cqw;z-index:4;animation:hop 1.6s ease-in-out infinite}
+@keyframes hop{0%,100%{transform:translateY(0)}50%{transform:translateY(-12%)}}
+
+/* 對話框 */
+.bubble{position:absolute;left:3cqw;top:6.5cqw;width:25cqw;background:#fff;border:.35cqw solid var(--ink);border-radius:2.5cqw;
+  padding:1.2cqw 1.6cqw;font-size:2.2cqw;line-height:1.4;z-index:6;box-shadow:.5cqw .5cqw 0 var(--pink)}
+.bubble::after{content:"";position:absolute;left:12cqw;bottom:-2.1cqw;border:1.1cqw solid transparent;border-top:1.4cqw solid var(--ink)}
+.scene.active .bubble{animation:pop .5s .5s cubic-bezier(.3,1.7,.5,1) both}
+@keyframes pop{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+
+/* 右側面板 */
+.panel{position:absolute;right:4cqw;top:12cqw;width:52cqw;height:30cqw;display:flex;align-items:center;justify-content:center}
+.scene.active .panel>*{animation:rise .7s .3s both}
+@keyframes rise{from{transform:translateY(8%);opacity:0}to{transform:none;opacity:1}}
+.card{background:var(--card);border:.35cqw solid var(--ink);border-radius:2cqw;box-shadow:.8cqw .8cqw 0 rgba(34,48,95,.25)}
+.hl{color:var(--pink);font-weight:900}
+.mark{background:linear-gradient(transparent 55%,var(--yellow) 55%)}
+
+/* 標題 */
+.title-wrap{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding-left:22cqw;text-align:center}
+.title-sub{font-size:2.6cqw;background:var(--navy);color:#fff;padding:.5cqw 2.2cqw;border-radius:999px;letter-spacing:.2em}
+.title-main{font-size:7.2cqw;line-height:1.15;margin:1.6cqw 0;color:#fff;-webkit-text-stroke:.6cqw var(--navy);paint-order:stroke fill;
+  text-shadow:.8cqw .8cqw 0 var(--pink)}
+.title-main span{display:inline-block}
+.scene.active .title-main span{animation:jump .6s cubic-bezier(.3,1.8,.5,1) both}
+@keyframes jump{from{transform:translateY(-120%) scale(.5);opacity:0}to{transform:none;opacity:1}}
+.title-tag{font-size:2.4cqw;color:var(--navy)}
+
+/* 字幕 */
+.subtitle{position:absolute;left:50%;bottom:2.5cqw;transform:translateX(-50%);width:88%;text-align:center;z-index:10;
+  background:rgba(20,24,46,.82);color:#fff;font-size:2.5cqw;line-height:1.45;padding:1cqw 2cqw;border-radius:1.4cqw;
+  border:.25cqw solid rgba(255,255,255,.5)}
+.subtitle:empty{display:none}
+.subtitle.hide{display:none}
+
+/* 開始遮罩 */
+.cover{position:absolute;inset:0;z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2cqw;
+  background:rgba(20,24,46,.55);backdrop-filter:blur(3px);color:#fff;text-align:center}
+.cover h1{font-size:4.4cqw;-webkit-text-stroke:.3cqw var(--pink);paint-order:stroke fill;text-shadow:0 .5cqw 0 var(--navy)}
+.cover button{font:inherit;font-size:3cqw;padding:1.2cqw 4cqw;border-radius:999px;border:.4cqw solid #fff;background:var(--pink);color:#fff;
+  cursor:pointer;box-shadow:0 .6cqw 0 #c43d73;animation:hop 1.4s ease-in-out infinite}
+.cover small{font-size:1.6cqw;opacity:.85}
+.cover.gone{display:none}
+
+/* 控制列 */
+.controls{display:flex;align-items:center;gap:10px;margin-top:10px;color:#dfe6ff;font-size:15px;flex-wrap:wrap}
+.controls button{font:inherit;background:#2b3466;color:#fff;border:1px solid #4a5596;border-radius:10px;padding:7px 12px;cursor:pointer}
+.controls button:hover{background:#3a4688}
+.controls button[aria-pressed="true"]{background:var(--pink);border-color:var(--pink)}
+.bar{flex:1;min-width:120px;height:10px;background:#2b3466;border-radius:99px;overflow:hidden;display:flex;gap:3px}
+.bar i{flex:1;background:#3d4780;border-radius:99px;cursor:pointer;position:relative;overflow:hidden}
+.bar i.done{background:var(--pink)}
+.bar i.now::after{content:"";position:absolute;inset:0;background:var(--pink);transform-origin:left;transform:scaleX(var(--p,0))}
+.counter{min-width:48px;text-align:center}
+
+/* ===== 各場景元素 ===== */
+/* S1 email + hook */
+.mailbig{position:relative;width:30cqw;height:20cqw}
+.env{position:absolute;inset:0;background:#fff;border:.4cqw solid var(--ink);border-radius:1.4cqw;overflow:hidden}
+.env::before{content:"";position:absolute;left:-10%;right:-10%;top:-60%;height:120%;border-bottom:.4cqw solid var(--ink);
+  background:var(--pink2);transform:rotate(0);clip-path:polygon(0 50%,50% 100%,100% 50%,100% 0,0 0)}
+.env b{position:absolute;bottom:2cqw;left:0;right:0;text-align:center;font-size:2.6cqw}
+.hook{position:absolute;top:-14cqw;left:50%;width:4cqw;height:16cqw;transform-origin:top center;animation:dangle 2s ease-in-out infinite}
+.hook::before{content:"";position:absolute;left:50%;top:0;width:.3cqw;height:11cqw;background:var(--ink)}
+.hook::after{content:"";position:absolute;left:-.2cqw;top:10.6cqw;width:3cqw;height:3.6cqw;border:.5cqw solid #8a93b8;border-top:none;border-radius:0 0 3cqw 3cqw}
+@keyframes dangle{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(8deg)}}
+.stamp{position:absolute;right:-5cqw;bottom:-3cqw;font-size:3cqw;color:var(--red);border:.45cqw solid var(--red);padding:.4cqw 1.4cqw;
+  border-radius:1cqw;transform:rotate(-14deg);background:rgba(255,255,255,.85)}
+.scene.active .stamp{animation:stampin .5s 1.2s cubic-bezier(.3,1.6,.5,1) both}
+@keyframes stampin{from{transform:rotate(-14deg) scale(3);opacity:0}to{transform:rotate(-14deg) scale(1);opacity:1}}
+.yearchip{position:absolute;left:-6cqw;top:-2cqw;background:var(--yellow);border:.35cqw solid var(--ink);border-radius:999px;padding:.4cqw 1.6cqw;font-size:2.4cqw;transform:rotate(-8deg)}
+
+/* S2 mail flying into box */
+.s2wrap{position:relative;width:50cqw;height:28cqw}
+.flymail{position:absolute;width:6cqw;height:4cqw;background:#fff;border:.3cqw solid var(--ink);border-radius:.6cqw;left:0;
+  animation:fly 2.6s ease-in infinite}
+.flymail::after{content:"@";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:2.2cqw;color:var(--pink);font-weight:900}
+@keyframes fly{0%{transform:translate(0,0) rotate(-10deg);opacity:0}15%{opacity:1}80%{opacity:1}100%{transform:translate(34cqw,6cqw) rotate(15deg) scale(.6);opacity:0}}
+.mbox{position:absolute;right:0;top:3cqw;width:16cqw;height:22cqw}
+.mbox .box{position:absolute;left:0;top:0;width:16cqw;height:11cqw;background:var(--pink);border:.4cqw solid var(--ink);border-radius:6cqw 6cqw 1cqw 1cqw}
+.mbox .slot{position:absolute;left:3cqw;top:4cqw;width:10cqw;height:1.2cqw;background:var(--ink);border-radius:1cqw}
+.mbox .pole{position:absolute;left:6.6cqw;top:11cqw;width:2.8cqw;height:11cqw;background:#8b5a3c;border:.3cqw solid var(--ink)}
+.mbox .flag{position:absolute;right:-1.4cqw;top:1cqw;width:1cqw;height:6cqw;background:var(--red);border:.25cqw solid var(--ink);transform-origin:bottom;animation:flagup 2.6s infinite}
+@keyframes flagup{0%,70%{transform:rotate(0)}80%,100%{transform:rotate(-30deg)}}
+.allstaff{position:absolute;left:0;bottom:0;font-size:3.2cqw;padding:1cqw 2cqw}
+
+/* S3 role cards */
+.roles{display:grid;grid-template-columns:repeat(4,1fr);gap:1.4cqw;width:100%}
+.role{text-align:center;padding:1.4cqw .6cqw 1.2cqw;position:relative}
+.role .ico{font-size:6cqw;line-height:1.1}
+.role .nm{font-size:2.5cqw;margin-top:.4cqw}
+.role .ok{position:absolute;top:-1.6cqw;right:-1.2cqw;width:4cqw;height:4cqw;border-radius:50%;background:var(--green);color:#fff;font-size:2.6cqw;
+  display:flex;align-items:center;justify-content:center;border:.3cqw solid var(--ink)}
+.role.no{background:#eef0f7;border-style:dashed}
+.role.no .ok{background:var(--red)}
+.role.no .nm{font-size:2cqw}
+.scene.active .role{animation:rise .5s both}
+.scene.active .role:nth-child(1){animation-delay:.6s}.scene.active .role:nth-child(2){animation-delay:1.1s}
+.scene.active .role:nth-child(3){animation-delay:1.6s}.scene.active .role:nth-child(4){animation-delay:2.4s}
+.rolenote{grid-column:1/-1;text-align:center;font-size:2.3cqw;margin-top:1cqw}
+
+/* S4 excel */
+.s4wrap{position:relative;display:flex;align-items:center;gap:3cqw}
+.xls{width:32cqw;overflow:hidden}
+.xls .top{background:#1f7a46;color:#fff;font-size:2cqw;padding:.6cqw 1.2cqw;display:flex;align-items:center;gap:.8cqw}
+.xls .top b{background:#fff;color:#1f7a46;border-radius:.4cqw;padding:0 .6cqw}
+.xls table{width:100%;border-collapse:collapse;font-size:1.8cqw}
+.xls th{background:#e4f3ea;font-weight:normal}
+.xls th,.xls td{border:.15cqw solid #b9cfc2;padding:.5cqw .6cqw;text-align:left;white-space:nowrap}
+.scene.active .xls tbody tr{animation:rowin .4s both}
+.scene.active .xls tbody tr:nth-child(1){animation-delay:.9s}.scene.active .xls tbody tr:nth-child(2){animation-delay:1.3s}
+.scene.active .xls tbody tr:nth-child(3){animation-delay:1.7s}.scene.active .xls tbody tr:nth-child(4){animation-delay:2.1s}
+@keyframes rowin{from{opacity:0;transform:translateX(-10%)}to{opacity:1;transform:none}}
+.upload{width:14cqw;text-align:center}
+.cloudico{position:relative;width:14cqw;height:9cqw;background:#fff;border:.35cqw solid var(--ink);border-radius:5cqw}
+.cloudico::after{content:"↑";font-weight:900;position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:5cqw;color:var(--pink);
+  animation:up 1.2s ease-in-out infinite}
+@keyframes up{0%{transform:translateY(20%);opacity:.3}60%{transform:translateY(-10%);opacity:1}100%{transform:translateY(-25%);opacity:0}}
+.upload p{font-size:2.2cqw;margin-top:1cqw}
+.arrow{font-size:5cqw;color:var(--navy);animation:nudge 1s ease-in-out infinite}
+@keyframes nudge{50%{transform:translateX(30%)}}
+
+/* S5 duplicate */
+.s5wrap{display:flex;gap:2cqw;align-items:stretch}
+.list{width:23cqw;padding:1.4cqw}
+.list h4{font-size:2.3cqw;text-align:center;margin-bottom:1cqw;border-bottom:.25cqw dashed var(--ink);padding-bottom:.6cqw}
+.list li{list-style:none;font-size:2cqw;padding:.45cqw .8cqw;border-radius:.8cqw;margin:.3cqw 0;position:relative}
+.list li.dup{background:#ffe2e6}
+.list li.dup::after{content:"";position:absolute;left:0;right:0;top:50%;height:.35cqw;background:var(--red);transform-origin:left;transform:scaleX(0)}
+.scene.active .list li.dup::after{animation:strike .5s 2s forwards}
+@keyframes strike{to{transform:scaleX(1)}}
+.list li.same{background:#e2f6ea}
+.warn{position:absolute;left:50%;bottom:-1cqw;transform:translateX(-50%);background:var(--yellow);border:.35cqw solid var(--ink);border-radius:1cqw;
+  padding:.6cqw 2cqw;font-size:2.4cqw;white-space:nowrap}
+.scene.active .warn{animation:shake .5s 2.6s both}
+@keyframes shake{0%{opacity:0;transform:translateX(-50%) scale(.6)}40%{opacity:1;transform:translateX(-52%) rotate(-3deg) scale(1.05)}
+  70%{transform:translateX(-48%) rotate(3deg)}100%{opacity:1;transform:translateX(-50%)}}
+
+/* S6 ending */
+.ending{display:flex;flex-direction:column;align-items:center;text-align:center;gap:1.4cqw}
+.ending .big{font-size:6cqw;color:#fff;-webkit-text-stroke:.5cqw var(--pink);paint-order:stroke fill;text-shadow:.6cqw .6cqw 0 var(--navy)}
+.checklist{padding:1.4cqw 2.4cqw;text-align:left;font-size:2.1cqw;line-height:1.7}
+.checklist li{list-style:none}
+.checklist li::before{content:"✔ ";color:var(--green);font-weight:900}
+.heart{position:absolute;font-size:3cqw;color:var(--pink);animation:floatup 3s ease-in infinite;opacity:0}
+@keyframes floatup{0%{transform:translateY(0) scale(.6);opacity:0}20%{opacity:1}100%{transform:translateY(-22cqw) scale(1.2);opacity:0}}
+
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;animation-iteration-count:1!important}}
+</style>
+</head>
+<body>
+<div class="player">
+  <div class="stage" id="stage">
+    <!-- 背景 -->
+    <div class="cloud" style="width:14cqw;height:4cqw;top:8%;animation-duration:48s;animation-delay:-10s"></div>
+    <div class="cloud" style="width:10cqw;height:3cqw;top:22%;animation-duration:62s;animation-delay:-40s"></div>
+    <div class="cloud" style="width:18cqw;height:5cqw;top:4%;animation-duration:80s;animation-delay:-60s"></div>
+    <div class="sparkle" style="left:40%;top:10%"></div>
+    <div class="sparkle" style="left:70%;top:6%;animation-delay:.8s"></div>
+    <div class="sparkle" style="left:88%;top:30%;animation-delay:1.6s"></div>
+    <div class="sparkle" style="left:55%;top:40%;animation-delay:1.1s"></div>
+    <div class="ground"></div>
+    <div class="speedlines" id="lines"></div>
+
+    <!-- 場景由 JS 產生 -->
+    <div id="scenes"></div>
+
+    <div class="subtitle" id="sub"></div>
+
+    <div class="cover" id="cover">
+      <h1>115學年度 轄下學校社交工程演練</h1>
+      <button id="startBtn" type="button">▶ 開始播放</button>
+      <small>建議開啟喇叭，將以語音旁白搭配字幕播放</small>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button id="prevBtn" type="button" title="上一段">⏮</button>
+    <button id="playBtn" type="button" title="播放／暫停">⏸</button>
+    <button id="nextBtn" type="button" title="下一段">⏭</button>
+    <div class="bar" id="bar"></div>
+    <span class="counter" id="counter">1/7</span>
+    <button id="voiceBtn" type="button" aria-pressed="true">🔊 旁白</button>
+    <button id="subBtn" type="button" aria-pressed="true">💬 字幕</button>
+  </div>
+</div>
+
+<template id="girlTpl">
+<svg viewBox="0 0 300 440" xmlns="http://www.w3.org/2000/svg" aria-label="資安小隊長小晴">
+  <defs>
+    <linearGradient id="hairG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4b3d8f"/><stop offset="1" stop-color="#2a2160"/></linearGradient>
+    <radialGradient id="irisG" cx=".5" cy=".65" r=".6"><stop offset="0" stop-color="#7fe0ff"/><stop offset=".55" stop-color="#2f8de0"/><stop offset="1" stop-color="#1b3a8f"/></radialGradient>
+  </defs>
+  <!-- 後髮 -->
+  <path d="M60 140 C40 260 50 330 70 380 L230 380 C250 330 260 260 240 140 Z" fill="url(#hairG)"/>
+  <!-- 雙馬尾 -->
+  <path d="M62 120 C10 150 5 260 30 330 C40 300 50 250 70 200 Z" fill="url(#hairG)"/>
+  <path d="M238 120 C290 150 295 260 270 330 C260 300 250 250 230 200 Z" fill="url(#hairG)"/>
+  <circle cx="66" cy="118" r="13" fill="#ff6fa5" stroke="#1d2340" stroke-width="3"/>
+  <circle cx="234" cy="118" r="13" fill="#ff6fa5" stroke="#1d2340" stroke-width="3"/>
+  <!-- 身體 -->
+  <path d="M135 245 L165 245 L168 270 L132 270 Z" fill="#ffe1cf"/>
+  <path d="M85 300 C90 270 115 262 150 262 C185 262 210 270 215 300 L225 440 L75 440 Z" fill="#22305f" stroke="#1d2340" stroke-width="3"/>
+  <path d="M150 262 L125 266 L150 320 L175 266 Z" fill="#fff" stroke="#1d2340" stroke-width="3"/>
+  <path d="M138 290 L150 280 L162 290 L150 330 Z" fill="#ff6fa5" stroke="#1d2340" stroke-width="2.5"/>
+  <!-- 資安徽章 -->
+  <path d="M188 318 L208 312 L228 318 L228 340 C228 352 218 360 208 364 C198 360 188 352 188 340 Z" fill="#ffd84d" stroke="#1d2340" stroke-width="2.5"/>
+  <text x="208" y="345" text-anchor="middle" font-size="16" font-weight="900" fill="#1d2340">資</text>
+  <!-- 揮手的手 -->
+  <g class="arm-wave">
+    <path d="M90 300 C70 290 55 250 60 215" stroke="#22305f" stroke-width="26" fill="none" stroke-linecap="round"/>
+    <circle cx="60" cy="205" r="16" fill="#ffe1cf" stroke="#1d2340" stroke-width="3"/>
+  </g>
+  <!-- 臉 -->
+  <path d="M78 150 C78 95 110 70 150 70 C190 70 222 95 222 150 C222 205 190 250 150 252 C110 250 78 205 78 150 Z" fill="#ffe8da" stroke="#1d2340" stroke-width="3"/>
+  <!-- 腮紅 -->
+  <ellipse cx="105" cy="196" rx="15" ry="8" fill="#ff9fbf" opacity=".6"/>
+  <ellipse cx="195" cy="196" rx="15" ry="8" fill="#ff9fbf" opacity=".6"/>
+  <g stroke="#ff7fa8" stroke-width="2" opacity=".7"><path d="M96 194 l6 -6 M104 196 l6 -6 M112 198 l6 -6"/><path d="M186 194 l6 -6 M194 196 l6 -6 M202 198 l6 -6"/></g>
+  <!-- 眼睛 -->
+  <g class="eyes">
+    <g>
+      <ellipse cx="118" cy="165" rx="20" ry="26" fill="#fff"/>
+      <ellipse cx="118" cy="168" rx="17" ry="23" fill="url(#irisG)"/>
+      <ellipse cx="118" cy="172" rx="8" ry="11" fill="#14214f"/>
+      <ellipse cx="111" cy="159" rx="6" ry="8" fill="#fff"/>
+      <circle cx="125" cy="180" r="3" fill="#fff"/>
+      <path d="M94 148 C104 134 132 134 142 146" stroke="#1d2340" stroke-width="6" fill="none" stroke-linecap="round"/>
+      <path d="M95 148 l-8 -6" stroke="#1d2340" stroke-width="4" stroke-linecap="round"/>
+    </g>
+    <g>
+      <ellipse cx="182" cy="165" rx="20" ry="26" fill="#fff"/>
+      <ellipse cx="182" cy="168" rx="17" ry="23" fill="url(#irisG)"/>
+      <ellipse cx="182" cy="172" rx="8" ry="11" fill="#14214f"/>
+      <ellipse cx="175" cy="159" rx="6" ry="8" fill="#fff"/>
+      <circle cx="189" cy="180" r="3" fill="#fff"/>
+      <path d="M158 146 C168 134 196 134 206 148" stroke="#1d2340" stroke-width="6" fill="none" stroke-linecap="round"/>
+      <path d="M205 148 l8 -6" stroke="#1d2340" stroke-width="4" stroke-linecap="round"/>
+    </g>
+  </g>
+  <!-- 眉毛 -->
+  <path d="M104 128 q14 -7 28 0" stroke="#2a2160" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <path d="M168 128 q14 -7 28 0" stroke="#2a2160" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <!-- 嘴 -->
+  <path class="mouth-closed" d="M140 215 q10 9 20 0" stroke="#1d2340" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <path class="mouth-open" d="M139 212 q11 -3 22 0 q-2 16 -11 16 q-9 0 -11 -16 Z" fill="#d8455f" stroke="#1d2340" stroke-width="2.5"/>
+  <!-- 瀏海 -->
+  <path d="M74 150 C68 80 110 52 152 54 C200 56 236 88 226 152 C215 128 205 112 196 104 C196 120 190 132 182 138 C182 122 178 112 170 104 C160 122 140 130 128 132 C134 120 136 110 134 102 C120 118 104 128 90 132 C92 120 94 110 98 104 C88 116 80 132 74 150 Z" fill="url(#hairG)" stroke="#1d2340" stroke-width="3"/>
+  <!-- 呆毛 -->
+  <path d="M150 56 C140 30 160 18 172 24 C160 28 156 40 156 56 Z" fill="#4b3d8f" stroke="#1d2340" stroke-width="2.5"/>
+  <!-- 髮夾 -->
+  <path d="M188 92 l18 -4 l2 8 l-18 4 Z" fill="#ffd84d" stroke="#1d2340" stroke-width="2"/>
+</svg>
+</template>
+
+<template id="mascotTpl">
+<svg viewBox="0 0 120 130" xmlns="http://www.w3.org/2000/svg" aria-label="吉祥物盾盾">
+  <path d="M60 6 L108 22 L108 62 C108 94 84 116 60 124 C36 116 12 94 12 62 L12 22 Z" fill="#7fd6ff" stroke="#1d2340" stroke-width="4"/>
+  <path d="M60 18 L96 30 L96 62 C96 86 78 103 60 110 C42 103 24 86 24 62 L24 30 Z" fill="#c9f0ff"/>
+  <ellipse cx="44" cy="62" rx="7" ry="10" fill="#1d2340"/><ellipse cx="76" cy="62" rx="7" ry="10" fill="#1d2340"/>
+  <circle cx="42" cy="58" r="3" fill="#fff"/><circle cx="74" cy="58" r="3" fill="#fff"/>
+  <path d="M52 80 q8 8 16 0" stroke="#1d2340" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  <ellipse cx="34" cy="78" rx="7" ry="4" fill="#ff9fbf"/><ellipse cx="86" cy="78" rx="7" ry="4" fill="#ff9fbf"/>
+  <path d="M60 6 L60 0" stroke="#1d2340" stroke-width="3"/><circle cx="60" cy="0" r="5" fill="#ffd84d" stroke="#1d2340" stroke-width="2"/>
+</svg>
+</template>
+
+<script>
+(function(){
+  // ====== 劇本 ======
+  const SCENES = [
+    { badge:"資安宣導", say:"大家好！我是資安小隊長・小晴！",
+      narr:"115學年度轄下學校社交工程演練，重要說明，開始囉！",
+      html:`<div class="title-wrap"><div class="title-sub">115 學年度</div>
+        <div class="title-main">${[..."轄下學校"].map((c,i)=>`<span style="animation-delay:${.3+i*.1}s">${c}</span>`).join("")}<br>${[..."社交工程演練"].map((c,i)=>`<span style="animation-delay:${.8+i*.1}s">${c}</span>`).join("")}</div>
+        <div class="title-tag">各校夥伴必看・名單填報說明</div></div>`,
+      mascot:{left:"84%",top:"52%"} },
+    { step:"1", badge:"演練目的", say:"小心！可疑信件來了～",
+      narr:"為辦理本中心115年轄下連線單位社交工程演練作業。",
+      html:`<div class="panel"><div class="mailbig"><div class="hook"></div><div class="env"><b>📩 可疑信件？</b></div>
+        <div class="yearchip">115年</div><div class="stamp">演練作業</div></div></div>` },
+    { step:"2", badge:"協助填報", say:"每位教職員的信箱都要喔！",
+      narr:"敬請各校夥伴協助填報各校「所有教職員」信箱資料。",
+      html:`<div class="panel"><div class="s2wrap">
+        <div class="flymail" style="top:2cqw;animation-delay:0s"></div>
+        <div class="flymail" style="top:8cqw;animation-delay:.6s"></div>
+        <div class="flymail" style="top:14cqw;animation-delay:1.2s"></div>
+        <div class="flymail" style="top:5cqw;animation-delay:1.8s"></div>
+        <div class="mbox"><div class="box"><div class="slot"></div><div class="flag"></div></div><div class="pole"></div></div>
+        <div class="card allstaff">「<span class="hl mark">所有教職員</span>」信箱</div></div></div>` },
+    { step:"3", badge:"名單範圍", say:"教師、職員、工友都要列入！",
+      narr:"所有教職員應含教師、職員及工友，無使用電腦辦公者除外。",
+      html:`<div class="panel"><div class="roles">
+        <div class="card role"><div class="ok">✔</div><div class="ico">👩‍🏫</div><div class="nm">教師</div></div>
+        <div class="card role"><div class="ok">✔</div><div class="ico">🧑‍💼</div><div class="nm">職員</div></div>
+        <div class="card role"><div class="ok">✔</div><div class="ico">🧹</div><div class="nm">工友</div></div>
+        <div class="card role no"><div class="ok">✕</div><div class="ico">🚫💻</div><div class="nm">無使用電腦<br>辦公者除外</div></div>
+        <div class="rolenote">✔ 列入名單　✕ 不需列入</div></div></div>` },
+    { step:"4", badge:"上傳名單", say:"照格式填好，上傳就完成！",
+      narr:"依格式建立演練名單Excel檔上傳，以利彙整後辦理演練作業。",
+      html:`<div class="panel"><div class="s4wrap">
+        <div class="card xls"><div class="top"><b>X</b> 演練名單.xlsx</div>
+          <table><thead><tr><th>單位</th><th>姓名</th><th>職稱</th><th>電子信箱</th></tr></thead>
+          <tbody><tr><td>○○國小</td><td>王○明</td><td>教師</td><td>t01@…</td></tr>
+          <tr><td>○○國小</td><td>李○華</td><td>職員</td><td>s01@…</td></tr>
+          <tr><td>○○國小</td><td>陳○美</td><td>工友</td><td>w01@…</td></tr>
+          <tr><td>…</td><td>…</td><td>…</td><td>…</td></tr></tbody></table></div>
+        <div class="arrow">➜</div>
+        <div class="upload"><div class="cloudico"></div><p>上傳彙整</p></div></div></div>` },
+    { step:"5", badge:"注意事項", say:"兼辦的人事會計，不要重複列喔！",
+      narr:"貴校人事會計如為兼辦，請勿列在名單中，避免資料重複。",
+      html:`<div class="panel"><div class="s5wrap" style="position:relative;padding-bottom:3cqw">
+        <div class="card list"><h4>主辦學校名單</h4><ul>
+          <li class="same">林○○（人事）</li><li class="same">張○○（會計）</li><li>……</li></ul></div>
+        <div class="card list"><h4>貴校名單（兼辦）</h4><ul>
+          <li class="dup">林○○（人事兼辦）</li><li class="dup">張○○（會計兼辦）</li><li>……</li></ul></div>
+        <div class="warn">⚠ 兼辦者勿列入・避免資料重複</div></div></div>` },
+    { badge:"感謝配合", say:"謝謝大家！資安防護一起來！",
+      narr:"感謝各校夥伴協助配合，一起守護校園資訊安全！",
+      html:`<div class="panel" style="top:6cqw;height:36cqw"><div class="ending">
+        <div class="big">感謝各校協助！</div>
+        <ul class="card checklist">
+          <li>填報「所有教職員」信箱</li>
+          <li>含教師、職員、工友（無使用電腦辦公者除外）</li>
+          <li>依格式建立 Excel 名單上傳</li>
+          <li>兼辦之人事、會計勿重複列入</li></ul></div>
+        <span class="heart" style="left:10%;bottom:0">♥</span><span class="heart" style="left:50%;bottom:0;animation-delay:1s">♥</span>
+        <span class="heart" style="left:90%;bottom:0;animation-delay:2s">♥</span></div>`,
+      mascot:{left:"88%",top:"64%"} }
+  ];
+
+  const $ = id => document.getElementById(id);
+  const host = $("scenes"), girlTpl = $("girlTpl").innerHTML, mascotTpl = $("mascotTpl").innerHTML;
+
+  // 建立場景
+  SCENES.forEach((s,i)=>{
+    const el = document.createElement("section");
+    el.className = "scene";
+    el.innerHTML = `<div class="badge">${s.badge}</div>${s.step?`<div class="step">STEP ${s.step}</div>`:""}
+      ${s.html}<div class="girl">${girlTpl.replace(/hairG/g,"hairG"+i).replace(/irisG/g,"irisG"+i)}</div>
+      <div class="bubble" >${s.say}</div>
+      ${s.mascot?`<div class="mascot" style="left:${s.mascot.left};top:${s.mascot.top}">${mascotTpl}</div>`:""}`;
+    host.appendChild(el);
+    const seg = document.createElement("i");
+    seg.title = `第 ${i+1} 段`;
+    seg.addEventListener("click",()=>go(i));
+    $("bar").appendChild(seg);
+  });
+  const sceneEls = [...host.children], segs = [...$("bar").children];
+
+  // ====== 語音 ======
+  const synth = window.speechSynthesis;
+  let voice = null;
+  function pickVoice(){
+    if(!synth) return;
+    const vs = synth.getVoices();
+    voice = vs.find(v=>/zh[-_]TW/i.test(v.lang)) || vs.find(v=>/zh[-_]HK/i.test(v.lang)) || vs.find(v=>/^zh/i.test(v.lang)) || null;
+  }
+  if(synth){ pickVoice(); synth.onvoiceschanged = pickVoice; }
+
+  let idx = 0, playing = false, voiceOn = !!synth, timer = null, raf = null, t0 = 0, dur = 0, token = 0;
+
+  function sceneDuration(s){ return Math.max(5500, s.narr.length * 280 + 2200); }
+
+  function show(i){
+    sceneEls.forEach((el,k)=>el.classList.toggle("active",k===i));
+    segs.forEach((g,k)=>{g.classList.toggle("done",k<i);g.classList.toggle("now",k===i);g.style.setProperty("--p",0);});
+    $("counter").textContent = `${i+1}/${SCENES.length}`;
+    $("sub").textContent = SCENES[i].narr;
+    const lines = $("lines"); lines.classList.remove("flash"); void lines.offsetWidth; lines.classList.add("flash");
+  }
+
+  function setTalking(on){ sceneEls[idx].querySelector(".girl").classList.toggle("talking",on); }
+
+  function stopAll(){
+    token++;
+    clearTimeout(timer); cancelAnimationFrame(raf);
+    if(synth) synth.cancel();
+    sceneEls.forEach(el=>el.querySelector(".girl").classList.remove("talking"));
+  }
+
+  function progress(){
+    const p = Math.min(1,(performance.now()-t0)/dur);
+    segs[idx].style.setProperty("--p",p);
+    if(p<1) raf = requestAnimationFrame(progress);
+  }
+
+  function next(){ if(idx < SCENES.length-1) go(idx+1); else { playing=false; $("playBtn").textContent="↻"; setTalking(false); } }
+
+  function play(){
+    const my = ++token, s = SCENES[idx];
+    playing = true; $("playBtn").textContent = "⏸";
+    dur = sceneDuration(s); t0 = performance.now(); progress();
+    setTalking(true);
+    const minEnd = t0 + 3500; // 動畫至少播放的時間
+    const finish = ()=>{
+      if(my!==token) return;
+      setTalking(false);
+      const wait = Math.max(1200, minEnd - performance.now());
+      dur = performance.now() - t0 + wait;
+      timer = setTimeout(()=>{ if(my===token) next(); }, wait);
+    };
+    if(voiceOn && synth){
+      const u = new SpeechSynthesisUtterance(s.narr);
+      u.lang = voice ? voice.lang : "zh-TW"; if(voice) u.voice = voice;
+      u.rate = 1.0; u.pitch = 1.35;
+      u.onend = finish; u.onerror = finish;
+      synth.speak(u);
+      // 防呆：部分瀏覽器不觸發 onend
+      timer = setTimeout(finish, dur + 4000);
+    } else {
+      timer = setTimeout(finish, dur - 1200);
+    }
+  }
+
+  function go(i){
+    stopAll(); idx = i; show(i);
+    if(playing) play();
+  }
+
+  function pause(){ stopAll(); playing=false; $("playBtn").textContent="▶"; }
+
+  $("startBtn").addEventListener("click",()=>{ $("cover").classList.add("gone"); playing=true; idx=0; show(0); play(); });
+  $("playBtn").addEventListener("click",()=>{
+    if(!$("cover").classList.contains("gone")){ $("startBtn").click(); return; }
+    if(playing) pause();
+    else { if(idx===SCENES.length-1 && $("playBtn").textContent==="↻") { idx=0; show(0); } playing=true; play(); }
+  });
+  function leaveCover(){ if(!$("cover").classList.contains("gone")){ $("cover").classList.add("gone"); playing=true; } }
+  $("prevBtn").addEventListener("click",()=>{ leaveCover(); go(Math.max(0,idx-1)); });
+  $("nextBtn").addEventListener("click",()=>{ leaveCover(); go(Math.min(SCENES.length-1,idx+1)); });
+  $("voiceBtn").addEventListener("click",e=>{
+    voiceOn = !voiceOn && !!synth; e.currentTarget.setAttribute("aria-pressed",voiceOn);
+    e.currentTarget.textContent = voiceOn ? "🔊 旁白" : "🔇 旁白";
+    if(playing){ stopAll(); play(); }
+  });
+  if(!synth){ $("voiceBtn").setAttribute("aria-pressed","false"); $("voiceBtn").textContent="🔇 不支援語音"; $("voiceBtn").disabled=true; }
+  $("subBtn").addEventListener("click",e=>{
+    const on = e.currentTarget.getAttribute("aria-pressed")!=="true";
+    e.currentTarget.setAttribute("aria-pressed",on); $("sub").classList.toggle("hide",!on);
+  });
+  document.addEventListener("keydown",e=>{
+    if(e.key===" "){ e.preventDefault(); $("playBtn").click(); }
+    if(e.key==="ArrowRight") $("nextBtn").click();
+    if(e.key==="ArrowLeft") $("prevBtn").click();
+  });
+
+  show(0);
+})();
+</script>
+</body>
+</html>
