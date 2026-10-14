@@ -46,7 +46,6 @@ body{background:#14182e;font-family:"Iansui","Noto Sans TC","Microsoft JhengHei"
 /* 角色 */
 .girl{position:absolute;bottom:2%;left:2%;width:28cqw;z-index:4}
 .girl svg{width:100%;height:auto;overflow:visible}
-.scene.active .girl{animation:popin .7s cubic-bezier(.3,1.6,.5,1) both,bob 3s ease-in-out .7s infinite}
 @keyframes popin{from{transform:translateY(30%) scale(.8);opacity:0}to{transform:none;opacity:1}}
 @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-1.2%)}}
 .eyes{transform-box:fill-box;transform-origin:center;animation:blink 4s infinite}
@@ -398,7 +397,7 @@ body{background:#14182e;font-family:"Iansui","Noto Sans TC","Microsoft JhengHei"
     const el = document.createElement("section");
     el.className = "scene";
     el.innerHTML = `<div class="badge">${s.badge}</div>${s.step?`<div class="step">STEP ${s.step}</div>`:""}
-      ${s.html}<div class="girl">${girlTpl.replace(/hairG/g,"hairG"+i).replace(/irisG/g,"irisG"+i)}</div>
+      ${s.html}
       <div class="bubble" >${s.say}</div>
       ${s.mascot?`<div class="mascot" style="left:${s.mascot.left};top:${s.mascot.top}">${mascotTpl}</div>`:""}`;
     host.appendChild(el);
@@ -407,6 +406,10 @@ body{background:#14182e;font-family:"Iansui","Noto Sans TC","Microsoft JhengHei"
     seg.addEventListener("click",()=>go(i));
     $("bar").appendChild(seg);
   });
+  // 角色固定在原位，不隨場景切換
+  const girl = document.createElement("div");
+  girl.className = "girl"; girl.id = "girl"; girl.innerHTML = girlTpl;
+  host.after(girl);
   const sceneEls = [...host.children], segs = [...$("bar").children];
 
   // ====== 語音 ======
@@ -431,13 +434,13 @@ body{background:#14182e;font-family:"Iansui","Noto Sans TC","Microsoft JhengHei"
     const lines = $("lines"); lines.classList.remove("flash"); void lines.offsetWidth; lines.classList.add("flash");
   }
 
-  function setTalking(on){ sceneEls[idx].querySelector(".girl").classList.toggle("talking",on); }
+  function setTalking(on){ girl.classList.toggle("talking",on); }
 
   function stopAll(){
     token++;
     clearTimeout(timer); cancelAnimationFrame(raf);
     if(synth) synth.cancel();
-    sceneEls.forEach(el=>el.querySelector(".girl").classList.remove("talking"));
+    girl.classList.remove("talking");
   }
 
   function progress(){
