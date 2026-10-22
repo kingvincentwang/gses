@@ -4,6 +4,7 @@
 輸入：dance/deevid-clip.mp4（黑底角色跳舞片段）
 輸出：dance/kuanxi-short.mp4（1080x1920、24fps、配樂）
 """
+import json
 import math
 import os
 import random
@@ -20,6 +21,9 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 CLIP_PATH = os.path.join(HERE, "deevid-clip.mp4")
 OUT_PATH = os.path.join(HERE, "kuanxi-short.mp4")
 WAV_PATH = os.path.join(HERE, "_short.wav")
+NARR_WAV = os.path.join(HERE, "narration.wav")  # 旁白（由 make_narration.py 產生；沒有就只放配樂）
+NARR_JSON = os.path.join(HERE, "narration.json")
+NARR_LINES = json.load(open(NARR_JSON, encoding="utf-8")) if os.path.exists(NARR_JSON) else []
 PHOTO_PATH = os.path.join(HERE, "bg-photo.jpg")  # 有這張照片就當背景，沒有就用畫的舞台
 PHOTO_FOCUS_X = 0.46  # 直式裁切時保留照片的水平位置（0 左 ~ 1 右）
 
@@ -33,7 +37,7 @@ CLIP_TOP = FLOOR_Y + 40 - int(CHAR_W * 864 / 768)  # 片段上緣，藏在標題
 TITLE_Y = CLIP_TOP - 195  # 標題框上緣
 SKIP = 2  # 原片前兩格破圖
 INTRO = 1.5  # 片頭秒數
-OUTRO = 3.0  # 片尾定格秒數
+OUTRO = 4.0  # 片尾定格秒數
 
 # 片段中動作的時間點（秒），用來切換字幕
 MOVES = [(0.0, "揮揮手 打招呼"), (1.2, "左右搖擺 跟著節拍"), (3.2, "張開雙手 好開心"),
@@ -216,6 +220,20 @@ def render(bg, clip, kind, src_i, t, t_kind):
         d.polygon(heart_poly(W / 2 + 330, FLOOR_Y - 700, 150 * s), fill=(255, 80, 120, 235))
         text_center(d, (W / 2, 1770), "一起動起來！", int(60 + 40 * s), ORANGE + (255,), 8, NAVY)
         text_center(d, (W / 2, 1870), "下課也來跳一跳", 54, NAVY)
+    # 旁白對話泡泡（在標題框上方，尾巴指向角色）
+    for line in NARR_LINES:
+        lt = t - line["start"]
+        if 0 <= lt < line["dur"] + 0.3:
+            pop = min(1.0, lt / 0.15)
+            f = font(int(54 * (0.8 + 0.2 * pop)))
+            l, tp, rr, b = d.textbbox((0, 0), line["text"], font=f)
+            bw, bh = rr - l + 70, b - tp + 50
+            bx, by = W / 2 - bw / 2, TITLE_Y - bh - 50
+            d.polygon([(W / 2 + 60, by + bh - 4), (W / 2 + 130, by + bh - 4), (W / 2 + 170, TITLE_Y - 8)],
+                      fill=(255, 255, 255, 245), outline=ORANGE + (255,))
+            d.rounded_rectangle((bx, by, bx + bw, by + bh), radius=bh / 2, fill=(255, 255, 255, 245),
+                                outline=ORANGE + (255,), width=6)
+            d.text((W / 2, by + bh / 2), line["text"], font=f, fill=NAVY, anchor="mm")
     d.text((W - 24, 20), "角色動畫：DeeVid AI 生成", font=font(28), fill=(255, 255, 255, 235), anchor="rt",
            stroke_width=2, stroke_fill=(40, 60, 100, 200))
     frame.alpha_composite(ov)
@@ -285,7 +303,18 @@ def make_music(total):
     put(noise(1.5, 0.45, True), dance_end, 0.25)
     fade = int(0.8 * SR)
     out[-fade:] *= np.linspace(1, 0, fade)
-    out = out / (np.abs(out).max() + 1e-9) * 0.85
+    out = out / (np.abs(out).max() + 1e-9)
+    if os.path.exists(NARR_WAV):  # 混入旁白，講話時把配樂壓低
+        with wave.open(NARR_WAV) as wf:
+            v = np.frombuffer(wf.readframes(wf.getnframes()), np.int16).astype(np.float64) / 32768
+        voice = np.zeros_like(out)
+        voice[: min(len(v), len(out))] = v[: len(out)]
+        k = int(0.15 * SR)
+        envl = np.convolve(np.abs(voice), np.ones(k) / k, mode="same")
+        duck = 1 - 0.6 * np.clip(envl * 12, 0, 1)
+        out = out * 0.75 * duck + voice * 1.0
+        out[-fade:] *= np.linspace(1, 0, fade) ** 0.5
+    out = out / (np.abs(out).max() + 1e-9) * 0.9
     pcm = (out * 32767).astype(np.int16)
     with wave.open(WAV_PATH, "wb") as wf:
         wf.setnchannels(2)
