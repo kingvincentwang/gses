@@ -14,6 +14,7 @@ import wave
 import numpy as np
 from PIL import Image, ImageDraw, ImageFilter
 
+from lipsync import detect_mouths, draw_mouth
 from make_video import (BLUE, NAVY, ORANGE, WHITE, YELLOW, font, heart_poly, star_poly,
                         text_center)
 
@@ -147,7 +148,7 @@ def timeline(n_src):
     return seq
 
 
-def render(bg, clip, kind, src_i, t, t_kind):
+def render(bg, clip, kind, src_i, t, t_kind, mouth=None):
     frame = bg.copy()
     d0 = ImageDraw.Draw(frame)
     beat = t / SPB
@@ -161,6 +162,8 @@ def render(bg, clip, kind, src_i, t, t_kind):
     frame.alpha_composite(sh.filter(ImageFilter.GaussianBlur(14)))
 
     ch = clip[src_i]
+    if mouth is not None:  # 對嘴：mouth = (嘴巴外框, 開合程度)
+        ch = draw_mouth(ch, *mouth)
     scale = 1.0
     if kind == "intro":  # 彈跳登場
         u = min(1.0, t_kind / 0.6)
@@ -238,6 +241,35 @@ def render(bg, clip, kind, src_i, t, t_kind):
            stroke_width=2, stroke_fill=(40, 60, 100, 200))
     frame.alpha_composite(ov)
     return frame.convert("RGB").tobytes()
+
+
+# ---------------------------------------------------------------- 對嘴
+def voice_openness(n_frames):
+    """每一格的嘴巴開合程度（0~1），沒在講話的格子為 None"""
+    if not (os.path.exists(NARR_WAV) and NARR_LINES):
+        return [None] * n_frames
+    with wave.open(NARR_WAV) as wf:
+        sr = wf.getframerate()
+        v = np.frombuffer(wf.readframes(wf.getnframes()), np.int16).astype(np.float64) / 32768
+    rms = np.zeros(n_frames)
+    talking = np.zeros(n_frames, bool)
+    for i in range(n_frames):
+        t = i / FPS
+        seg = v[max(0, int((t - 0.03) * sr)): int((t + 0.03) * sr)]
+        rms[i] = np.sqrt(np.mean(seg ** 2)) if len(seg) else 0
+        talking[i] = any(l["start"] - 0.05 <= t <= l["start"] + l["dur"] + 0.05 for l in NARR_LINES)
+    ref = np.percentile(rms[talking], 90) if talking.any() else 1
+    out, prev = [], 0.0
+    for i in range(n_frames):
+        if not talking[i]:
+            out.append(None)
+            prev = 0.0
+            continue
+        o = float(np.clip((rms[i] / ref - 0.12) / 0.8, 0, 1)) ** 0.8
+        o = max(o, prev * 0.45)  # 快開慢合
+        out.append(o)
+        prev = o
+    return out
 
 
 # ---------------------------------------------------------------- 配樂
@@ -325,11 +357,13 @@ def make_music(total):
 
 def main():
     clip = load_clip()
+    boxes = detect_mouths(clip)
     seq = timeline(len(clip))
     total = len(seq) / FPS
     print(f"來源 {len(clip)} 格，輸出 {len(seq)} 格（{total:.1f} 秒）")
     make_music(total)
     bg = make_bg()
+    opens = voice_openness(len(seq))
     cmd = ["ffmpeg", "-y", "-loglevel", "error", "-f", "rawvideo", "-pix_fmt", "rgb24",
            "-s", f"{W}x{H}", "-r", str(FPS), "-i", "-", "-i", WAV_PATH,
            "-c:v", "libx264", "-preset", "medium", "-crf", "21", "-pix_fmt", "yuv420p",
@@ -339,7 +373,9 @@ def main():
     for i, (kind, src_i) in enumerate(seq):
         kind_start.setdefault(kind, i)
         t = i / FPS
-        proc.stdin.write(render(bg, clip, kind, src_i, t, (i - kind_start[kind]) / FPS))
+        o = opens[i]
+        mouth = (boxes[src_i], o) if o is not None and not np.isnan(boxes[src_i]).any() else None
+        proc.stdin.write(render(bg, clip, kind, src_i, t, (i - kind_start[kind]) / FPS, mouth))
     proc.stdin.close()
     proc.wait()
     os.remove(WAV_PATH)
