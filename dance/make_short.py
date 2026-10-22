@@ -21,15 +21,16 @@ CLIP_PATH = os.path.join(HERE, "deevid-clip.mp4")
 OUT_PATH = os.path.join(HERE, "kuanxi-short.mp4")
 WAV_PATH = os.path.join(HERE, "_short.wav")
 PHOTO_PATH = os.path.join(HERE, "bg-photo.jpg")  # 有這張照片就當背景，沒有就用畫的舞台
-PHOTO_FOCUS_X = 0.38  # 直式裁切時保留照片的水平位置（0 左 ~ 1 右）
+PHOTO_FOCUS_X = 0.46  # 直式裁切時保留照片的水平位置（0 左 ~ 1 右）
 
 W, H = 1080, 1920
 FPS = 24
 BPM = 120
 SPB = 60 / BPM
-CHAR_W = 1100  # 片段縮放後寬度
-CLIP_TOP = 240  # 片段上緣（藏在標題框後面，遮住原片切到的帽頂）
-FLOOR_Y = CLIP_TOP + int(CHAR_W * 864 / 768) - 40  # 角色腳底位置
+CHAR_W = 920  # 片段縮放後寬度
+FLOOR_Y = 1690  # 角色腳底位置（站在建築前的地面）
+CLIP_TOP = FLOOR_Y + 40 - int(CHAR_W * 864 / 768)  # 片段上緣，藏在標題框後面，遮住原片切到的帽頂
+TITLE_Y = CLIP_TOP - 195  # 標題框上緣
 SKIP = 2  # 原片前兩格破圖
 INTRO = 1.5  # 片頭秒數
 OUTRO = 3.0  # 片尾定格秒數
@@ -86,7 +87,7 @@ def make_photo_bg():
     bg = ph.crop((x0, y0, x0 + W, y0 + H)).filter(ImageFilter.GaussianBlur(2)).convert("RGBA")
     # 上下加淡淡的白色漸層，讓標題與字幕更清楚
     g = np.zeros((H, 1), np.float32)
-    g[:420, 0] = np.linspace(0.45, 0, 420)
+    g[:420, 0] = np.linspace(0.2, 0, 420)
     g[H - 380:, 0] = np.linspace(0, 0.5, 380)
     a = (np.repeat(g, W, axis=1) * 255).astype(np.uint8)
     veil = Image.new("RGBA", (W, H), (255, 255, 255, 0))
@@ -132,13 +133,13 @@ def draw_confetti(d, t):
 
 # ---------------------------------------------------------------- 畫面
 def timeline(n_src):
-    """片頭定格 → 正放 → 倒放 → 正放 → 片尾定格（倒放讓接點自然）"""
+    """片頭定格 → 正放 → 倒放 → 正放 → 倒放 → 片尾定格（倒放讓接點自然，結尾停在正面揮手）"""
     seq = []
     seq += [("intro", 0)] * int(INTRO * FPS)
     fwd = list(range(n_src))
-    for k, order in enumerate([fwd, fwd[::-1][1:], fwd[1:]]):
+    for k, order in enumerate([fwd, fwd[::-1][1:], fwd[1:], fwd[::-1][1:]]):
         seq += [("dance", i) for i in order]
-    seq += [("outro", n_src - 1)] * int(OUTRO * FPS)
+    seq += [("outro", 0)] * int(OUTRO * FPS)
     return seq
 
 
@@ -171,14 +172,14 @@ def render(bg, clip, kind, src_i, t, t_kind):
     d = ImageDraw.Draw(ov)
     # 標題
     bob = 6 * math.sin(t * 4)
-    d.rounded_rectangle((90, 70 + bob, W - 90, 330 + bob), radius=50, fill=(255, 255, 255, 235),
+    d.rounded_rectangle((90, TITLE_Y + bob, W - 90, TITLE_Y + 260 + bob), radius=50, fill=(255, 255, 255, 235),
                         outline=ORANGE + (255,), width=10)
-    text_center(d, (W / 2, 150 + bob), "關西小子 動起來！", 78, NAVY)
-    text_center(d, (W / 2, 255 + bob), "〈嗨！我是關西〉", 70, ORANGE + (255,), 5, NAVY)
+    text_center(d, (W / 2, TITLE_Y + 80 + bob), "關西小子 動起來！", 78, NAVY)
+    text_center(d, (W / 2, TITLE_Y + 185 + bob), "〈嗨！我是關西〉", 70, ORANGE + (255,), 5, NAVY)
     # 星星點綴
     for k in range(6):
         a = t * 1.2 + k * math.pi / 3
-        x, y = W / 2 + 470 * math.cos(a), 760 + 330 * math.sin(a)
+        x, y = W / 2 + 450 * math.cos(a), FLOOR_Y - 480 + 300 * math.sin(a)
         d.polygon(star_poly(x, y, 22, 9, 5, t * 2 + k), fill=YELLOW + (220,))
 
     if kind == "dance":
@@ -188,17 +189,17 @@ def render(bg, clip, kind, src_i, t, t_kind):
         for st, txt in MOVES:
             if clip_t >= st:
                 cap = txt
-        f = font(64)
+        f = font(56)
         l, tp, rr, b = d.textbbox((0, 0), cap, font=f)
         x0 = W / 2 - (rr - l) / 2 - 50
-        d.rounded_rectangle((x0, 1640, W - x0, 1750), radius=55, fill=(255, 255, 255, 240),
+        d.rounded_rectangle((x0, 1722, W - x0, 1812), radius=45, fill=(255, 255, 255, 240),
                             outline=BLUE + (255,), width=6)
-        d.text((W / 2, 1695), cap, font=f, fill=NAVY, anchor="mm")
+        d.text((W / 2, 1767), cap, font=f, fill=NAVY, anchor="mm")
         # 八拍燈
         n = int(beat) % 8
         for i in range(8):
-            x, y = W / 2 + (i - 3.5) * 105, 1830
-            rad = 40 if i == n else 30
+            x, y = W / 2 + (i - 3.5) * 100, 1866
+            rad = 36 if i == n else 27
             if i == n:
                 d.ellipse((x - rad, y - rad, x + rad, y + rad), fill=ORANGE + (255,), outline=WHITE, width=5)
                 d.text((x, y), str(i + 1), font=font(48), fill=WHITE, anchor="mm")
@@ -208,14 +209,14 @@ def render(bg, clip, kind, src_i, t, t_kind):
                 d.text((x, y), str(i + 1), font=font(34), fill=BLUE, anchor="mm")
     elif kind == "intro":
         a = int(255 * min(1, t_kind / 0.5))
-        text_center(d, (W / 2, 1720), "準備好了嗎？", 80, ORANGE + (a,), 6, NAVY)
+        text_center(d, (W / 2, 1790), "準備好了嗎？", 80, ORANGE + (a,), 6, NAVY)
     else:
         draw_confetti(d, t_kind)
         s = min(1.0, t_kind / 0.35)
-        d.polygon(heart_poly(W / 2 + 330, 560, 150 * s), fill=(255, 80, 120, 235))
-        text_center(d, (W / 2, 1680), "一起動起來！", int(60 + 40 * s), ORANGE + (255,), 8, NAVY)
-        text_center(d, (W / 2, 1810), "下課也來跳一跳", 54, NAVY)
-    d.text((W - 24, H - 18), "角色動畫：DeeVid AI 生成", font=font(26), fill=(255, 255, 255, 230), anchor="rd",
+        d.polygon(heart_poly(W / 2 + 330, FLOOR_Y - 700, 150 * s), fill=(255, 80, 120, 235))
+        text_center(d, (W / 2, 1770), "一起動起來！", int(60 + 40 * s), ORANGE + (255,), 8, NAVY)
+        text_center(d, (W / 2, 1870), "下課也來跳一跳", 54, NAVY)
+    d.text((W - 24, 20), "角色動畫：DeeVid AI 生成", font=font(28), fill=(255, 255, 255, 235), anchor="rt",
            stroke_width=2, stroke_fill=(40, 60, 100, 200))
     frame.alpha_composite(ov)
     return frame.convert("RGB").tobytes()
