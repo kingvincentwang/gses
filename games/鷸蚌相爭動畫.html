@@ -1,0 +1,1548 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>鷸蚌相爭｜成語故事動畫</title>
+<style>
+  :root {
+    --paper: #f4ecda;
+    --paper2: #fbf6ea;
+    --ink: #2b241c;
+    --muted: #6f604c;
+    --red: #b23a2a;
+    --blue: #3c6378;
+    --line: #dccdaf;
+    --kai: "DFKai-SB", "BiauKai", "標楷體", "Kaiti TC", "STKaiti", "KaiTi", "AR PL UKai TW", serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: #e9dfc8;
+    color: var(--ink);
+    font-family: "Microsoft JhengHei", "PingFang TC", "Noto Sans TC", sans-serif;
+    line-height: 1.6;
+  }
+  header { text-align: center; padding: 18px 16px 8px; }
+  header h1 {
+    margin: 0;
+    font-family: var(--kai);
+    font-size: clamp(1.8rem, 5vw, 2.8rem);
+    letter-spacing: .25em;
+    color: var(--ink);
+  }
+  header h1 .seal {
+    display: inline-block; vertical-align: middle;
+    font-size: .38em; letter-spacing: 0; line-height: 1.1;
+    background: var(--red); color: #fbeee0;
+    padding: .25em .3em; border-radius: 4px; margin-left: .4em;
+    writing-mode: vertical-rl;
+  }
+  header p { margin: 2px 0 0; color: var(--muted); }
+
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 16px 40px; }
+
+  #stageWrap { background: #1d1813; border-radius: 14px; overflow: hidden; box-shadow: 0 8px 24px rgba(60,40,20,.3); }
+  #stageWrap:fullscreen { display: flex; flex-direction: column; justify-content: center; border-radius: 0; }
+  #stage {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    background: var(--paper);
+    user-select: none;
+  }
+  #stageWrap:fullscreen #stage { width: min(100vw, calc((100vh - 60px) * 16 / 9)); margin: 0 auto; }
+  #stage svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  #paperTex {
+    position: absolute; inset: 0; pointer-events: none;
+    mix-blend-mode: multiply; opacity: .55;
+    box-shadow: inset 0 0 90px rgba(110, 80, 40, .35);
+  }
+
+  #sceneTag {
+    position: absolute; left: 2%; top: 3%;
+    display: flex; align-items: center; gap: .45em;
+    background: rgba(251,246,234,.92);
+    color: var(--ink);
+    padding: .15em .9em .15em .2em;
+    border-radius: 999px;
+    border: 2px solid #c9b48a;
+    font-size: clamp(.75rem, 1.9vw, 1.2rem);
+    font-weight: bold;
+    font-family: var(--kai);
+    z-index: 2;
+  }
+  #sceneTag .no {
+    display: inline-grid; place-items: center;
+    width: 1.7em; height: 1.7em; border-radius: 50%;
+    background: var(--blue); color: #fff; font-family: sans-serif; font-size: .85em;
+  }
+  #subtitle {
+    position: absolute; left: 50%; bottom: 5%;
+    transform: translateX(-50%);
+    width: 92%;
+    text-align: center;
+    pointer-events: none;
+    transition: opacity .25s;
+    z-index: 3;
+  }
+  #subtitle .box {
+    display: inline-block;
+    background: rgba(251,246,234,.94);
+    color: var(--ink);
+    border: 2px solid #c9b48a;
+    padding: .3em .9em;
+    border-radius: 12px;
+    font-size: clamp(.9rem, 2.5vw, 1.65rem);
+    line-height: 1.45;
+    box-shadow: 0 3px 10px rgba(60,40,20,.25);
+  }
+  #subtitle .who {
+    display: inline-block;
+    font-size: .72em;
+    padding: .05em .6em;
+    margin-right: .5em;
+    border-radius: 999px;
+    vertical-align: .12em;
+    color: #fff;
+  }
+  .who-旁白 { background: #6a6258; }
+  .who-鷸 { background: #8a5f36; }
+  .who-蚌 { background: #c9667e; }
+  .who-漁翁 { background: #3c6378; }
+  .who-鷸蚌 { background: linear-gradient(90deg, #8a5f36, #c9667e); }
+  .who-小明 { background: #2f6aa8; }
+  .who-小美 { background: #c0392b; }
+  #stage.no-sub #subtitle { opacity: 0 !important; }
+
+  .overlay {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity .9s;
+    text-align: center;
+    z-index: 2;
+  }
+  .overlay.show { opacity: 1; }
+
+  #titleCard { justify-content: flex-start; align-items: flex-start; padding: 7% 0 0 5%; }
+  #titleCard .t {
+    font-family: var(--kai);
+    font-size: clamp(2.2rem, 10vw, 7.5rem);
+    font-weight: bold;
+    color: #241d16;
+    letter-spacing: .08em;
+    line-height: 1.1;
+    text-shadow: 0 0 18px rgba(251,246,234,.9), 0 0 4px rgba(251,246,234,.9);
+  }
+  #titleCard .ribbon {
+    margin: .3em 0 0 1.2em;
+    font-family: var(--kai);
+    font-size: clamp(1rem, 3.6vw, 2.6rem);
+    font-weight: bold;
+    background: #e9d4a6;
+    border: 2px solid #9c7a43;
+    padding: .05em 1.2em;
+    transform: rotate(-3deg);
+    clip-path: polygon(0 0, 100% 0, 95% 50%, 100% 100%, 0 100%, 5% 50%);
+  }
+
+  #infoCard .scroll {
+    width: 78%;
+    background: #fbf3df;
+    border: 3px solid #b0894e;
+    outline: 6px double #d9bf8a;
+    outline-offset: 6px;
+    border-radius: 10px;
+    padding: 3% 5%;
+    text-align: left;
+    box-shadow: 0 8px 24px rgba(60,40,20,.25);
+    margin-bottom: 9%;
+  }
+  #infoCard h3 {
+    margin: 0 0 .3em;
+    text-align: center;
+    font-family: var(--kai);
+    font-size: clamp(1.4rem, 5.4vw, 4rem);
+    color: #8e2a1b;
+    letter-spacing: .12em;
+  }
+  #infoCard .row { display: grid; grid-template-columns: max-content 1fr; gap: .1em .7em; font-size: clamp(.75rem, 2.1vw, 1.45rem); margin: .25em 0; }
+  #infoCard .row b { color: var(--red); font-family: var(--kai); }
+
+  #endCard .slogan {
+    font-family: var(--kai);
+    font-weight: bold;
+    font-size: clamp(1.6rem, 6.4vw, 5rem);
+    color: #241d16;
+    line-height: 1.35;
+    transform: rotate(-4deg);
+    margin: 0 0 14% 0;
+    text-shadow: 0 0 16px rgba(251,246,234,.95);
+  }
+  #endCard .slogan .l2 { display: block; margin-left: 1.2em; }
+  #endCard .brush {
+    display: block; height: .18em; width: 70%; margin: .15em auto 0;
+    background: linear-gradient(90deg, transparent, #d9573b 15%, #e2724f 85%, transparent);
+    border-radius: 50%;
+  }
+
+  #startOverlay {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: rgba(244,236,218,.55);
+    gap: 14px;
+    z-index: 5;
+  }
+  #startOverlay .t {
+    font-family: var(--kai);
+    color: var(--ink);
+    font-size: clamp(2rem, 8vw, 5.5rem);
+    font-weight: bold;
+    letter-spacing: .2em;
+    text-shadow: 0 0 14px #fbf6ea;
+  }
+  #startBtn {
+    font: inherit;
+    font-size: clamp(1rem, 2.6vw, 1.6rem);
+    padding: .5em 1.6em;
+    border-radius: 999px;
+    border: none;
+    background: var(--red);
+    color: #fff;
+    cursor: pointer;
+    box-shadow: 0 5px 0 #7a2418;
+  }
+  #startBtn:active { transform: translateY(3px); box-shadow: 0 2px 0 #7a2418; }
+  #startOverlay .hint { color: var(--muted); font-size: clamp(.75rem, 1.8vw, 1rem); background: rgba(251,246,234,.8); padding: 0 .8em; border-radius: 99px; }
+
+  #progress { position: absolute; left: 0; bottom: 0; height: 5px; width: 100%; background: rgba(0,0,0,.08); z-index: 4; }
+  #progress div { height: 100%; width: 0; background: var(--red); transition: width .3s; }
+
+  .controls {
+    display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
+    padding: 10px; background: #2b241c;
+  }
+  .controls button {
+    font: inherit; font-size: .95rem;
+    border: none; border-radius: 8px;
+    padding: .4em .9em;
+    background: #4a3f33; color: #fff;
+    cursor: pointer; min-width: 44px;
+  }
+  .controls button:hover { background: #62543f; }
+  .controls button.off { opacity: .5; text-decoration: line-through; }
+  .controls button.main { background: var(--red); }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin: 14px 0 6px; }
+  .chips button {
+    font: inherit; font-size: .9rem;
+    border: 2px solid var(--line);
+    background: var(--paper2); color: var(--ink);
+    border-radius: 999px;
+    padding: .2em .8em;
+    cursor: pointer;
+  }
+  .chips button.on { background: var(--blue); border-color: var(--blue); color: #fff; }
+
+  section.card {
+    background: var(--paper2);
+    border: 2px solid var(--line);
+    border-radius: 14px;
+    padding: 16px 20px;
+    margin-top: 18px;
+  }
+  section.card h2 { margin: 0 0 10px; color: var(--red); font-size: 1.3rem; font-family: var(--kai); }
+  .idiom-big { font-family: var(--kai); font-size: clamp(1.6rem, 5vw, 2.6rem); color: #8e2a1b; text-align: center; margin: 4px 0 10px; letter-spacing: .1em; }
+  dl.learn { display: grid; grid-template-columns: max-content 1fr; gap: 8px 14px; margin: 0; }
+  dl.learn dt { font-weight: bold; color: var(--blue); }
+  dl.learn dd { margin: 0; }
+  .roles { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+  .role { border: 2px dashed var(--line); border-radius: 12px; padding: 10px 14px; }
+  .role b { font-size: 1.15rem; font-family: var(--kai); }
+  .role small { color: var(--muted); }
+
+  .quiz .q { margin: 12px 0 4px; font-weight: bold; }
+  .quiz .opts { display: flex; flex-wrap: wrap; gap: 8px; }
+  .quiz .opts button {
+    font: inherit; font-size: .95rem;
+    border: 2px solid var(--line);
+    background: #fff; color: var(--ink);
+    border-radius: 10px;
+    padding: .35em .9em;
+    cursor: pointer; text-align: left;
+  }
+  .quiz .opts button.right { background: #e2f0dc; border-color: #5a8f4f; }
+  .quiz .opts button.wrong { background: #f8e0d9; border-color: #b8553f; }
+  .quiz .fb { min-height: 1.6em; color: var(--muted); }
+
+  @media (max-width: 600px) {
+    .controls button { font-size: .85rem; padding: .35em .6em; }
+    dl.learn { grid-template-columns: 1fr; }
+    dl.learn dt { margin-top: 6px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>鷸蚌相爭<span class="seal">成語</span></h1>
+  <p>成語故事動畫｜國小中高年級</p>
+</header>
+
+<div class="wrap">
+  <div id="stageWrap">
+    <div id="stage">
+      <svg id="svg" viewBox="0 0 1600 900" xmlns="http://www.w3.org/2000/svg" aria-label="鷸蚌相爭動畫">
+        <defs>
+          <linearGradient id="gSky" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#dfe6e2"/>
+            <stop offset=".55" stop-color="#f3ecdb"/>
+            <stop offset="1" stop-color="#f6efdf"/>
+          </linearGradient>
+          <linearGradient id="gSunset" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#6c5a8e"/>
+            <stop offset=".4" stop-color="#e2876a"/>
+            <stop offset=".7" stop-color="#f6b26b"/>
+            <stop offset="1" stop-color="#f9d89a"/>
+          </linearGradient>
+          <linearGradient id="gRiver" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#e3ebe4"/>
+            <stop offset=".5" stop-color="#c9dbd6"/>
+            <stop offset="1" stop-color="#b5cdc9"/>
+          </linearGradient>
+          <linearGradient id="gSand" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#ddca9e"/>
+            <stop offset=".5" stop-color="#d3bb88"/>
+            <stop offset="1" stop-color="#c4a877"/>
+          </linearGradient>
+          <linearGradient id="gRock" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#a9b0ab"/>
+            <stop offset="1" stop-color="#7d8580"/>
+          </linearGradient>
+          <radialGradient id="gSunGlow">
+            <stop offset="0" stop-color="#f6a27f" stop-opacity=".6"/>
+            <stop offset="1" stop-color="#f6a27f" stop-opacity="0"/>
+          </radialGradient>
+          <radialGradient id="gMist">
+            <stop offset="0" stop-color="#fbf7ec" stop-opacity=".95"/>
+            <stop offset="1" stop-color="#fbf7ec" stop-opacity="0"/>
+          </radialGradient>
+          <radialGradient id="gDream" cx=".5" cy=".5" r=".75">
+            <stop offset=".45" stop-color="#fff" stop-opacity="0"/>
+            <stop offset="1" stop-color="#fbe7ea" stop-opacity=".95"/>
+          </radialGradient>
+          <linearGradient id="gShellTop" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#b3a289"/>
+            <stop offset="1" stop-color="#7e6d58"/>
+          </linearGradient>
+          <linearGradient id="gShellBot" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#8e7d66"/>
+            <stop offset="1" stop-color="#625342"/>
+          </linearGradient>
+          <linearGradient id="gBeak" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#8a7558"/>
+            <stop offset=".35" stop-color="#4b3d30"/>
+            <stop offset="1" stop-color="#2a221b"/>
+          </linearGradient>
+          <linearGradient id="gHat" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#e2c98c"/>
+            <stop offset="1" stop-color="#b8975a"/>
+          </linearGradient>
+          <clipPath id="cBasket"><path d="M-132 -200 Q -150 -90 -100 0 L 100 0 Q 150 -90 132 -200 Q 0 -176 -132 -200 Z"/></clipPath>
+          <clipPath id="cHandBasket"><path d="M-118 -150 Q -122 -110 -102 -86 L -58 -86 Q -38 -110 -42 -150 Z"/></clipPath>
+          <filter id="fSil">
+            <feColorMatrix type="matrix" values="0 0 0 0 .17  0 0 0 0 .12  0 0 0 0 .14  0 0 0 1 0"/>
+          </filter>
+        </defs>
+
+        <!-- 遠景：山水 -->
+        <g id="far">
+          <rect x="0" y="0" width="1600" height="900" fill="url(#gSky)"/>
+          <rect id="sunsetSky" x="0" y="0" width="1600" height="900" fill="url(#gSunset)" opacity="0"/>
+          <g id="sun"><circle r="150" fill="url(#gSunGlow)"/><circle r="52" fill="#d9573b" opacity=".82"/></g>
+          <g id="mountains"></g>
+          <g id="mists"></g>
+          <g id="skyBirds"></g>
+          <!-- 落款 -->
+          <g id="inscription" transform="translate(1530 70)">
+            <g font-family="DFKai-SB, BiauKai, 標楷體, Kaiti TC, STKaiti, KaiTi, serif" font-size="34" fill="#3a3128" opacity=".75" text-anchor="middle">
+              <text x="0" y="30">鷸</text><text x="0" y="70">蚌</text><text x="0" y="110">相</text><text x="0" y="150">爭</text>
+            </g>
+            <rect x="-17" y="178" width="34" height="34" rx="3" fill="#b23a2a" opacity=".85"/>
+            <text x="0" y="202" text-anchor="middle" font-family="DFKai-SB, BiauKai, 標楷體, KaiTi, serif" font-size="17" fill="#fbeee0">成語</text>
+          </g>
+        </g>
+
+        <!-- 主場景（鏡頭可推近） -->
+        <g id="world">
+          <rect x="-400" y="505" width="2400" height="170" fill="url(#gRiver)"/>
+          <g id="ripples" stroke="#7e9c99" fill="none" stroke-linecap="round"></g>
+          <!-- 漁船 -->
+          <g id="boat">
+            <path d="M-120 0 Q -60 34 0 34 Q 70 34 130 -6 Q 60 10 0 10 Q -70 10 -120 0 Z" fill="#4a3a2c"/>
+            <path d="M-80 4 Q 0 16 90 2" stroke="#7a6248" stroke-width="3" fill="none"/>
+            <g id="boatMan">
+              <path d="M-10 6 L -6 -60 L 14 -60 L 16 6 Z" fill="#3b4f63"/>
+              <circle cx="4" cy="-74" r="12" fill="#3a2f27"/>
+              <path d="M-26 -76 L 4 -100 L 34 -76 Z" fill="#5a4630"/>
+              <path d="M-60 40 L 70 -150" stroke="#3a2f27" stroke-width="4" stroke-linecap="round"/>
+            </g>
+            <path d="M-120 22 Q 0 46 130 18" stroke="#9fb7b3" stroke-width="3" fill="none" opacity=".6"/>
+          </g>
+          <path id="shore" d="M-400 640 Q -100 618 200 628 Q 520 640 800 626 Q 1150 610 1400 628 Q 1700 642 2000 620 L 2000 1200 L -400 1200 Z" fill="url(#gSand)"/>
+          <path d="M-400 640 Q -100 618 200 628 Q 520 640 800 626 Q 1150 610 1400 628 Q 1700 642 2000 620" stroke="#7a6748" stroke-width="3" fill="none" opacity=".45"/>
+          <g id="groundDetail"></g>
+          <g id="pine"></g>
+          <g id="reedsBack"></g>
+
+          <!-- 竹簍後半 -->
+          <g id="basketBack">
+            <ellipse cx="0" cy="-200" rx="130" ry="26" fill="#4a3318"/>
+            <ellipse cx="0" cy="-196" rx="112" ry="17" fill="#2e2010"/>
+          </g>
+
+          <!-- 鷸 -->
+          <g id="snipe">
+            <ellipse cx="10" cy="2" rx="60" ry="9" fill="rgba(60,40,20,.18)"/>
+            <g id="snLegB"><path d="M-6 -80 L -10 0 M -10 0 l -18 3 M -10 0 l 14 4 M -10 0 l -2 8" stroke="#8f8648" stroke-width="4.5" fill="none" stroke-linecap="round"/></g>
+            <g id="snLegF"><path d="M10 -80 L 14 0 M 14 0 l -16 3 M 14 0 l 16 4 M 14 0 l 2 8" stroke="#a69a55" stroke-width="4.5" fill="none" stroke-linecap="round"/></g>
+            <g id="snUpper">
+              <path d="M-56 -124 L -122 -132 Q -114 -118 -124 -102 L -56 -98 Z" fill="#5e4027" stroke="#2f2216" stroke-width="2"/>
+              <path d="M-112 -128 L -100 -104 M -96 -129 L -86 -102 M -80 -127 L -72 -100" stroke="#e3c896" stroke-width="2.5"/>
+              <ellipse cx="0" cy="-112" rx="72" ry="45" fill="#9c7650" stroke="#2f2216" stroke-width="2.5"/>
+              <path d="M-46 -84 Q 8 -64 62 -98 Q 74 -116 62 -134 Q 30 -102 -46 -84 Z" fill="#f7f2e6"/>
+              <g stroke="#7d5b3a" stroke-width="2.5" stroke-linecap="round">
+                <path d="M46 -128 l -4 7 M 56 -122 l -4 7 M 38 -120 l -4 7 M 50 -112 l -4 6 M 60 -108 l -3 6 M 30 -112 l -3 6"/>
+              </g>
+              <g id="snWing"></g>
+              <path d="M30 -140 Q 50 -150 44 -172 L 78 -166 Q 76 -132 52 -108 Q 44 -124 30 -140 Z" fill="#9c7650" stroke="#2f2216" stroke-width="2"/>
+              <path d="M50 -150 l 6 5 M 58 -140 l 6 5 M 62 -152 l 6 4" stroke="#5e4027" stroke-width="2.5" stroke-linecap="round"/>
+              <circle cx="62" cy="-176" r="33" fill="#a47e56" stroke="#2f2216" stroke-width="2.5"/>
+              <path d="M70 -158 Q 86 -160 92 -170 L 92 -150 Q 78 -146 70 -158 Z" fill="#f2e8d4"/>
+              <path d="M34 -190 Q 60 -214 92 -196" stroke="#3b2816" stroke-width="9" fill="none" stroke-linecap="round"/>
+              <path d="M38 -184 Q 64 -198 94 -186" stroke="#efe2c4" stroke-width="5" fill="none" stroke-linecap="round"/>
+              <path d="M52 -172 L 94 -175" stroke="#4a3320" stroke-width="3" stroke-linecap="round"/>
+              <path d="M90 -185 L 218 -166 L 216 -162 L 90 -164 Z" fill="url(#gBeak)" stroke="#2a221b" stroke-width="1.5" stroke-linejoin="round"/>
+              <g class="face" data-f="normal"><circle cx="74" cy="-181" r="10.5" fill="#fbf6ea" stroke="#2f2216" stroke-width="1.5"/><circle cx="75" cy="-181" r="7" fill="#1a1612"/><circle cx="77.5" cy="-184" r="2.4" fill="#fff"/></g>
+              <g class="face" data-f="happy"><circle cx="74" cy="-181" r="10.5" fill="#f2e8d4"/><path d="M65 -179 Q 74 -191 83 -179" stroke="#1a1612" stroke-width="4.5" fill="none" stroke-linecap="round"/></g>
+              <g class="face" data-f="hurt"><circle cx="74" cy="-181" r="10.5" fill="#f2e8d4"/><path d="M67 -189 L 81 -181 L 67 -173" stroke="#1a1612" stroke-width="4.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>
+              <g class="face" data-f="angry"><circle cx="74" cy="-180" r="10" fill="#fbf6ea" stroke="#2f2216" stroke-width="1.5"/><circle cx="76" cy="-179" r="6.5" fill="#1a1612"/><path d="M60 -200 L 90 -188" stroke="#2a1a0e" stroke-width="6" stroke-linecap="round"/></g>
+              <g class="face" data-f="sad"><circle cx="74" cy="-179" r="10" fill="#fbf6ea" stroke="#2f2216" stroke-width="1.5"/><circle cx="74" cy="-176" r="6" fill="#1a1612"/><path d="M60 -188 L 88 -198" stroke="#2a1a0e" stroke-width="5" stroke-linecap="round"/></g>
+              <g class="face" data-f="surprise"><circle cx="74" cy="-182" r="13" fill="#fff" stroke="#1a1612" stroke-width="3"/><circle cx="75" cy="-182" r="4.5" fill="#1a1612"/></g>
+            </g>
+          </g>
+
+          <!-- 蚌 -->
+          <g id="clam">
+            <ellipse cx="0" cy="8" rx="102" ry="11" fill="rgba(60,40,20,.18)"/>
+            <path d="M-100 -30 Q -98 14 0 14 Q 98 14 100 -30 Z" fill="url(#gShellBot)" stroke="#3f342a" stroke-width="3"/>
+            <g fill="none" stroke-linecap="round">
+              <path d="M-88 -26 Q -84 4 0 5 Q 84 4 88 -26" stroke="#b7a68c" stroke-width="3" opacity=".7"/>
+              <path d="M-72 -24 Q -66 -4 0 -3 Q 66 -4 72 -24" stroke="#4e4135" stroke-width="2" opacity=".6"/>
+              <path d="M-54 -24 Q -48 -12 0 -11 Q 48 -12 54 -24" stroke="#b7a68c" stroke-width="2.5" opacity=".6"/>
+            </g>
+            <g id="clamMeat">
+              <ellipse cx="-14" cy="-38" rx="74" ry="40" fill="#f2b0b6" stroke="#b97079" stroke-width="2.5"/>
+              <ellipse cx="-26" cy="-56" rx="36" ry="12" fill="#f9d2d5" opacity=".8"/>
+              <ellipse cx="-62" cy="-36" rx="10" ry="6" fill="#e88a98" opacity=".8"/>
+              <ellipse cx="18" cy="-36" rx="10" ry="6" fill="#e88a98" opacity=".8"/>
+              <g class="face" data-f="normal"><circle cx="-40" cy="-48" r="11" fill="#fff" stroke="#3a2a2a" stroke-width="2"/><circle cx="-6" cy="-48" r="11" fill="#fff" stroke="#3a2a2a" stroke-width="2"/><circle cx="-38" cy="-47" r="6" fill="#2a1d1d"/><circle cx="-4" cy="-47" r="6" fill="#2a1d1d"/><path d="M-30 -26 Q -22 -20 -14 -26" stroke="#7a3340" stroke-width="3" fill="none" stroke-linecap="round"/></g>
+              <g class="face" data-f="happy"><path d="M-50 -46 Q -40 -58 -30 -46 M -16 -46 Q -6 -58 4 -46" stroke="#2a1d1d" stroke-width="4.5" fill="none" stroke-linecap="round"/><path d="M-32 -28 Q -22 -14 -12 -28 Z" fill="#b3384e"/></g>
+              <g class="face" data-f="angry"><circle cx="-40" cy="-46" r="9" fill="#fff" stroke="#3a2a2a" stroke-width="2"/><circle cx="-6" cy="-46" r="9" fill="#fff" stroke="#3a2a2a" stroke-width="2"/><circle cx="-38" cy="-45" r="5" fill="#2a1d1d"/><circle cx="-4" cy="-45" r="5" fill="#2a1d1d"/><path d="M-54 -66 L -30 -58 M 8 -66 L -16 -58" stroke="#2a1d1d" stroke-width="4.5" stroke-linecap="round"/><path d="M-32 -24 L -12 -24" stroke="#7a3340" stroke-width="3.5" stroke-linecap="round"/></g>
+              <g class="face" data-f="hurt"><path d="M-50 -54 L -34 -47 L -50 -40 M 4 -54 L -12 -47 L 4 -40" stroke="#2a1d1d" stroke-width="4.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>
+              <g class="face" data-f="sad"><circle cx="-40" cy="-45" r="9" fill="#fff" stroke="#3a2a2a" stroke-width="2"/><circle cx="-6" cy="-45" r="9" fill="#fff" stroke="#3a2a2a" stroke-width="2"/><circle cx="-40" cy="-42" r="5" fill="#2a1d1d"/><circle cx="-6" cy="-42" r="5" fill="#2a1d1d"/><path d="M-52 -58 L -30 -64 M 6 -58 L -16 -64" stroke="#2a1d1d" stroke-width="4" stroke-linecap="round"/><path d="M-30 -22 Q -22 -30 -14 -22" stroke="#7a3340" stroke-width="3" fill="none" stroke-linecap="round"/></g>
+              <g class="face" data-f="surprise"><circle cx="-40" cy="-48" r="13" fill="#fff" stroke="#2a1d1d" stroke-width="2.5"/><circle cx="-6" cy="-48" r="13" fill="#fff" stroke="#2a1d1d" stroke-width="2.5"/><circle cx="-40" cy="-48" r="4.5" fill="#2a1d1d"/><circle cx="-6" cy="-48" r="4.5" fill="#2a1d1d"/><ellipse cx="-22" cy="-24" rx="6" ry="7" fill="#7a3340"/></g>
+            </g>
+            <g id="clamTop">
+              <path d="M-100 -30 Q -104 -122 0 -122 Q 102 -120 100 -30 Q 0 -22 -100 -30 Z" fill="url(#gShellTop)" stroke="#3f342a" stroke-width="3"/>
+              <g fill="none" stroke-linecap="round">
+                <path d="M-86 -34 Q -88 -106 0 -106 Q 86 -104 86 -34" stroke="#cdbda2" stroke-width="3.5" opacity=".7"/>
+                <path d="M-72 -34 Q -72 -92 0 -92 Q 72 -90 72 -34" stroke="#5a4b3c" stroke-width="2" opacity=".55"/>
+                <path d="M-56 -34 Q -56 -78 0 -78 Q 56 -76 56 -34" stroke="#cdbda2" stroke-width="3" opacity=".6"/>
+                <path d="M-40 -34 Q -40 -64 0 -64 Q 40 -62 40 -34" stroke="#5a4b3c" stroke-width="2" opacity=".5"/>
+                <path d="M-24 -34 Q -22 -50 0 -50 Q 22 -50 24 -34" stroke="#cdbda2" stroke-width="2.5" opacity=".55"/>
+              </g>
+              <path d="M70 -96 Q 90 -80 96 -46" stroke="#fff8e6" stroke-width="4" fill="none" opacity=".35" stroke-linecap="round"/>
+            </g>
+            <!-- 閉殼時從縫裡偷看的眼睛 -->
+            <g id="clamPeek">
+              <path d="M-78 -31 Q -40 -42 -4 -31 Q -40 -25 -78 -31 Z" fill="#2a1f19"/>
+              <g class="face" data-f="normal"><ellipse cx="-50" cy="-32" rx="7" ry="4.5" fill="#fff"/><ellipse cx="-28" cy="-32" rx="7" ry="4.5" fill="#fff"/><circle cx="-49" cy="-32" r="2.6" fill="#1a1612"/><circle cx="-27" cy="-32" r="2.6" fill="#1a1612"/></g>
+              <g class="face" data-f="happy"><path d="M-56 -31 Q -50 -37 -44 -31 M -34 -31 Q -28 -37 -22 -31" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round"/></g>
+              <g class="face" data-f="angry"><ellipse cx="-50" cy="-32" rx="7" ry="4" fill="#fff"/><ellipse cx="-28" cy="-32" rx="7" ry="4" fill="#fff"/><circle cx="-48" cy="-32" r="2.6" fill="#1a1612"/><circle cx="-26" cy="-32" r="2.6" fill="#1a1612"/><path d="M-62 -48 L -42 -40 M -16 -48 L -36 -40" stroke="#2a1f19" stroke-width="5" stroke-linecap="round"/></g>
+              <g class="face" data-f="hurt"><path d="M-56 -36 L -46 -32 L -56 -28 M -22 -36 L -32 -32 L -22 -28" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round"/></g>
+              <g class="face" data-f="sad"><ellipse cx="-50" cy="-31" rx="6" ry="4" fill="#fff"/><ellipse cx="-28" cy="-31" rx="6" ry="4" fill="#fff"/><circle cx="-50" cy="-30" r="2.4" fill="#1a1612"/><circle cx="-28" cy="-30" r="2.4" fill="#1a1612"/><path d="M-60 -42 L -42 -48 M -18 -42 L -36 -48" stroke="#2a1f19" stroke-width="4" stroke-linecap="round"/></g>
+              <g class="face" data-f="surprise"><circle cx="-50" cy="-32" r="7" fill="#fff"/><circle cx="-28" cy="-32" r="7" fill="#fff"/><circle cx="-50" cy="-32" r="2.6" fill="#1a1612"/><circle cx="-28" cy="-32" r="2.6" fill="#1a1612"/></g>
+            </g>
+          </g>
+
+          <!-- 漁翁 -->
+          <g id="fisher">
+            <ellipse cx="0" cy="4" rx="72" ry="10" fill="rgba(60,40,20,.18)"/>
+            <g id="fRod">
+              <path d="M40 -205 L 150 -430" stroke="#a8874f" stroke-width="7" stroke-linecap="round"/>
+              <path d="M62 -250 l 7 3 M 84 -295 l 7 3 M 106 -340 l 7 3 M 128 -385 l 7 3" stroke="#6e5530" stroke-width="3"/>
+              <path d="M150 -430 Q 178 -360 170 -300" stroke="#cfc7b6" stroke-width="1.5" fill="none"/>
+            </g>
+            <g id="fLegB"><path d="M-24 -100 L -22 -40 L -6 -40 L -4 -100 Z" fill="#9aa7ae" stroke="#4d5a62" stroke-width="2"/><rect x="-22" y="-42" width="14" height="38" fill="#e2b78f"/><path d="M-34 -2 Q -18 -12 -2 -2 Z" fill="#b39a62" stroke="#6e5a34" stroke-width="2"/></g>
+            <g id="fLegF"><path d="M4 -100 L 6 -40 L 22 -40 L 24 -100 Z" fill="#a8b4ba" stroke="#4d5a62" stroke-width="2"/><rect x="8" y="-42" width="14" height="38" fill="#ecc39a"/><path d="M-4 -2 Q 14 -12 30 -2 Z" fill="#b39a62" stroke="#6e5a34" stroke-width="2"/></g>
+            <g id="fUpper">
+              <path d="M30 -228 Q 54 -210 44 -200" stroke="#6f8597" stroke-width="22" fill="none" stroke-linecap="round"/>
+              <circle cx="42" cy="-203" r="10" fill="#ecc39a" stroke="#9a7452" stroke-width="1.5"/>
+              <path d="M-42 -236 Q -52 -150 -66 -88 L 66 -88 Q 52 -150 42 -236 Q 0 -250 -42 -236 Z" fill="#7f95a6" stroke="#3c4c58" stroke-width="2.5"/>
+              <path d="M-40 -228 Q -10 -190 20 -96" stroke="#5f7486" stroke-width="3" fill="none"/>
+              <path d="M24 -150 L 44 -146 L 40 -126 L 22 -130 Z" fill="#94a7b5" stroke="#5f7486" stroke-width="1.5"/>
+              <path d="M-22 -242 L 14 -196 M 22 -242 L -6 -214" stroke="#ece4d0" stroke-width="7" fill="none" stroke-linecap="round"/>
+              <path d="M-52 -158 Q 0 -148 52 -158" stroke="#b49a6a" stroke-width="9" fill="none" stroke-linecap="round"/>
+              <path d="M-8 -152 l -6 22 M -2 -152 l 4 20" stroke="#b49a6a" stroke-width="4" stroke-linecap="round"/>
+              <circle cx="0" cy="-278" r="40" fill="#ecc39a" stroke="#9a7452" stroke-width="2"/>
+              <ellipse cx="34" cy="-276" rx="7" ry="11" fill="#e2b58c" stroke="#9a7452" stroke-width="1.5"/>
+              <path d="M-14 -300 q 8 -3 14 0 M -10 -306 q 6 -2 10 0" stroke="#c99a74" stroke-width="2" fill="none"/>
+              <circle cx="-30" cy="-262" r="8" fill="#e99a86" opacity=".55"/>
+              <path d="M-12 -276 Q -16 -266 -9 -262" stroke="#b07d58" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+              <path d="M-34 -258 Q -30 -230 -22 -212 Q -14 -192 -8 -176 Q -2 -196 6 -214 Q 14 -236 16 -258 Q -8 -246 -34 -258 Z" fill="#f4f3ee" stroke="#c8c3b8" stroke-width="1.5"/>
+              <path d="M-20 -236 q 3 12 6 20 M -6 -238 q 0 14 0 24 M 6 -236 q -2 10 -4 18" stroke="#d6d1c6" stroke-width="1.5" fill="none"/>
+              <path d="M-38 -254 Q -24 -268 -10 -256 Q 2 -268 18 -254" stroke="#f4f3ee" stroke-width="8" fill="none" stroke-linecap="round"/>
+              <path d="M-40 -292 L -16 -298 M 0 -298 L 18 -292" stroke="#f4f3ee" stroke-width="7" stroke-linecap="round"/>
+              <g class="face" data-f="normal"><circle cx="-26" cy="-282" r="4.5" fill="#1d1d1d"/><circle cx="4" cy="-282" r="4.5" fill="#1d1d1d"/></g>
+              <g class="face" data-f="happy"><path d="M-33 -281 Q -26 -290 -19 -281 M -3 -281 Q 4 -290 11 -281" stroke="#1d1d1d" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M-22 -246 Q -10 -236 2 -246" stroke="#9a3b30" stroke-width="5" fill="none" stroke-linecap="round"/></g>
+              <g class="face" data-f="surprise"><circle cx="-26" cy="-283" r="8" fill="#fff" stroke="#1d1d1d" stroke-width="2.5"/><circle cx="4" cy="-283" r="8" fill="#fff" stroke="#1d1d1d" stroke-width="2.5"/><circle cx="-26" cy="-283" r="3.5" fill="#1d1d1d"/><circle cx="4" cy="-283" r="3.5" fill="#1d1d1d"/><ellipse cx="-10" cy="-243" rx="6" ry="8" fill="#6e2a22"/></g>
+              <path d="M-26 -282 Q -40 -250 -30 -230 M 26 -282 Q 34 -252 26 -232" stroke="#8a6a3a" stroke-width="1.8" fill="none"/>
+              <path d="M-108 -282 L 0 -352 L 108 -282 Q 0 -264 -108 -282 Z" fill="url(#gHat)" stroke="#7c6232" stroke-width="3"/>
+              <path d="M-54 -282 L 0 -352 L 54 -282 M -84 -282 L 0 -352 L 84 -282 M -24 -276 L 0 -352 L 24 -276" stroke="#9c7f45" stroke-width="2" fill="none"/>
+              <path d="M-80 -300 Q 0 -288 80 -300 M -50 -322 Q 0 -314 50 -322" stroke="#9c7f45" stroke-width="2" fill="none"/>
+              <g id="fBasket">
+                <path d="M-116 -150 Q -80 -205 -44 -150" stroke="#7d5c2c" stroke-width="5" fill="none"/>
+                <path d="M-118 -150 Q -122 -110 -102 -86 L -58 -86 Q -38 -110 -42 -150 Z" fill="#c8a462" stroke="#7d5c2c" stroke-width="3"/>
+                <g clip-path="url(#cHandBasket)" stroke="#8f6c34" stroke-width="2">
+                  <path d="M-130 -160 L -50 -80 M -110 -160 L -30 -80 M -150 -160 L -70 -80 M -90 -160 L -20 -90 M -30 -160 L -110 -80 M -50 -160 L -130 -80 M -70 -160 L -150 -80"/>
+                </g>
+                <path d="M-120 -150 Q -80 -142 -40 -150" stroke="#7d5c2c" stroke-width="5" fill="none"/>
+              </g>
+              <path d="M-30 -226 Q -60 -190 -70 -160" stroke="#6f8597" stroke-width="24" fill="none" stroke-linecap="round"/>
+              <circle cx="-72" cy="-152" r="11" fill="#ecc39a" stroke="#9a7452" stroke-width="1.5"/>
+            </g>
+          </g>
+
+          <!-- 竹簍前半 -->
+          <g id="basketFront">
+            <path d="M-132 -200 Q -150 -90 -100 0 L 100 0 Q 150 -90 132 -200 Q 0 -176 -132 -200 Z" fill="#c8a462" stroke="#6e4f22" stroke-width="4"/>
+            <g id="weave" clip-path="url(#cBasket)" stroke="#8c6a32" stroke-width="3.5" opacity=".9"></g>
+            <path d="M-140 -110 Q 0 -86 140 -110" stroke="#7d5c2c" stroke-width="6" fill="none"/>
+            <path d="M-134 -200 Q 0 -170 134 -200" stroke="#6e4f22" stroke-width="14" fill="none" stroke-linecap="round"/>
+            <path d="M-134 -200 Q 0 -170 134 -200" stroke="#a88246" stroke-width="5" fill="none" stroke-linecap="round" stroke-dasharray="14 8"/>
+          </g>
+
+          <g id="fx"></g>
+          <g id="reedsFront"></g>
+          <rect id="sunsetTint" x="-400" y="-200" width="2400" height="1400" fill="#f07a4a" opacity="0" pointer-events="none"/>
+        </g>
+
+        <!-- 生活例子：教室 -->
+        <g id="life" opacity="0">
+          <rect x="0" y="0" width="1600" height="900" fill="#efe4ca"/>
+          <rect x="0" y="560" width="1600" height="340" fill="#d6bd8f"/>
+          <path d="M0 560 L 1600 560" stroke="#a88b5c" stroke-width="6"/>
+          <g transform="translate(330 120)">
+            <rect x="0" y="0" width="560" height="260" rx="8" fill="#3e5a4a" stroke="#8b6a3e" stroke-width="12"/>
+            <text x="280" y="105" text-anchor="middle" font-size="56" fill="#f3f0e4" font-family="DFKai-SB, BiauKai, 標楷體, KaiTi, serif" opacity=".9">分組討論</text>
+            <text x="280" y="185" text-anchor="middle" font-size="40" fill="#f3f0e4" font-family="DFKai-SB, BiauKai, 標楷體, KaiTi, serif" opacity=".75">選出小組長</text>
+          </g>
+          <g transform="translate(1060 110)">
+            <rect x="0" y="0" width="330" height="260" fill="#cfe3d8" stroke="#8b6a3e" stroke-width="12"/>
+            <circle cx="90" cy="170" r="70" fill="#9cc48b" opacity=".8"/><circle cx="200" cy="150" r="90" fill="#86b47a" opacity=".75"/><circle cx="290" cy="190" r="60" fill="#a5cc93" opacity=".8"/>
+            <path d="M165 0 L 165 260 M 0 130 L 330 130" stroke="#8b6a3e" stroke-width="8"/>
+          </g>
+          <g transform="translate(120 140)">
+            <rect x="0" y="0" width="140" height="180" fill="#f7f1e2" stroke="#b49a6a" stroke-width="4"/>
+            <path d="M20 40 h100 M20 70 h100 M20 100 h80 M20 130 h100" stroke="#b9a988" stroke-width="5"/>
+          </g>
+          <g id="kidA"></g>
+          <g id="kidB"></g>
+          <g id="kidC"></g>
+          <g transform="translate(780 820)">
+            <rect x="-330" y="-60" width="660" height="40" rx="6" fill="#b48a52" stroke="#7a5a2e" stroke-width="4"/>
+            <rect x="-300" y="-20" width="24" height="100" fill="#8c6a3a"/><rect x="276" y="-20" width="24" height="100" fill="#8c6a3a"/>
+            <path d="M-110 -62 L 0 -78 L 110 -62 L 0 -54 Z" fill="#fbfaf4" stroke="#9a9182" stroke-width="2"/>
+            <path d="M0 -78 L 0 -54" stroke="#9a9182" stroke-width="2"/>
+          </g>
+          <g id="lifeFx"></g>
+        </g>
+
+        <rect id="dream" x="0" y="0" width="1600" height="900" fill="url(#gDream)" opacity="0" pointer-events="none"/>
+        <g id="dreamSparkles" opacity="0"></g>
+      </svg>
+      <div id="paperTex"></div>
+
+      <div id="sceneTag"><span class="no"></span><span class="tt"></span></div>
+      <div id="titleCard" class="overlay">
+        <div class="t">鷸蚌相爭</div>
+        <div class="ribbon">漁翁得利</div>
+      </div>
+      <div id="infoCard" class="overlay">
+        <div class="scroll">
+          <h3>鷸蚌相爭，漁翁得利</h3>
+          <div class="row"><b>注音：</b><span>ㄩˋ ㄅㄤˋ ㄒㄧㄤ ㄓㄥ，ㄩˊ ㄨㄥ ㄉㄜˊ ㄌㄧˋ</span></div>
+          <div class="row"><b>意思：</b><span>鷸鳥和蚌互相爭鬥，最後讓漁翁得到好處。比喻雙方爭執不休，反而讓第三方獲利。</span></div>
+          <div class="row"><b>出處：</b><span>《戰國策・燕策二》</span></div>
+        </div>
+      </div>
+      <div id="endCard" class="overlay">
+        <div class="slogan">遇到衝突，<span class="l2">先溝通，再解決問題！</span><span class="brush"></span></div>
+      </div>
+      <div id="startOverlay">
+        <div class="t">鷸蚌相爭</div>
+        <button id="startBtn">▶ 開始播放</button>
+        <div class="hint">有旁白與音效，請打開喇叭 🔊</div>
+      </div>
+      <div id="subtitle"><span class="box"><span class="who"></span><span class="text"></span></span></div>
+      <div id="progress"><div></div></div>
+    </div>
+    <div class="controls">
+      <button id="btnPrev" title="上一幕（←）">⏮ 上一幕</button>
+      <button id="btnPlay" class="main" title="播放／暫停（空白鍵）">▶ 播放</button>
+      <button id="btnNext" title="下一幕（→）">下一幕 ⏭</button>
+      <button id="btnReplay" title="重播本幕">↻ 重播本幕</button>
+      <button id="btnAuto" title="自動接續下一幕">自動連播</button>
+      <button id="btnVoice" title="旁白配音">🗣 旁白</button>
+      <button id="btnMusic" title="背景音樂與音效">🎵 音樂</button>
+      <button id="btnSub" title="字幕">💬 字幕</button>
+      <button id="btnFull" title="全螢幕">⛶ 全螢幕</button>
+    </div>
+  </div>
+
+  <div class="chips" id="chips"></div>
+
+  <section class="card">
+    <h2>📖 成語小學堂</h2>
+    <div class="idiom-big">鷸蚌相爭，漁翁得利</div>
+    <dl class="learn">
+      <dt>注音</dt><dd>ㄩˋ ㄅㄤˋ ㄒㄧㄤ ㄓㄥ，ㄩˊ ㄨㄥ ㄉㄜˊ ㄌㄧˋ</dd>
+      <dt>意思</dt><dd>鷸鳥和蚌互相爭鬥，最後讓漁翁得到好處。比喻雙方爭執不休，反而讓第三方獲利。</dd>
+      <dt>故事出處</dt><dd>《戰國策・燕策二》</dd>
+      <dt>生活例子</dt><dd>兩位同學為了搶當小組長而爭吵，最後由另一位同學獲得大家支持，成為小組長。</dd>
+    </dl>
+  </section>
+
+  <section class="card">
+    <h2>🎭 角色介紹</h2>
+    <div class="roles">
+      <div class="role"><b>鷸</b> <small>ㄩˋ</small><br>棕色斑紋羽毛、細長尖嘴，個性好勝，想吃蚌肉。</div>
+      <div class="role"><b>蚌</b> <small>ㄅㄤˋ</small><br>灰褐色蚌殼、粉色內部，遇到危險就緊緊閉殼。</div>
+      <div class="role"><b>漁翁</b> <small>ㄩˊ ㄨㄥ</small><br>戴斗笠、穿古代布衣，發現鷸與蚌爭鬥後，趁機捉住牠們。</div>
+    </div>
+  </section>
+
+  <section class="card quiz">
+    <h2>✏️ 看完考考你</h2>
+    <div id="quiz"></div>
+  </section>
+</div>
+
+<script>
+(() => {
+  const $ = (s) => document.querySelector(s);
+  const NS = 'http://www.w3.org/2000/svg';
+  const mk = (tag, attrs, parent, html) => {
+    const n = document.createElementNS(NS, tag);
+    for (const k in attrs) n.setAttribute(k, attrs[k]);
+    if (html) n.innerHTML = html;
+    if (parent) parent.appendChild(n);
+    return n;
+  };
+  // 可重現的亂數
+  let seed = 7;
+  const rnd = () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
+
+  // ---------- 宣紙紋理 ----------
+  (() => {
+    const c = document.createElement('canvas');
+    c.width = c.height = 256;
+    const g = c.getContext('2d');
+    const img = g.createImageData(256, 256);
+    for (let i = 0; i < img.data.length; i += 4) {
+      const v = 225 + Math.random() * 30;
+      img.data[i] = v; img.data[i + 1] = v - 6; img.data[i + 2] = v - 18; img.data[i + 3] = 255;
+    }
+    g.putImageData(img, 0, 0);
+    g.strokeStyle = 'rgba(150,120,80,.12)';
+    for (let i = 0; i < 60; i++) {
+      g.beginPath();
+      const x = Math.random() * 256, y = Math.random() * 256;
+      g.moveTo(x, y); g.quadraticCurveTo(x + 10, y + Math.random() * 8, x + 6 + Math.random() * 20, y + Math.random() * 6);
+      g.stroke();
+    }
+    $('#paperTex').style.backgroundImage = `url(${c.toDataURL()})`;
+  })();
+
+  // ---------- 山水遠山 ----------
+  const MT = $('#mountains');
+  const defs = $('#svg defs');
+  function mountainLayer(id, color, base, peaks, opTop, strokes) {
+    const top = base - Math.max(...peaks.map((p) => p[1]));
+    const gr = mk('linearGradient', { id, x1: 0, y1: top, x2: 0, y2: base + 30, gradientUnits: 'userSpaceOnUse' }, defs);
+    mk('stop', { offset: 0, 'stop-color': color, 'stop-opacity': opTop }, gr);
+    mk('stop', { offset: .55, 'stop-color': color, 'stop-opacity': opTop * .55 }, gr);
+    mk('stop', { offset: 1, 'stop-color': color, 'stop-opacity': 0 }, gr);
+    const H = (x) => {
+      let h = 0;
+      peaks.forEach(([px, ph, pw]) => {
+        const k = (x - px) / pw;
+        if (Math.abs(k) < 1) h = Math.max(h, ph * Math.pow(1 - k * k, .75));
+      });
+      return h + 8 * Math.sin(x * .05) + 5 * Math.sin(x * .13 + 1);
+    };
+    let d = `M-60 ${base + 40}`;
+    for (let x = -60; x <= 1660; x += 8) d += ` L${x} ${(base - H(x)).toFixed(1)}`;
+    d += ` L1660 ${base + 40} Z`;
+    mk('path', { d, fill: `url(#${id})` }, MT);
+    // 皴法筆觸
+    if (strokes) {
+      peaks.forEach(([px, ph, pw]) => {
+        for (let i = 0; i < 5; i++) {
+          const sx = px + (rnd() - .5) * pw * .9;
+          const sy = base - H(sx) + 6;
+          const len = ph * (.25 + rnd() * .35);
+          const bend = (sx - px) * .25;
+          mk('path', { d: `M${sx} ${sy} q ${bend * .5} ${len * .5} ${bend} ${len}`, stroke: color, 'stroke-width': 2 + rnd() * 4, fill: 'none', opacity: .35, 'stroke-linecap': 'round' }, MT);
+        }
+      });
+    }
+    return H;
+  }
+  mountainLayer('m1', '#9fb1b8', 470, [[180, 260, 170], [470, 330, 150], [760, 200, 200], [1120, 280, 160], [1420, 340, 170]], .55, false);
+  mountainLayer('m2', '#6f8b98', 500, [[60, 200, 150], [330, 250, 120], [620, 160, 170], [1000, 210, 130], [1290, 260, 120], [1560, 200, 140]], .75, true);
+  const H3 = mountainLayer('m3', '#5b7a6c', 530, [[-20, 170, 200], [250, 120, 160], [880, 110, 220], [1240, 150, 170], [1610, 180, 180]], .9, true);
+  // 山頂小松樹
+  [230, 270, 870, 1220, 1270].forEach((x) => {
+    const y = 530 - H3(x);
+    const g = mk('g', { transform: `translate(${x} ${y + 4})`, opacity: .8 }, MT);
+    mk('path', { d: 'M0 0 L0 -26', stroke: '#2f3a30', 'stroke-width': 2.5 }, g);
+    [[-24, 10], [-16, 8], [-8, 6]].forEach(([yy, w]) => mk('ellipse', { cx: 0, cy: yy, rx: w, ry: 3.5, fill: '#2f4a3a' }, g));
+  });
+  // 霧氣
+  const mists = [];
+  [[300, 455, 420, 40], [1000, 440, 520, 46], [1450, 480, 380, 36], [650, 505, 600, 34]].forEach(([x, y, rx, ry], i) => {
+    const e = mk('ellipse', { cx: 0, cy: 0, rx, ry, fill: 'url(#gMist)' }, $('#mists'));
+    mists.push({ e, x, y, sp: 4 + i * 2 });
+  });
+
+  // 水面漣漪
+  const RP = $('#ripples');
+  for (let i = 0; i < 46; i++) {
+    const x = -300 + rnd() * 2200, y = 520 + rnd() * 140, w = 20 + rnd() * 50;
+    mk('path', { d: `M${x} ${y} q ${w / 2} ${-3 - rnd() * 3} ${w} 0`, 'stroke-width': 1.5 + (y - 520) / 60, opacity: .35 + rnd() * .3 }, RP);
+  }
+
+  // 岸邊石頭、草
+  const GD = $('#groundDetail');
+  function rock(x, y, w, h) {
+    const g = mk('g', { transform: `translate(${x} ${y})` }, GD);
+    mk('path', { d: `M${-w} 0 Q ${-w} ${-h * .7} ${-w * .4} ${-h} Q ${w * .2} ${-h * 1.1} ${w * .6} ${-h * .6} Q ${w} ${-h * .3} ${w} 0 Z`, fill: 'url(#gRock)', stroke: '#4d5552', 'stroke-width': 3 }, g);
+    mk('path', { d: `M${-w * .4} ${-h} q ${-w * .1} ${h * .5} ${w * .05} ${h * .9} M ${w * .2} ${-h * .9} q ${w * .1} ${h * .4} ${-w * .05} ${h * .8}`, stroke: '#5d6662', 'stroke-width': 2.5, fill: 'none', opacity: .7 }, g);
+    for (let i = 0; i < 7; i++) mk('circle', { cx: (rnd() - .5) * w * 1.4, cy: -h * (.75 + rnd() * .25), r: 3 + rnd() * 3, fill: '#6f8a4e', opacity: .8 }, g);
+  }
+  rock(140, 760, 120, 90); rock(300, 745, 60, 40); rock(1470, 790, 150, 110); rock(1310, 760, 50, 34);
+  function tuft(x, y, s = 1, c = '#5c7a3e') {
+    const g = mk('g', { transform: `translate(${x} ${y}) scale(${s})` }, GD);
+    for (let i = -3; i <= 3; i++) mk('path', { d: `M0 0 q ${i * 6} -30 ${i * 14} ${-48 + Math.abs(i) * 8}`, stroke: c, 'stroke-width': 3, fill: 'none', 'stroke-linecap': 'round' }, g);
+  }
+  [[420, 700], [560, 820], [1100, 830], [880, 680], [1250, 700], [700, 880], [40, 840]].forEach(([x, y], i) => tuft(x, y, .8 + (i % 3) * .2, i % 2 ? '#5c7a3e' : '#7b8f45'));
+
+  // 松樹
+  (() => {
+    const g = mk('g', { transform: 'translate(120 690)' }, $('#pine'));
+    mk('path', { d: 'M-10 0 Q -30 -120 10 -200 Q 40 -260 0 -340 Q -20 -390 20 -440', stroke: '#3a2c20', 'stroke-width': 22, fill: 'none', 'stroke-linecap': 'round' }, g);
+    mk('path', { d: 'M-10 0 Q -30 -120 10 -200 Q 40 -260 0 -340', stroke: '#6b5440', 'stroke-width': 6, fill: 'none', opacity: .6 }, g);
+    mk('path', { d: 'M8 -210 Q 80 -230 150 -210 M 2 -330 Q -60 -350 -110 -330 M 16 -420 Q 70 -440 120 -430', stroke: '#3a2c20', 'stroke-width': 9, fill: 'none', 'stroke-linecap': 'round' }, g);
+    [[150, -215, 70], [90, -232, 55], [-110, -335, 65], [-50, -350, 50], [120, -435, 60], [60, -450, 50], [10, -470, 45]].forEach(([x, y, w]) => {
+      mk('ellipse', { cx: x, cy: y, rx: w, ry: w * .32, fill: '#3f5e48', opacity: .92 }, g);
+      for (let i = 0; i < 9; i++) {
+        const a = x - w + (i / 8) * w * 2;
+        mk('path', { d: `M${a} ${y - w * .15} l ${(rnd() - .5) * 6} ${-w * .25}`, stroke: '#2a4033', 'stroke-width': 2 }, g);
+      }
+    });
+  })();
+
+  // 竹簍編織紋
+  (() => {
+    let d = '';
+    for (let i = -300; i < 300; i += 26) d += `M${i} -220 L ${i + 220} 10 M ${i} 10 L ${i + 220} -220 `;
+    mk('path', { d }, $('#weave'));
+  })();
+
+  // 鷸的羽毛（鱗狀斑紋）
+  (() => {
+    const W = $('#snWing');
+    const rows = [[-138, [-40, -18, 4, 24]], [-126, [-56, -34, -12, 10, 30]], [-114, [-60, -40, -18, 4]], [-102, [-52, -30, -8]]];
+    rows.forEach(([y, xs]) => xs.forEach((x) => {
+      mk('path', { d: `M${x + 14} ${y} q -14 -10 -30 -2 q 12 12 30 2 Z`, fill: '#4a301b', stroke: '#e2c48f', 'stroke-width': 2.2 }, W);
+    }));
+    mk('path', { d: 'M-70 -104 Q -30 -86 20 -96', stroke: '#2f2216', 'stroke-width': 2, fill: 'none', opacity: .7 }, W);
+  })();
+
+  // ---------- 背景動態元素 ----------
+  const birdList = [];
+  for (let i = 0; i < 3; i++) {
+    const p = mk('path', { stroke: '#3d3a36', 'stroke-width': 2.5, fill: 'none', 'stroke-linecap': 'round' }, $('#skyBirds'));
+    birdList.push({ p, x: 300 + i * 70, y: 180 + i * 22, ph: i });
+  }
+  const reeds = [];
+  function makeReeds(parent, list) {
+    list.forEach(([x, y, h, n]) => {
+      for (let i = 0; i < n; i++) {
+        const bx = x + i * 14, hh = h * (0.8 + ((i * 37) % 10) / 25);
+        const g = mk('g', {}, parent,
+          `<path d="M${bx} ${y} Q ${bx + 6} ${y - hh / 2} ${bx + 2} ${y - hh}" stroke="#5b7440" stroke-width="4" fill="none" stroke-linecap="round"/>` +
+          `<path d="M${bx + 2} ${y - hh} q -4 -18 2 -34 q 8 14 -2 34 Z" fill="#a07a4a"/>` +
+          `<path d="M${bx} ${y - 10} Q ${bx - 30} ${y - hh * .5} ${bx - 40} ${y - hh * .72}" stroke="#7a944f" stroke-width="3.5" fill="none" stroke-linecap="round"/>`);
+        reeds.push({ g, bx, by: y, ph: bx * 0.05 });
+      }
+    });
+  }
+  makeReeds($('#reedsBack'), [[480, 645, 120, 3], [1380, 640, 150, 4], [960, 640, 90, 3]]);
+  makeReeds($('#reedsFront'), [[-20, 920, 260, 4], [1540, 930, 240, 4]]);
+
+  // ---------- 教室小朋友 ----------
+  function kid(o) {
+    const skin = '#f7d9bb', line = '#9a7058';
+    const bottom = o.skirt
+      ? `<path d="M-46 -82 L -36 -130 L 36 -130 L 46 -82 Z" fill="#2e4470" stroke="#1f2f50" stroke-width="2"/><path d="M-20 -128 L -26 -84 M 0 -128 L 0 -84 M 20 -128 L 26 -84" stroke="#1f2f50" stroke-width="2"/>`
+      : `<path d="M-40 -130 L 40 -130 L 42 -88 L 4 -88 L 0 -112 L -4 -88 L -42 -88 Z" fill="#2e4470" stroke="#1f2f50" stroke-width="2"/>`;
+    let hair = '';
+    if (o.hair === 'boy') hair = `<path d="M-58 -268 Q -60 -330 0 -330 Q 60 -330 58 -268 Q 48 -296 20 -300 Q 30 -288 22 -282 Q 0 -300 -30 -296 Q -50 -290 -58 -268 Z" fill="#1f1a17"/>`;
+    if (o.hair === 'pony') hair = `<path d="M-58 -262 Q -62 -330 0 -332 Q 62 -330 58 -262 Q 40 -302 -6 -298 Q -40 -296 -58 -262 Z" fill="#1f1a17"/><path d="M52 -300 Q 98 -280 86 -200 Q 80 -230 60 -270 Z" fill="#1f1a17"/><circle cx="56" cy="-298" r="8" fill="#d23b3b"/>`;
+    if (o.hair === 'bob') hair = `<path d="M-62 -230 Q -70 -334 0 -334 Q 70 -334 62 -230 L 50 -232 Q 54 -282 30 -296 Q -10 -300 -40 -290 Q -54 -270 -50 -232 Z" fill="#3a2a20"/>`;
+    return `
+      <ellipse cx="0" cy="2" rx="50" ry="8" fill="rgba(60,40,20,.15)"/>
+      <g class="kLegs"><rect x="-28" y="-92" width="18" height="78" rx="6" fill="${skin}"/><rect x="10" y="-92" width="18" height="78" rx="6" fill="${skin}"/>
+      <rect x="-30" y="-30" width="22" height="16" fill="#fff"/><rect x="8" y="-30" width="22" height="16" fill="#fff"/>
+      <path d="M-36 0 Q -36 -18 -18 -16 L -8 -16 L -8 0 Z" fill="#2b2b2b"/><path d="M8 0 L 8 -16 L 18 -16 Q 36 -18 36 0 Z" fill="#2b2b2b"/></g>
+      ${bottom}
+      <path d="M-44 -206 Q -50 -150 -42 -126 L 42 -126 Q 50 -150 44 -206 Q 0 -220 -44 -206 Z" fill="#fbfbf6" stroke="#9aa0a6" stroke-width="2"/>
+      <path d="M-18 -210 L 0 -194 L 18 -210" stroke="#3d6fb0" stroke-width="5" fill="none"/>
+      <path d="M-12 -198 L 12 -198 L 4 -190 L 8 -160 L 0 -152 L -8 -160 L -4 -190 Z" fill="#d23b3b"/>
+      <g class="armL"><path d="M-44 -200 Q -56 -160 -54 -130" stroke="#fbfbf6" stroke-width="22" fill="none" stroke-linecap="round"/><circle cx="-54" cy="-122" r="11" fill="${skin}"/></g>
+      <g class="armR"><path d="M44 -200 Q 56 -160 54 -130" stroke="#fbfbf6" stroke-width="22" fill="none" stroke-linecap="round"/><circle cx="54" cy="-122" r="11" fill="${skin}"/></g>
+      ${o.book ? '<rect x="-30" y="-176" width="56" height="44" rx="4" fill="#5f9e6e" stroke="#3b6b48" stroke-width="3" transform="rotate(-8 0 -150)"/>' : ''}
+      <g class="sash" opacity="0"><path d="M-44 -204 L 40 -130 L 30 -122 L -48 -190 Z" fill="#c8312b"/><text x="-2" y="-160" font-size="22" fill="#fff" text-anchor="middle" transform="rotate(42 -2 -166)" font-family="DFKai-SB, BiauKai, 標楷體, KaiTi, serif" font-weight="bold">小組長</text></g>
+      <circle cx="-56" cy="-264" r="11" fill="${skin}" stroke="${line}" stroke-width="2"/><circle cx="56" cy="-264" r="11" fill="${skin}" stroke="${line}" stroke-width="2"/>
+      <circle cx="0" cy="-268" r="58" fill="${skin}" stroke="${line}" stroke-width="2.5"/>
+      ${hair}
+      <circle cx="-32" cy="-246" r="9" fill="#f3a0a0" opacity=".6"/><circle cx="32" cy="-246" r="9" fill="#f3a0a0" opacity=".6"/>
+      <g class="face" data-f="normal"><circle cx="-20" cy="-264" r="7" fill="#2a1d18"/><circle cx="20" cy="-264" r="7" fill="#2a1d18"/><circle cx="-18" cy="-267" r="2.3" fill="#fff"/><circle cx="22" cy="-267" r="2.3" fill="#fff"/><path d="M-10 -238 Q 0 -230 10 -238" stroke="#8a3a2a" stroke-width="3.5" fill="none" stroke-linecap="round"/></g>
+      <g class="face" data-f="angry"><circle cx="-20" cy="-262" r="7" fill="#2a1d18"/><circle cx="20" cy="-262" r="7" fill="#2a1d18"/><path d="M-34 -284 L -10 -276 M 34 -284 L 10 -276" stroke="#2a1d18" stroke-width="5" stroke-linecap="round"/><ellipse cx="0" cy="-236" rx="12" ry="8" fill="#8a2a2a"/></g>
+      <g class="face" data-f="surprise"><circle cx="-20" cy="-264" r="9" fill="#fff" stroke="#2a1d18" stroke-width="2.5"/><circle cx="20" cy="-264" r="9" fill="#fff" stroke="#2a1d18" stroke-width="2.5"/><circle cx="-20" cy="-264" r="3.5" fill="#2a1d18"/><circle cx="20" cy="-264" r="3.5" fill="#2a1d18"/><ellipse cx="0" cy="-236" rx="6" ry="8" fill="#8a2a2a"/></g>
+      <g class="face" data-f="happy"><path d="M-28 -262 Q -20 -272 -12 -262 M 12 -262 Q 20 -272 28 -262" stroke="#2a1d18" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M-14 -240 Q 0 -224 14 -240 Z" fill="#b33a3a"/></g>`;
+  }
+  $('#kidA').innerHTML = kid({ hair: 'boy' });
+  $('#kidB').innerHTML = kid({ hair: 'pony', skirt: true });
+  $('#kidC').innerHTML = kid({ hair: 'bob', skirt: true, book: true });
+
+  // ---------- 角色狀態 ----------
+  const S = { snipe: {}, clam: {}, fisher: {}, basket: {}, pair: {}, cam: {}, env: {}, boat: {}, kA: {}, kB: {}, kC: {} };
+  const el = {
+    snipe: $('#snipe'), snUpper: $('#snUpper'), snLegB: $('#snLegB'), snLegF: $('#snLegF'),
+    clam: $('#clam'), clamTop: $('#clamTop'), clamMeat: $('#clamMeat'), clamPeek: $('#clamPeek'),
+    fisher: $('#fisher'), fUpper: $('#fUpper'), fLegB: $('#fLegB'), fLegF: $('#fLegF'), fBasket: $('#fBasket'),
+    bBack: $('#basketBack'), bFront: $('#basketFront'), boat: $('#boat'),
+    world: $('#world'), sun: $('#sun'), sunsetSky: $('#sunsetSky'), sunsetTint: $('#sunsetTint'),
+    dream: $('#dream'), dreamSparkles: $('#dreamSparkles'), fx: $('#fx'), lifeFx: $('#lifeFx'),
+    ripples: $('#ripples'), life: $('#life'),
+    kA: $('#kidA'), kB: $('#kidB'), kC: $('#kidC'),
+  };
+
+  function setFace(g, f) {
+    g.querySelectorAll('.face').forEach((n) => { n.style.display = n.dataset.f === f ? '' : 'none'; });
+  }
+
+  // ---------- 時鐘、補間、等待 ----------
+  let clock = 0, last = performance.now(), playing = false, runId = 0;
+  let tweens = [], waiters = [], fxList = [];
+  const ease = {
+    io: (t) => t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2,
+    out: (t) => 1 - Math.pow(1 - t, 3),
+    lin: (t) => t,
+    back: (t) => { const c = 1.7; return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2); },
+  };
+  function tween(obj, to, dur, e = 'io') {
+    return new Promise((res) => {
+      const from = {};
+      for (const k in to) from[k] = obj[k];
+      tweens.push({ obj, from, to, start: clock, dur: Math.max(1, dur), e: ease[e], res, id: runId });
+    });
+  }
+  function wait(ms) { return new Promise((res) => waiters.push({ at: clock + ms, res })); }
+  function set(obj, props) { Object.assign(obj, props); }
+
+  // ---------- 特效 ----------
+  function pop(txt, x, y, opt = {}) {
+    const t = mk('text', { 'text-anchor': 'middle', 'font-size': opt.size || 56, 'font-weight': 'bold' }, opt.layer || el.fx);
+    t.textContent = txt;
+    fxList.push({ n: t, x, y, start: clock, life: opt.life || 1400, rise: opt.rise ?? 50, dx: opt.dx || 0, scale: opt.scale ?? 1, wobble: opt.wobble || 0 });
+  }
+  function burst(x, y) {
+    const g = mk('g', {}, el.fx);
+    let d = '';
+    for (let i = 0; i < 16; i++) {
+      const a = i / 16 * Math.PI * 2, r = i % 2 ? 46 : 92;
+      d += (i ? 'L' : 'M') + (Math.cos(a) * r).toFixed(1) + ' ' + (Math.sin(a) * r).toFixed(1) + ' ';
+    }
+    mk('path', { d: d + 'Z', fill: '#f2a03a', stroke: '#c8312b', 'stroke-width': 5 }, g);
+    mk('text', { x: 0, y: 16, 'text-anchor': 'middle', 'font-size': 52, 'font-weight': 'bold', fill: '#c8312b', 'font-family': 'DFKai-SB, BiauKai, 標楷體, KaiTi, serif' }, g).textContent = '啪！';
+    fxList.push({ n: g, x, y, start: clock, life: 1300, rise: 0, dx: 0, scale: 1, pop: true });
+  }
+  function bubble(txt, x, y, life = 1600) {
+    const g = mk('g', {}, el.fx,
+      `<ellipse cx="0" cy="0" rx="${30 + txt.length * 14}" ry="40" fill="#fbf6ea" stroke="#3b2a1a" stroke-width="4"/>` +
+      `<path d="M-8 34 L -22 62 L 10 36 Z" fill="#fbf6ea" stroke="#3b2a1a" stroke-width="4" stroke-linejoin="round"/>` +
+      `<rect x="-14" y="30" width="22" height="8" fill="#fbf6ea"/>` +
+      `<text x="0" y="16" text-anchor="middle" font-size="46" font-weight="bold" fill="#b23a2a">${txt}</text>`);
+    fxList.push({ n: g, x, y, start: clock, life, rise: 0, dx: 0, scale: 1, pop: true });
+  }
+  function clearFx() { fxList.forEach((f) => f.n.remove()); fxList = []; }
+
+  // ---------- 音效（Web Audio 合成） ----------
+  let ac = null, master = null, musicGain = null, sfxGain = null, waterGain = null, noiseBuf = null;
+  let musicOn = true;
+  function initAudio() {
+    if (ac) return;
+    try { ac = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return; }
+    master = ac.createGain(); master.connect(ac.destination);
+    musicGain = ac.createGain(); musicGain.gain.value = .15; musicGain.connect(master);
+    sfxGain = ac.createGain(); sfxGain.gain.value = .5; sfxGain.connect(master);
+    waterGain = ac.createGain(); waterGain.gain.value = 0; waterGain.connect(master);
+    const len = ac.sampleRate * 2;
+    noiseBuf = ac.createBuffer(1, len, ac.sampleRate);
+    const d = noiseBuf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    const src = ac.createBufferSource(); src.buffer = noiseBuf; src.loop = true;
+    const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 450;
+    src.connect(lp); lp.connect(waterGain); src.start();
+  }
+  const sfxOk = () => ac && musicOn && playing;
+  function tone(freq, t0, dur, type = 'sine', vol = .3, slideTo, dest) {
+    const o = ac.createOscillator(), g = ac.createGain();
+    o.type = type; o.frequency.setValueAtTime(freq, t0);
+    if (slideTo) o.frequency.exponentialRampToValueAtTime(slideTo, t0 + dur);
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(vol, t0 + 0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    o.connect(g); g.connect(dest || sfxGain);
+    o.start(t0); o.stop(t0 + dur + .05);
+  }
+  function noise(t0, dur, vol, freq = 1500, q = 1) {
+    const s = ac.createBufferSource(); s.buffer = noiseBuf;
+    const f = ac.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = freq; f.Q.value = q;
+    const g = ac.createGain();
+    g.gain.setValueAtTime(vol, t0); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    s.connect(f); f.connect(g); g.connect(sfxGain);
+    s.start(t0, Math.random()); s.stop(t0 + dur + .05);
+  }
+  const SFX = {
+    chirp() { if (!sfxOk()) return; const t = ac.currentTime; tone(2600, t, .09, 'sine', .1, 3600); tone(2900, t + .12, .08, 'sine', .08, 3900); tone(2500, t + .24, .1, 'sine', .07, 3400); },
+    discover() { if (!sfxOk()) return; const t = ac.currentTime; [784, 988, 1175, 1568].forEach((f, i) => tone(f, t + i * .07, .25, 'triangle', .22)); },
+    snap() { if (!sfxOk()) return; const t = ac.currentTime; noise(t, .12, .9, 2500, .7); tone(180, t, .18, 'square', .25, 60); tone(900, t + .12, .35, 'sine', .2, 300); },
+    boing() { if (!sfxOk()) return; const t = ac.currentTime; tone(300, t, .45, 'sine', .25, 700); },
+    huh() { if (!sfxOk()) return; const t = ac.currentTime; tone(500, t, .12, 'triangle', .2, 900); tone(700, t + .14, .25, 'triangle', .2, 1300); },
+    pull() { if (!sfxOk()) return; const t = ac.currentTime; noise(t, .25, .25, 600, 2); },
+    basket() { if (!sfxOk()) return; const t = ac.currentTime; for (let i = 0; i < 5; i++) noise(t + i * .07, .08, .5, 900 + i * 150, 3); tone(160, t, .3, 'sine', .3, 90); },
+    sad() { if (!sfxOk()) return; const t = ac.currentTime; [587, 523, 466, 392].forEach((f, i) => tone(f, t + i * .28, .4, 'triangle', .18)); },
+    sparkle() { if (!sfxOk()) return; const t = ac.currentTime; [1568, 2093, 2637, 3136].forEach((f, i) => tone(f, t + i * .06, .3, 'sine', .1)); },
+    title() { if (!sfxOk()) return; const t = ac.currentTime; [523, 659, 784, 1047].forEach((f, i) => tone(f, t + i * .12, .6, 'triangle', .22)); },
+    clap() { if (!sfxOk()) return; const t = ac.currentTime; for (let i = 0; i < 10; i++) noise(t + i * .09 + Math.random() * .04, .06, .35, 1800, 1.5); },
+  };
+
+  // 五聲音階背景音樂（古箏撥弦感）
+  const scale = [392, 440, 523, 587, 659, 784, 880];
+  const melody = [2, 3, 4, -1, 4, 5, 4, 3, 2, -1, 1, 2, 3, -1, 2, 1, 0, -1, 2, 4, 5, -1, 6, 5, 4, 3, 2, -1, 3, 2, 1, -1];
+  let mStep = 0, mNext = 0, mood = 'calm';
+  function musicTick() {
+    if (!ac || !musicOn || !playing) { mNext = 0; return; }
+    const beat = mood === 'sad' ? .55 : mood === 'busy' ? .28 : .4;
+    if (!mNext || mNext < ac.currentTime) mNext = ac.currentTime + .05;
+    while (mNext < ac.currentTime + .4) {
+      const n = melody[mStep % melody.length];
+      if (n >= 0) {
+        let f = scale[n];
+        if (mood === 'sad') f *= .84;
+        tone(f, mNext, beat * 2.4, 'triangle', .25, null, musicGain);
+        tone(f * 2, mNext, beat * .7, 'sine', .05, null, musicGain);
+        if (mStep % 4 === 0) tone(f / 2, mNext, beat * 3, 'sine', .16, null, musicGain);
+      }
+      mStep++; mNext += beat;
+    }
+  }
+  let water = .05;
+  function setWater(v) { water = v; if (waterGain) waterGain.gain.setTargetAtTime(musicOn && playing ? v : 0, ac.currentTime, .4); }
+
+  // ---------- 語音旁白與字幕 ----------
+  let voiceOn = 'speechSynthesis' in window, voice = null;
+  function pickVoice() {
+    const vs = speechSynthesis.getVoices();
+    voice = vs.find((v) => /zh[-_]TW/i.test(v.lang)) || vs.find((v) => /zh[-_](HK|Hant)/i.test(v.lang)) || vs.find((v) => /^zh/i.test(v.lang)) || null;
+  }
+  if ('speechSynthesis' in window) { pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
+  const VOICE = {
+    '旁白': { rate: .95, pitch: 1 },
+    '鷸': { rate: 1.08, pitch: 1.5 },
+    '蚌': { rate: 1.02, pitch: 1.25 },
+    '漁翁': { rate: .85, pitch: .6 },
+    '鷸蚌': { rate: 1.1, pitch: 1.4 },
+    '小明': { rate: 1.1, pitch: 1.4 },
+    '小美': { rate: 1.1, pitch: 1.7 },
+  };
+  const LABEL = { '鷸蚌': '鷸、蚌' };
+  let line = null, uttSeq = 0;
+  function speakLine() {
+    if (!line || !voiceOn || !('speechSynthesis' in window)) return;
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(line.text.replace(/[「」『』《》]/g, ''));
+    const cfg = VOICE[line.who] || VOICE['旁白'];
+    u.lang = 'zh-TW'; if (voice) u.voice = voice;
+    u.rate = cfg.rate; u.pitch = cfg.pitch;
+    const my = ++uttSeq, ln = line;
+    u.onend = u.onerror = () => { if (my === uttSeq && ln === line) ln.endedAt = clock; };
+    ln.spoken = true; ln.endedAt = null;
+    speechSynthesis.speak(u);
+  }
+  function stopSpeech() { uttSeq++; if ('speechSynthesis' in window) speechSynthesis.cancel(); }
+  function showSub(who, text) {
+    const w = $('#subtitle .who');
+    w.textContent = LABEL[who] || who;
+    w.className = 'who who-' + who;
+    $('#subtitle .text').textContent = text;
+    $('#subtitle').style.opacity = 1;
+  }
+  function hideSub() { $('#subtitle').style.opacity = 0; }
+  function say(who, text) {
+    return new Promise((res) => {
+      showSub(who, text);
+      line = { who, text, res, start: clock, min: Math.max(1500, text.length * 240), endedAt: null, spoken: false };
+      speakLine();
+    });
+  }
+  function checkLine() {
+    if (!line) return;
+    const t = clock - line.start;
+    const done = (voiceOn && line.spoken)
+      ? (line.endedAt !== null && clock - line.endedAt > 350) || t > line.text.length * 420 + 4000
+      : t > line.min + 400;
+    if (done) { const r = line.res; line = null; r(); }
+  }
+
+  // ---------- 繪製 ----------
+  function render(t) {
+    const sec = t / 1000;
+    mists.forEach((m) => m.e.setAttribute('transform', `translate(${m.x + Math.sin(sec * .08 * m.sp) * 60} ${m.y})`));
+    el.ripples.setAttribute('transform', `translate(${Math.sin(sec * .6) * 14} 0)`);
+    birdList.forEach((b) => {
+      const x = ((b.x + sec * 35) % 2000) - 200, y = b.y + Math.sin(sec + b.ph) * 10, f = Math.sin(sec * 7 + b.ph) * 7;
+      b.p.setAttribute('d', `M${x - 14} ${y - f} Q ${x - 7} ${y - 4} ${x} ${y} Q ${x + 7} ${y - 4} ${x + 14} ${y - f}`);
+    });
+    reeds.forEach((r) => r.g.setAttribute('transform', `rotate(${Math.sin(sec * 1.3 + r.ph) * 3} ${r.bx} ${r.by})`));
+    const E = S.env;
+    el.sun.setAttribute('transform', `translate(${E.sunX} ${E.sunY})`);
+    el.sunsetSky.setAttribute('opacity', E.sunset);
+    el.sunsetTint.setAttribute('opacity', E.sunset * .2);
+    el.dream.setAttribute('opacity', E.dream);
+    el.dreamSparkles.setAttribute('opacity', E.dream);
+    if (E.dream > 0) el.dreamSparkles.querySelectorAll('text').forEach((n, i) => n.setAttribute('opacity', .5 + .5 * Math.sin(sec * 3 + i)));
+    el.life.setAttribute('opacity', E.life);
+    el.life.style.display = E.life > 0 ? '' : 'none';
+
+    const c = S.cam;
+    el.world.setAttribute('transform', `translate(800 450) scale(${c.z}) translate(${-c.x} ${-c.y})`);
+
+    // 漁船
+    const bt = S.boat;
+    el.boat.setAttribute('transform', `translate(${bt.x} ${bt.y + Math.sin(sec * 1.6) * 3}) scale(${bt.s}) rotate(${Math.sin(sec * 1.2) * 1.5})`);
+    el.boat.setAttribute('opacity', bt.op);
+
+    // 夾住時，鷸與蚌一起移動
+    const P = S.pair;
+    if (P.locked) {
+      const sway = Math.sin(sec * 4.5) * 34 * P.tug;
+      S.clam.x = P.x + sway; S.clam.y = P.y; S.clam.s = 1.3 * P.s;
+      S.snipe.x = P.x - 328 * P.s + sway; S.snipe.y = P.y; S.snipe.s = P.s;
+      S.snipe.dir = 1;
+      S.snipe.lean = 30 + Math.sin(sec * 9) * 2.5 * P.tug;
+    }
+
+    // 鷸
+    const sn = S.snipe;
+    const walkPh = sec * 9;
+    const bob = sn.walk ? Math.abs(Math.sin(walkPh)) * -6 : Math.sin(sec * 2) * 1.5;
+    el.snipe.setAttribute('transform', `translate(${sn.x} ${sn.y}) scale(${sn.s * sn.dir} ${sn.s})`);
+    el.snipe.setAttribute('opacity', sn.op);
+    el.snUpper.setAttribute('transform', `translate(0 ${bob}) rotate(${sn.lean} 0 -75)`);
+    const leg = sn.walk ? Math.sin(walkPh) * 22 : (P.locked ? -12 - Math.sin(sec * 9) * 6 * P.tug : 0);
+    el.snLegB.setAttribute('transform', `rotate(${leg} -6 -80)`);
+    el.snLegF.setAttribute('transform', `rotate(${sn.walk ? -leg : leg * .6} 10 -80)`);
+    el.snipe.setAttribute('filter', sn.sil ? 'url(#fSil)' : '');
+
+    // 蚌
+    const cl = S.clam;
+    const cbob = cl.bob ? Math.abs(Math.sin(sec * 3)) * -10 * cl.bob : 0;
+    el.clam.setAttribute('transform', `translate(${cl.x} ${cl.y + cbob}) scale(${cl.s})`);
+    el.clam.setAttribute('opacity', cl.op);
+    el.clamTop.setAttribute('transform', `rotate(${cl.open * 34} 100 -30)`);
+    el.clamMeat.setAttribute('opacity', Math.min(1, cl.open * 3));
+    el.clamPeek.setAttribute('opacity', cl.sil ? 0 : Math.max(0, 1 - cl.open * 6));
+    el.clam.setAttribute('filter', cl.sil ? 'url(#fSil)' : '');
+
+    // 漁翁
+    const fi = S.fisher;
+    const fPh = sec * 6;
+    el.fisher.setAttribute('transform', `translate(${fi.x} ${fi.y}) scale(${fi.s})`);
+    el.fisher.setAttribute('opacity', fi.op);
+    el.fUpper.setAttribute('transform', `translate(0 ${fi.walk ? Math.abs(Math.sin(fPh)) * -6 : Math.sin(sec * 1.5) * 1.5}) rotate(${fi.lean} 0 -90)`);
+    const fl = fi.walk ? Math.sin(fPh) * 16 : 0;
+    el.fLegB.setAttribute('transform', `rotate(${fl} -14 -100)`);
+    el.fLegF.setAttribute('transform', `rotate(${-fl} 14 -100)`);
+    el.fBasket.style.display = fi.basket ? '' : 'none';
+
+    // 竹簍
+    const b = S.basket;
+    const sh = b.shake ? Math.sin(sec * 30) * 4 * b.shake : 0;
+    const btf = `translate(${b.x} ${b.y}) scale(${b.s}) rotate(${sh})`;
+    el.bBack.setAttribute('transform', btf); el.bFront.setAttribute('transform', btf);
+    el.bBack.setAttribute('opacity', b.op); el.bFront.setAttribute('opacity', b.op);
+
+    // 小朋友
+    if (E.life > 0) {
+      [['kA', el.kA], ['kB', el.kB], ['kC', el.kC]].forEach(([k, n]) => {
+        const st = S[k];
+        const hop = st.walk ? Math.abs(Math.sin(sec * 8)) * -10 : (st.angry ? Math.abs(Math.sin(sec * 7 + st.x)) * -8 : 0);
+        n.setAttribute('transform', `translate(${st.x} ${st.y + hop}) scale(${st.s * st.dir} ${st.s})`);
+        const jab = st.point ? st.point + Math.sin(sec * 10) * 8 * st.angry : 0;
+        n.querySelector('.armR').setAttribute('transform', `rotate(${-jab} 44 -200)`);
+        n.querySelector('.sash').setAttribute('opacity', st.sash);
+      });
+    }
+
+    // 特效
+    fxList = fxList.filter((f) => {
+      const k = (clock - f.start) / f.life;
+      if (k >= 1) { f.n.remove(); return false; }
+      const sc = f.pop ? (k < .12 ? ease.back(k / .12) : 1) : f.scale * (0.8 + k * .3);
+      const op = k > .75 ? (1 - k) / .25 : 1;
+      const wob = f.wobble ? Math.sin(k * 20) * f.wobble : 0;
+      f.n.setAttribute('transform', `translate(${f.x + f.dx * k + wob} ${f.y - f.rise * k}) scale(${sc})`);
+      f.n.setAttribute('opacity', op);
+      return true;
+    });
+  }
+
+  let nextChirp = 0, nextDust = 0, ambientChirp = true;
+  function ambient() {
+    if (ambientChirp && clock > nextChirp) { SFX.chirp(); nextChirp = clock + 2500 + Math.random() * 3500; }
+    if (S.pair.locked && S.pair.tug > .5 && clock > nextDust) {
+      pop('💨', S.snipe.x - 40, S.snipe.y - 10, { size: 40, life: 800, rise: 20, dx: -40 });
+      pop('💢', S.snipe.x + 70, S.snipe.y - 230, { size: 40, life: 700, rise: 10 });
+      SFX.pull();
+      nextDust = clock + 900;
+    }
+  }
+
+  function frame(now) {
+    const dt = Math.min(100, now - last); last = now;
+    if (playing) {
+      clock += dt;
+      tweens = tweens.filter((tw) => {
+        if (tw.id !== runId) return false;
+        const k = Math.min(1, (clock - tw.start) / tw.dur), e = tw.e(k);
+        for (const key in tw.to) tw.obj[key] = tw.from[key] + (tw.to[key] - tw.from[key]) * e;
+        if (k >= 1) { tw.res(); return false; }
+        return true;
+      });
+      waiters = waiters.filter((w) => { if (clock >= w.at) { w.res(); return false; } return true; });
+      checkLine();
+      musicTick();
+      ambient();
+    }
+    render(clock);
+    requestAnimationFrame(frame);
+  }
+
+  // ---------- 分鏡 ----------
+  function baseState() {
+    clearFx();
+    el.lifeFx.innerHTML = '';
+    set(S.snipe, { x: -250, y: 740, s: 1, dir: 1, lean: 0, walk: 0, op: 1, face: 'normal', sil: 0 });
+    set(S.clam, { x: 1000, y: 745, s: 1.3, open: 0, op: 0, face: 'normal', sil: 0, bob: 0 });
+    set(S.fisher, { x: 1900, y: 760, s: 1, walk: 0, op: 1, face: 'normal', basket: 1, lean: 0 });
+    set(S.basket, { x: 1180, y: 775, s: 1, op: 0, shake: 0 });
+    set(S.pair, { x: 1000, y: 745, s: 1, locked: 0, tug: 0 });
+    set(S.cam, { x: 800, y: 450, z: 1 });
+    set(S.env, { sunset: 0, dream: 0, sunY: 170, sunX: 1250, life: 0 });
+    set(S.boat, { x: 1150, y: 585, s: .55, op: 0 });
+    set(S.kA, { x: 560, y: 790, s: 1, dir: 1, walk: 0, angry: 0, point: 0, sash: 0, face: 'normal' });
+    set(S.kB, { x: 1000, y: 790, s: 1, dir: -1, walk: 0, angry: 0, point: 0, sash: 0, face: 'normal' });
+    set(S.kC, { x: 1800, y: 800, s: .95, dir: -1, walk: 0, angry: 0, point: 0, sash: 0, face: 'normal' });
+    document.querySelectorAll('.overlay').forEach((n) => n.classList.remove('show'));
+    ambientChirp = true; mood = 'calm';
+    setWater(.05);
+  }
+  function lockState(tug = 0) {
+    set(S.clam, { op: 1, open: 0, face: 'angry' });
+    set(S.snipe, { face: 'hurt', walk: 0 });
+    set(S.pair, { x: 1000, y: 745, s: 1, locked: 1, tug });
+  }
+  const applyFaces = () => {
+    setFace(el.snipe, S.snipe.face); setFace(el.clam, S.clam.face); setFace(el.fisher, S.fisher.face);
+    setFace(el.kA, S.kA.face); setFace(el.kB, S.kB.face); setFace(el.kC, S.kC.face);
+  };
+  const face = (who, f) => { S[who].face = f; applyFaces(); };
+  function prologueState() {
+    set(S.snipe, { x: 330, y: 760, s: .9, face: 'normal' });
+    set(S.clam, { x: 640, y: 770, s: 1, op: 1, open: .45, face: 'happy' });
+    set(S.boat, { op: 1, x: 1180, y: 585, s: .6 });
+  }
+
+  const scenes = [
+    { no: '序', title: '鷸蚌相爭', async run() {
+      prologueState(); applyFaces();
+      set(S.cam, { x: 800, y: 420, z: 1.08 });
+      tween(S.cam, { x: 800, y: 450, z: 1 }, 7000);
+      tween(S.boat, { x: 1050 }, 9000, 'lin');
+      SFX.title();
+      $('#titleCard').classList.add('show');
+      await wait(1500);
+      await say('旁白', '這是一個有關「爭執」與「合作」的成語故事——鷸蚌相爭，漁翁得利。');
+      await wait(600);
+    }},
+    { no: 1, title: '寧靜的河岸', async run() {
+      set(S.cam, { x: 700, y: 470, z: 1.15 });
+      tween(S.cam, { x: 800, y: 450, z: 1 }, 6000);
+      S.snipe.walk = 1;
+      const w = tween(S.snipe, { x: 260 }, 4200, 'lin');
+      await wait(400);
+      await say('旁白', '從前，有一隻鷸鳥在河邊尋找食物。');
+      await w;
+      S.snipe.walk = 0;
+      S.snipe.dir = -1; await wait(500); S.snipe.dir = 1; await wait(400);
+      S.snipe.walk = 1; const w2 = tween(S.snipe, { x: 420 }, 1800, 'lin');
+      await say('旁白', '牠東看看、西瞧瞧，希望能飽餐一頓。');
+      await w2; S.snipe.walk = 0;
+    }},
+    { no: 2, title: '鷸鳥發現蚌', async run() {
+      set(S.snipe, { x: 420 });
+      await tween(S.clam, { op: 1 }, 600);
+      tween(S.clam, { open: 1 }, 900, 'out');
+      face('clam', 'happy');
+      await wait(700);
+      face('snipe', 'surprise');
+      SFX.discover();
+      bubble('!', S.snipe.x + 70, S.snipe.y - 290);
+      await wait(700);
+      await say('旁白', '這時，牠發現一隻張開蚌殼的蚌，便想趁機吃掉牠。');
+      face('snipe', 'happy');
+      S.snipe.walk = 1;
+      const w = tween(S.snipe, { x: 560 }, 1300, 'lin');
+      await say('鷸', '「哈哈！這下有好吃的了！」');
+      await w; S.snipe.walk = 0;
+    }},
+    { no: 3, title: '蚌殼緊緊閉上', async run() {
+      set(S.snipe, { x: 560, face: 'happy' }); set(S.clam, { op: 1, open: 1, face: 'happy' }); applyFaces();
+      await wait(500);
+      await tween(S.snipe, { lean: -8 }, 400);
+      await tween(S.snipe, { x: 1000 - 328, lean: 30 }, 260, 'out');
+      await tween(S.clam, { open: 0 }, 90, 'lin');
+      set(S.pair, { x: 1000, y: 745, s: 1, locked: 1, tug: 0 });
+      SFX.snap();
+      burst(980, 560);
+      pop('💫', 870, 520, { size: 50, life: 1200, rise: 20, wobble: 12 });
+      face('snipe', 'surprise'); face('clam', 'angry');
+      tween(S.cam, { x: 860, y: 560, z: 1.45 }, 700, 'out');
+      await wait(500);
+      face('snipe', 'hurt');
+      SFX.boing();
+      await say('旁白', '鷸鳥伸嘴啄向蚌肉，蚌立刻「啪」地閉上殼，夾住鷸鳥的嘴。');
+      await say('鷸', '「哎呀！我的嘴被夾住了！」');
+      pop('💦', S.snipe.x + 40, S.snipe.y - 240, { size: 44, life: 1000 });
+      await say('蚌', '「哼！看你還敢不敢欺負我！」');
+    }},
+    { no: 4, title: '誰也不肯讓步', async run() {
+      lockState(0); applyFaces();
+      set(S.cam, { x: 860, y: 560, z: 1.45 });
+      tween(S.cam, { x: 820, y: 520, z: 1.2 }, 1200);
+      mood = 'busy';
+      face('snipe', 'angry');
+      await tween(S.pair, { tug: 1 }, 600);
+      await say('鷸', '「快放開我！」');
+      await say('蚌', '「你先放開我才對！」');
+      await say('旁白', '牠們你爭我奪，誰也不肯退讓。');
+    }},
+    { no: 5, title: '漁翁悄悄靠近', async run() {
+      lockState(1); face('snipe', 'angry');
+      set(S.cam, { x: 820, y: 520, z: 1.2 });
+      tween(S.cam, { x: 800, y: 450, z: 1 }, 1500);
+      mood = 'busy';
+      S.fisher.walk = 1;
+      const w = tween(S.fisher, { x: 1420 }, 3200, 'lin');
+      await say('旁白', '就在牠們爭得不可開交時，一位漁翁正好經過。');
+      await w; S.fisher.walk = 0;
+      face('fisher', 'surprise'); SFX.huh();
+      bubble('?!', S.fisher.x - 10, S.fisher.y - 420);
+      await wait(500);
+      await say('漁翁', '「咦？這裡竟然有一隻鷸和一隻蚌！」');
+      face('fisher', 'happy');
+      await wait(400);
+    }},
+    { no: 6, title: '漁翁得利', async run() {
+      lockState(1); face('snipe', 'angry');
+      set(S.fisher, { x: 1420, face: 'happy', basket: 1 }); applyFaces();
+      mood = 'busy';
+      S.fisher.walk = 1;
+      await tween(S.fisher, { x: 1330 }, 900, 'lin');
+      S.fisher.walk = 0;
+      tween(S.fisher, { lean: -12 }, 400);
+      set(S.fisher, { basket: 0 });
+      set(S.basket, { x: 1255, y: 610, s: .45, op: 1 });
+      await tween(S.basket, { x: 1180, y: 775, s: 1 }, 500, 'out');
+      SFX.basket();
+      const arc = tween(S.pair, { x: 1247, s: .42 }, 900, 'io');
+      const up = tween(S.pair, { y: 520 }, 450, 'out').then(() => tween(S.pair, { y: 625 }, 450, 'io'));
+      face('snipe', 'surprise'); face('clam', 'surprise');
+      await arc; await up;
+      S.pair.tug = 0;
+      tween(S.fisher, { lean: 0 }, 400);
+      SFX.basket();
+      S.basket.shake = 1;
+      pop('❗', 1100, 520, { size: 50, life: 900 }); pop('❗', 1280, 510, { size: 50, life: 900 });
+      await say('鷸蚌', '「啊！不好了！」');
+      S.basket.shake = 0;
+      await say('漁翁', '「哈哈！真是天助我也！」');
+      await say('旁白', '漁翁不費吹灰之力，就把兩個爭鬥的傢伙一起捉住了。');
+    }},
+    { no: 7, title: '後悔已經太遲', async run() {
+      set(S.fisher, { x: 1330, basket: 0, op: 0 });
+      set(S.basket, { x: 1180, y: 775, s: 1, op: 1 });
+      set(S.pair, { locked: 0, tug: 0 });
+      set(S.snipe, { x: 1090, y: 660, s: .7, dir: 1, lean: 0, face: 'sad' });
+      set(S.clam, { x: 1232, y: 590, s: .85, open: .5, op: 1, face: 'sad' });
+      applyFaces();
+      set(S.cam, { x: 1000, y: 600, z: 1 });
+      ambientChirp = false; mood = 'sad'; SFX.sad();
+      await tween(S.cam, { x: 1175, y: 570, z: 2.2 }, 1600);
+      pop('💧', 1142, 545, { size: 26, life: 1600, rise: -40 });
+      await say('鷸', '「早知道就不跟你爭了！」');
+      pop('💧', 1200, 560, { size: 24, life: 1600, rise: -40 });
+      await say('蚌', '「唉！我們都不肯退讓，才會一起被抓住。」');
+      await say('旁白', '等到牠們明白過來，一切都已經太遲了。');
+    }},
+    { no: 8, title: '故事寓意', async run() {
+      set(S.basket, { op: 0 }); set(S.pair, { locked: 0, tug: 0 });
+      set(S.snipe, { x: 330, y: 790, s: 1.1, dir: 1, lean: 0, op: 0, sil: 1, face: 'normal' });
+      set(S.clam, { x: 610, y: 800, s: 1.15, open: 0, op: 0, sil: 1 });
+      set(S.fisher, { op: 0 });
+      set(S.boat, { x: 1250, y: 590, s: 1.25, op: 0 });
+      applyFaces();
+      ambientChirp = false;
+      tween(S.env, { sunset: 1, sunY: 400, sunX: 900 }, 2500);
+      setWater(.03);
+      await wait(800);
+      tween(S.boat, { op: 1, x: 1080 }, 9000, 'lin');
+      tween(S.snipe, { op: 1 }, 900); await wait(300);
+      await tween(S.clam, { op: 1 }, 900);
+      await say('旁白', '鷸和蚌互不相讓，最後卻讓漁翁得了便宜。');
+      await say('旁白', '這就是「鷸蚌相爭，漁翁得利」的由來。');
+    }},
+    { no: 9, title: '學會合作', async run() {
+      set(S.snipe, { x: 560, y: 745, s: 1, dir: 1, lean: 0, op: 0, face: 'happy' });
+      set(S.clam, { x: 900, y: 745, s: 1.2, open: .6, op: 0, face: 'happy' });
+      applyFaces();
+      SFX.sparkle();
+      tween(S.env, { dream: 1 }, 1000);
+      tween(S.snipe, { op: 1 }, 1000); await tween(S.clam, { op: 1 }, 1000);
+      tween(S.snipe, { lean: 18 }, 600).then(() => tween(S.snipe, { lean: 0 }, 600));
+      pop('❤️', 730, 520, { size: 60, life: 2200, rise: 80 });
+      await say('鷸', '「以後我們可以好好相處！」');
+      S.clam.bob = 1;
+      pop('🌸', 820, 500, { size: 46, life: 2200, rise: 70 });
+      await say('蚌', '「好啊！一起生活會更好！」');
+      S.clam.bob = 0;
+      pop('❤️', 680, 520, { size: 46, life: 2200, rise: 90 });
+      await say('旁白', '遇到衝突時，如果只顧著爭輸贏，可能讓別人有機可乘。');
+      pop('❤️', 820, 500, { size: 52, life: 2200, rise: 70 });
+      await say('旁白', '學會溝通、互相退讓，才能找到更好的解決方法。');
+    }},
+    { no: 10, title: '成語小知識', async run() {
+      set(S.snipe, { x: 220, y: 830, s: .8, face: 'happy' });
+      set(S.clam, { x: 1380, y: 840, s: .9, op: 1, open: .6, face: 'happy' });
+      set(S.boat, { op: .8, x: 1000, y: 585, s: .5 });
+      applyFaces();
+      SFX.title();
+      $('#infoCard').classList.add('show');
+      await wait(900);
+      await say('旁白', '記住這個成語：鷸蚌相爭，漁翁得利。');
+      await say('旁白', '意思是：雙方爭鬥不休時，第三方可能因此獲利。');
+      await say('旁白', '這個故事出自《戰國策・燕策二》。');
+    }},
+    { no: 11, title: '生活例子', async run() {
+      ambientChirp = false; setWater(0);
+      await tween(S.env, { life: 1 }, 700);
+      set(S.kA, { face: 'angry', angry: 1, point: 90 });
+      set(S.kB, { face: 'angry', angry: 1, point: 90 });
+      applyFaces();
+      mood = 'busy';
+      pop('💢', 520, 430, { size: 54, life: 1500, rise: 20, layer: el.lifeFx });
+      pop('💢', 1040, 430, { size: 54, life: 1500, rise: 20, layer: el.lifeFx });
+      await say('旁白', '生活中也有這樣的例子：兩位同學為了搶當小組長而爭吵。');
+      await say('小明', '「我來當小組長！」');
+      await say('小美', '「才不要，我比較適合！」');
+      set(S.kA, { angry: 0, point: 0 }); set(S.kB, { angry: 0, point: 0 });
+      mood = 'calm';
+      S.kC.walk = 1;
+      await tween(S.kC, { x: 1330 }, 1600, 'lin');
+      S.kC.walk = 0;
+      face('kC', 'happy');
+      SFX.clap();
+      pop('👏', 1190, 440, { size: 54, life: 1500, rise: 40, layer: el.lifeFx });
+      pop('👏', 1460, 440, { size: 54, life: 1500, rise: 40, layer: el.lifeFx });
+      tween(S.kC, { sash: 1 }, 700);
+      set(S.kA, { face: 'surprise' }); set(S.kB, { face: 'surprise' }); applyFaces();
+      SFX.sparkle();
+      await say('旁白', '最後，由另一位同學獲得大家支持，成為小組長。');
+    }},
+    { no: 12, title: '結語', async run() {
+      set(S.snipe, { x: 1450, y: 750, s: .95, dir: -1, face: 'happy' });
+      set(S.clam, { x: 1080, y: 740, s: 1.05, op: 1, open: .6, face: 'happy' });
+      set(S.boat, { op: 1, x: 420, y: 585, s: .55 });
+      applyFaces();
+      tween(S.boat, { x: 620 }, 12000, 'lin');
+      SFX.title();
+      $('#endCard').classList.add('show');
+      await wait(900);
+      await say('旁白', '遇到衝突，先溝通，再解決問題！');
+      await wait(1200);
+    }},
+  ];
+
+  // 夢境的閃光
+  [[120, 120], [1480, 140], [200, 760], [1420, 780], [800, 80], [60, 450], [1540, 460]].forEach(([x, y]) => {
+    mk('text', { x, y, 'font-size': 48, 'text-anchor': 'middle' }, el.dreamSparkles).textContent = '✨';
+  });
+
+  // ---------- 播放控制 ----------
+  let cur = 0, autoNext = true, ended = false, started = false;
+  function updateUI() {
+    const sc = scenes[cur];
+    $('#sceneTag .no').textContent = sc.no;
+    $('#sceneTag .tt').textContent = sc.title;
+    document.querySelectorAll('#chips button').forEach((b, i) => b.classList.toggle('on', i === cur));
+    $('#progress div').style.width = ((cur + 1) / scenes.length * 100) + '%';
+    $('#btnPlay').textContent = playing ? '⏸ 暫停' : '▶ 播放';
+    $('#btnAuto').classList.toggle('off', !autoNext);
+    $('#btnVoice').classList.toggle('off', !voiceOn);
+    $('#btnMusic').classList.toggle('off', !musicOn);
+    $('#btnSub').classList.toggle('off', $('#stage').classList.contains('no-sub'));
+  }
+  async function goScene(i) {
+    cur = Math.max(0, Math.min(scenes.length - 1, i));
+    const my = ++runId;
+    ended = false;
+    tweens = []; waiters = []; line = null; stopSpeech(); hideSub();
+    baseState();
+    // 從中間跳入時，先擺成前一幕結束時的樣子
+    if (cur >= 3 && cur <= 7) { set(S.snipe, { x: 560 }); set(S.clam, { op: 1, open: 1 }); }
+    if (cur === 6) set(S.fisher, { x: 1420 });
+    applyFaces();
+    updateUI();
+    try { await scenes[cur].run(); } catch (e) { console.error(e); }
+    if (my !== runId) return;
+    await wait(900);
+    if (my !== runId) return;
+    hideSub();
+    if (autoNext && cur < scenes.length - 1) goScene(cur + 1);
+    else { ended = true; if (cur === scenes.length - 1) { playing = false; setWater(water); updateUI(); } }
+  }
+  function setPlaying(p) {
+    playing = p;
+    if (!p) { stopSpeech(); if (line) line.spoken = false; setWater(water); }
+    else {
+      if (ac && ac.state === 'suspended') ac.resume();
+      setWater(water);
+      if (ended) goScene(cur === scenes.length - 1 ? 0 : cur + 1);
+      else if (line) { line.start = clock; speakLine(); }
+    }
+    updateUI();
+  }
+  function start() {
+    if (!started) {
+      started = true;
+      initAudio();
+      $('#startOverlay').style.display = 'none';
+    }
+    if (ac && ac.state === 'suspended') ac.resume();
+    playing = true;
+  }
+
+  const chips = $('#chips');
+  scenes.forEach((s, i) => {
+    const b = document.createElement('button');
+    b.textContent = i === 0 ? '序幕' : s.no + '. ' + s.title;
+    b.onclick = () => { start(); goScene(i); };
+    chips.appendChild(b);
+  });
+
+  $('#startBtn').onclick = () => { start(); goScene(0); };
+  $('#btnPlay').onclick = () => { if (!started) { start(); goScene(0); return; } setPlaying(!playing); };
+  $('#btnPrev').onclick = () => { start(); goScene(cur - 1); };
+  $('#btnNext').onclick = () => { start(); goScene(cur + 1); };
+  $('#btnReplay').onclick = () => { start(); goScene(cur); };
+  $('#btnAuto').onclick = () => { autoNext = !autoNext; updateUI(); };
+  $('#btnVoice').onclick = () => {
+    if (!('speechSynthesis' in window)) { alert('這個瀏覽器不支援語音旁白，請改用 Chrome 或 Edge。'); return; }
+    voiceOn = !voiceOn;
+    if (!voiceOn) stopSpeech(); else if (line && playing) { line.start = clock; speakLine(); }
+    updateUI();
+  };
+  $('#btnMusic').onclick = () => { musicOn = !musicOn; setWater(water); updateUI(); };
+  $('#btnSub').onclick = () => { $('#stage').classList.toggle('no-sub'); updateUI(); };
+  $('#btnFull').onclick = () => {
+    const w = $('#stageWrap');
+    if (document.fullscreenElement) document.exitFullscreen();
+    else if (w.requestFullscreen) w.requestFullscreen();
+    else if (w.webkitRequestFullscreen) w.webkitRequestFullscreen();
+  };
+  document.addEventListener('keydown', (e) => {
+    if (e.code === 'Space') { e.preventDefault(); $('#btnPlay').click(); }
+    else if (e.code === 'ArrowRight') $('#btnNext').click();
+    else if (e.code === 'ArrowLeft') $('#btnPrev').click();
+  });
+
+  // 初始畫面：序幕
+  baseState(); prologueState(); applyFaces();
+  updateUI();
+  requestAnimationFrame(frame);
+
+  // ---------- 小測驗 ----------
+  const QUIZ = [
+    { q: '1. 故事最後，得到好處的是誰？', o: ['鷸', '蚌', '漁翁'], a: 2, why: '鷸和蚌爭個不停，漁翁輕鬆就把牠們一起捉走了。' },
+    { q: '2. 鷸的嘴為什麼會被夾住？', o: ['牠想吃蚌肉，蚌立刻把殼閉上', '牠想喝河水', '漁翁用繩子綁住了牠'], a: 0, why: '鷸伸嘴去啄蚌肉，蚌「啪」地閉殼，就把鷸的嘴夾住了。' },
+    { q: '3. 下列哪個情況最適合用「鷸蚌相爭，漁翁得利」？', o: ['兩班為了搶球場吵個不停，結果被第三班先用了', '同學們互相幫忙，一起完成作業', '小明每天練習，最後得到第一名'], a: 0, why: '兩方爭執不休，反而讓第三方得到好處，正是這個成語的意思。' },
+  ];
+  const quiz = $('#quiz');
+  QUIZ.forEach((item) => {
+    const box = document.createElement('div');
+    box.innerHTML = `<div class="q">${item.q}</div><div class="opts"></div><div class="fb"></div>`;
+    const opts = box.querySelector('.opts'), fb = box.querySelector('.fb');
+    item.o.forEach((txt, i) => {
+      const b = document.createElement('button');
+      b.textContent = txt;
+      b.onclick = () => {
+        opts.querySelectorAll('button').forEach((x) => x.classList.remove('right', 'wrong'));
+        if (i === item.a) { b.classList.add('right'); fb.textContent = '⭕ 答對了！' + item.why; }
+        else { b.classList.add('wrong'); fb.textContent = '❌ 再想想看～'; }
+      };
+      opts.appendChild(b);
+    });
+    quiz.appendChild(box);
+  });
+})();
+</script>
+</body>
+</html>
