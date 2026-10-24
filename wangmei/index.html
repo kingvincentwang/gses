@@ -1,0 +1,771 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>望梅止渴動畫</title>
+<style>
+@font-face { font-family: 'Iansui'; src: url('assets/iansui-subset.woff2') format('woff2'); font-display: block; }
+:root {
+  --bg: #f3ece0; --ink: #1f2a44; --muted: #6b6253; --accent: #b3312c; --panel: #fffaf2; --line: #d9ccb6;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg: #16181d; --ink: #ece4d6; --muted: #a59c8c; --accent: #e0645c; --panel: #20232a; --line: #3a3d45; }
+}
+:root[data-theme="dark"] { --bg: #16181d; --ink: #ece4d6; --muted: #a59c8c; --accent: #e0645c; --panel: #20232a; --line: #3a3d45; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: 'Iansui', 'Noto Sans TC', 'Microsoft JhengHei', sans-serif; }
+main { max-width: 1100px; margin: 0 auto; padding: 20px 16px 40px; }
+h1 { font-size: 30px; margin: 4px 0 4px; letter-spacing: .1em; }
+.sub { color: var(--muted); margin: 0 0 14px; font-size: 15px; }
+.stage { position: relative; width: 100%; aspect-ratio: 16 / 9; background: #000; border-radius: 10px; overflow: hidden; box-shadow: 0 8px 30px rgba(0,0,0,.25); }
+canvas { width: 100%; height: 100%; display: block; }
+.start { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+  background: rgba(20,22,30,.55); color: #fff7e6; cursor: pointer; border: 0; font: inherit; width: 100%; }
+.start .big { width: 84px; height: 84px; border-radius: 50%; background: #b3312c; display: grid; place-items: center; box-shadow: 0 0 0 8px rgba(255,255,255,.15); }
+.start .big::after { content: ''; border-left: 28px solid #fff; border-top: 17px solid transparent; border-bottom: 17px solid transparent; margin-left: 8px; }
+.start span { font-size: 22px; letter-spacing: .15em; }
+.start[hidden] { display: none; }
+.bar { display: flex; align-items: center; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+.bar button { font: inherit; font-size: 15px; padding: 7px 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); cursor: pointer; }
+.bar button:hover { border-color: var(--accent); }
+.bar input[type=range] { flex: 1; min-width: 160px; accent-color: var(--accent); }
+.time { font-variant-numeric: tabular-nums; color: var(--muted); font-size: 14px; min-width: 92px; text-align: right; font-family: system-ui, sans-serif; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.chips button { font: inherit; font-size: 13px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); background: transparent; color: var(--muted); cursor: pointer; }
+.chips button.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+.note { margin-top: 18px; font-size: 14px; color: var(--muted); line-height: 1.7; }
+</style>
+</head>
+<body>
+<main>
+  <h1>望梅止渴</h1>
+  <p class="sub">國風幽默動畫・約 1 分 34 秒・旁白與角色配音，角色嘴形隨語音開合</p>
+  <div class="stage">
+    <canvas id="cv" width="1280" height="720"></canvas>
+    <button class="start" id="start"><div class="big"></div><span>載入中…</span></button>
+  </div>
+  <div class="bar">
+    <button id="play">▶ 播放</button>
+    <input type="range" id="seek" min="0" max="1000" value="0" aria-label="播放進度">
+    <span class="time" id="time">0:00 / 0:00</span>
+  </div>
+  <div class="chips" id="chips"></div>
+  <p class="note">分鏡：1 烈日荒野 ・ 2 滴水 ・ 3 軍隊癱軟 ・ 4 曹操沉思 ・ 5 靈光一閃 ・ 6 指向梅林 ・ 7 青梅幻想 ・ 8 口水直流 ・ 9 衝啊 ・ 10 抵達水源 ・ 11 成語註解</p>
+</main>
+<audio id="audio" src="assets/soundtrack.mp3" preload="auto"></audio>
+<script src="assets/meta.js"></script>
+<script src="assets/timeline.js"></script>
+<script>
+(() => {
+const W = 1280, H = 720, TL = window.TIMELINE, META = window.SPRITES;
+const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
+const audio = document.getElementById('audio');
+const FONT = "'Iansui', 'Noto Sans TC', 'Microsoft JhengHei', sans-serif";
+
+// ---------- 工具 ----------
+const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+const lerp = (a, b, k) => a + (b - a) * k;
+const seg = (t, a, b) => clamp((t - a) / (b - a));
+const eio = k => k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+const eout = k => 1 - Math.pow(1 - k, 3);
+const back = k => { const c = 1.9; return 1 + (c + 1) * Math.pow(k - 1, 3) + c * Math.pow(k - 1, 2); };
+const hash = n => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
+const TAU = Math.PI * 2;
+
+// ---------- 素材 ----------
+const IMG = {};
+const loadImg = n => new Promise(r => { const i = new Image(); i.onload = () => r(); i.onerror = () => r(); i.src = `assets/${n}.png`; IMG[n] = i; });
+const buf = {};
+function canvasFor(key, w, h) {
+  let c = buf[key];
+  if (!c) { c = buf[key] = document.createElement('canvas'); c.width = w; c.height = h; }
+  return c;
+}
+
+// 目前角色說話的嘴巴張開程度（0~1），由配音音量包絡計算
+function talk(who, t, delay = 0) {
+  for (const ln of TL.lines) {
+    if (ln.who !== who) continue;
+    const lt = t - ln.start - delay;
+    if (lt >= 0 && lt < ln.dur) {
+      const i = Math.floor(lt * TL.fps), f = lt * TL.fps - i;
+      return lerp(ln.env[i] || 0, ln.env[i + 1] || 0, f);
+    }
+  }
+  return 0;
+}
+
+// 把嘴巴下方（下唇、下巴）往下移，露出口腔，做出開口說話的嘴形
+function talkingImage(name, a) {
+  const img = IMG[name], m = META[name];
+  if (!m.mouth || a < 0.03) return img;
+  const [mx, my, mw] = m.mouth, off = a * mw * 0.6;
+  const O = canvasFor(name + ':o', m.w, m.h), J = canvasFor(name + ':j', m.w, m.h + 40);
+  const o = O.getContext('2d'), j = J.getContext('2d');
+  o.clearRect(0, 0, m.w, m.h); o.drawImage(img, 0, 0);
+  o.fillStyle = '#2b0907';
+  o.beginPath(); o.ellipse(mx, my + off * 0.5, mw * 0.5, off * 0.5 + 1.5, 0, 0, TAU); o.fill();
+  if (off > 4) { o.fillStyle = '#b5404c'; o.beginPath(); o.ellipse(mx, my + off * 0.85, mw * 0.3, off * 0.22, 0, 0, TAU); o.fill(); }
+  if (off > 6) { o.fillStyle = '#f4efe6'; o.fillRect(mx - mw * 0.3, my + 0.5, mw * 0.6, Math.min(3, off * 0.15)); }
+  j.globalCompositeOperation = 'source-over';
+  j.clearRect(0, 0, J.width, J.height); j.drawImage(img, 0, off);
+  j.globalCompositeOperation = 'destination-in';
+  j.save(); j.translate(mx, my + mw * 0.75); j.scale(1.45, 1.2);
+  const g = j.createRadialGradient(0, 0, mw * 0.45, 0, 0, mw * 1.05);
+  g.addColorStop(0, 'rgba(0,0,0,1)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+  j.fillStyle = g; j.fillRect(-mw * 3, -mw * 3, mw * 6, mw * 6); j.restore();
+  const lg = j.createLinearGradient(0, my + off - 1.5, 0, my + off + 1.5);
+  lg.addColorStop(0, 'rgba(0,0,0,0)'); lg.addColorStop(1, 'rgba(0,0,0,1)');
+  j.fillStyle = lg; j.fillRect(0, 0, J.width, J.height);
+  o.drawImage(J, 0, 0);
+  return O;
+}
+
+// 繪製角色：(x, y) 為腳底中心（anchor='bottom'）或圖片中心（'center'）
+function sprite(name, x, y, s, opt = {}) {
+  const m = META[name], img = opt.talk ? talkingImage(name, opt.talk) : IMG[name];
+  if (!img || !img.width) return;
+  ctx.save();
+  ctx.translate(x, y);
+  if (opt.rot) ctx.rotate(opt.rot);
+  ctx.scale(s * (opt.flip ? -1 : 1) * (opt.sx || 1), s * (opt.sy || 1));
+  if (opt.alpha !== undefined) ctx.globalAlpha *= opt.alpha;
+  if (opt.filter) ctx.filter = opt.filter;
+  const ay = opt.anchor === 'center' ? m.h / 2 : m.h;
+  ctx.drawImage(img, -m.w / 2, -ay, m.w, m.h);
+  ctx.restore();
+}
+// 角色身上某一點（圖片像素座標）在畫面上的位置
+function spritePt(name, x, y, s, px, py, opt = {}) {
+  const m = META[name], ay = opt.anchor === 'center' ? m.h / 2 : m.h;
+  return [x + (px - m.w / 2) * s * (opt.flip ? -1 : 1), y + (py - ay) * s];
+}
+
+// ---------- 背景元件 ----------
+function sky(c1, c2, c3, horizon = H) {
+  const g = ctx.createLinearGradient(0, 0, 0, horizon);
+  g.addColorStop(0, c1); g.addColorStop(.6, c2); g.addColorStop(1, c3);
+  ctx.fillStyle = g; ctx.fillRect(-W, -H, W * 4, H * 3);
+}
+const ridgeCache = {};
+function ridge(seed, y, amp, color, x0 = -W, x1 = W * 3, period = 260) {
+  const key = seed + ':' + period;
+  if (!ridgeCache[key]) {
+    const pts = []; for (let i = 0; i <= 160; i++) {
+      const k = i / 160;
+      pts.push(Math.sin(k * 23 + seed) * .5 + Math.sin(k * 57 + seed * 3) * .25 + Math.sin(k * 131 + seed * 7) * .12 + hash(seed + i) * .1);
+    }
+    ridgeCache[key] = pts;
+  }
+  const pts = ridgeCache[key], step = (x1 - x0) / 160;
+  ctx.fillStyle = color; ctx.beginPath(); ctx.moveTo(x0, H * 2);
+  pts.forEach((v, i) => ctx.lineTo(x0 + i * step, y - Math.abs(v) * amp));
+  ctx.lineTo(x1, H * 2); ctx.closePath(); ctx.fill();
+}
+function ground(y, c1, c2, cracks = true, shift = 0) {
+  const g = ctx.createLinearGradient(0, y, 0, H);
+  g.addColorStop(0, c1); g.addColorStop(1, c2);
+  ctx.fillStyle = g; ctx.fillRect(-W, y, W * 4, H * 2);
+  if (!cracks) return;
+  ctx.strokeStyle = 'rgba(90,50,20,.35)'; ctx.lineWidth = 2; ctx.lineCap = 'round';
+  for (let i = 0; i < 40; i++) {
+    let x = ((hash(i) * W * 3 - shift) % (W * 3) + W * 3) % (W * 3) - W, yy = y + 20 + hash(i + 50) * (H - y);
+    ctx.beginPath(); ctx.moveTo(x, yy);
+    for (let k = 0; k < 4; k++) { x += (hash(i * 9 + k) - .5) * 70; yy += (hash(i * 7 + k) - .3) * 18; ctx.lineTo(x, yy); }
+    ctx.stroke();
+  }
+}
+function sun(x, y, r, t, angry) {
+  ctx.save(); ctx.translate(x, y);
+  const glow = ctx.createRadialGradient(0, 0, r * .5, 0, 0, r * 3);
+  glow.addColorStop(0, 'rgba(255,200,80,.8)'); glow.addColorStop(1, 'rgba(255,160,60,0)');
+  ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(0, 0, r * 3, 0, TAU); ctx.fill();
+  // 火焰
+  ctx.rotate(t * .6);
+  for (let i = 0; i < 18; i++) {
+    const a = i / 18 * TAU, L = r * (1.35 + .25 * Math.sin(t * 9 + i * 2.1) + angry * .35);
+    ctx.fillStyle = i % 2 ? '#ff7a1a' : '#ffb21f';
+    ctx.beginPath();
+    ctx.moveTo(Math.cos(a - .17) * r * .9, Math.sin(a - .17) * r * .9);
+    ctx.quadraticCurveTo(Math.cos(a + .25) * L * .9, Math.sin(a + .25) * L * .9, Math.cos(a) * L, Math.sin(a) * L);
+    ctx.lineTo(Math.cos(a + .17) * r * .9, Math.sin(a + .17) * r * .9); ctx.fill();
+  }
+  ctx.rotate(-t * .6);
+  const body = ctx.createRadialGradient(-r * .3, -r * .3, r * .1, 0, 0, r);
+  body.addColorStop(0, '#fff3a0'); body.addColorStop(.6, '#ffc53a'); body.addColorStop(1, '#ff8a1e');
+  ctx.fillStyle = body; ctx.beginPath(); ctx.arc(0, 0, r, 0, TAU); ctx.fill();
+  if (angry > 0) {
+    ctx.globalAlpha = angry; ctx.strokeStyle = '#7a1d05'; ctx.fillStyle = '#7a1d05'; ctx.lineCap = 'round';
+    ctx.lineWidth = r * .1;
+    ctx.beginPath(); ctx.moveTo(-r * .55, -r * .42); ctx.lineTo(-r * .12, -r * .2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(r * .55, -r * .42); ctx.lineTo(r * .12, -r * .2); ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(-r * .3, -r * .02, r * .1, r * .13, 0, 0, TAU); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(r * .3, -r * .02, r * .1, r * .13, 0, 0, TAU); ctx.fill();
+    // 張牙舞爪的嘴
+    ctx.fillStyle = '#7a1d05'; ctx.beginPath(); ctx.moveTo(-r * .5, r * .3);
+    ctx.quadraticCurveTo(0, r * (.85 + .1 * Math.sin(t * 8)), r * .5, r * .3); ctx.quadraticCurveTo(0, r * .45, -r * .5, r * .3); ctx.fill();
+    ctx.fillStyle = '#fff';
+    for (let i = -2; i <= 2; i++) { ctx.beginPath(); ctx.moveTo(i * r * .16 - r * .06, r * .38); ctx.lineTo(i * r * .16 + r * .06, r * .38); ctx.lineTo(i * r * .16, r * .52); ctx.fill(); }
+  }
+  ctx.restore();
+}
+function heatHaze(t, alpha = .18, y0 = 250, y1 = H) {
+  ctx.save(); ctx.strokeStyle = `rgba(255,240,200,${alpha})`; ctx.lineWidth = 3;
+  for (let i = 0; i < 12; i++) {
+    const y = y1 - ((t * 40 + i * 60) % (y1 - y0));
+    ctx.beginPath();
+    for (let x = -20; x <= W + 20; x += 20) ctx.lineTo(x, y + Math.sin(x * .03 + t * 4 + i) * 6);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+function vignette(a = .5, color = '0,0,0') {
+  const g = ctx.createRadialGradient(W / 2, H / 2, H * .35, W / 2, H / 2, H * .95);
+  g.addColorStop(0, `rgba(${color},0)`); g.addColorStop(1, `rgba(${color},${a})`);
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+}
+function speedLines(t, cx, cy, color = 'rgba(255,255,255,.55)', n = 40) {
+  ctx.save(); ctx.strokeStyle = color;
+  for (let i = 0; i < n; i++) {
+    const a = hash(i) * TAU, r0 = 260 + hash(i + 9) * 140 + ((t * 600 + i * 37) % 120), r1 = r0 + 200 + hash(i + 3) * 300;
+    ctx.lineWidth = 1 + hash(i + 5) * 4;
+    ctx.beginPath(); ctx.moveTo(cx + Math.cos(a) * r0, cy + Math.sin(a) * r0); ctx.lineTo(cx + Math.cos(a) * r1, cy + Math.sin(a) * r1); ctx.stroke();
+  }
+  ctx.restore();
+}
+function cloud(x, y, w, h, tail) {
+  ctx.save(); ctx.fillStyle = '#fffaf0'; ctx.strokeStyle = '#1f2a44'; ctx.lineWidth = 4;
+  const bumps = 9;
+  ctx.beginPath();
+  for (let i = 0; i < bumps; i++) {
+    const a = i / bumps * TAU; ctx.ellipse(x + Math.cos(a) * w * .42, y + Math.sin(a) * h * .38, w * .2, h * .24, 0, 0, TAU);
+  }
+  ctx.fill();
+  ctx.beginPath(); ctx.ellipse(x, y, w * .45, h * .4, 0, 0, TAU); ctx.fill();
+  if (tail) for (let i = 1; i <= 3; i++) {
+    const k = i / 4; ctx.beginPath(); ctx.arc(lerp(x - w * .3, tail[0], k), lerp(y + h * .4, tail[1], k), 14 - i * 3, 0, TAU); ctx.fill(); ctx.stroke();
+  }
+  ctx.restore();
+}
+function text(str, x, y, size, color = '#1f2a44', opt = {}) {
+  ctx.save(); ctx.font = `${opt.weight || 400} ${size}px ${FONT}`; ctx.textAlign = opt.align || 'center'; ctx.textBaseline = 'middle';
+  if (opt.rot) { ctx.translate(x, y); ctx.rotate(opt.rot); x = 0; y = 0; }
+  if (opt.stroke) { ctx.lineJoin = 'round'; ctx.lineWidth = opt.strokeW || size * .16; ctx.strokeStyle = opt.stroke; ctx.strokeText(str, x, y); }
+  ctx.fillStyle = color; ctx.fillText(str, x, y); ctx.restore();
+}
+function pop(str, x, y, size, t0, t, color = '#fff', stroke = '#b3312c', rot = 0) {
+  const k = seg(t, t0, t0 + .35); if (k <= 0) return;
+  const s = back(k);
+  ctx.save(); ctx.translate(x, y); ctx.scale(s, s);
+  text(str, 0, 0, size, color, { stroke, rot, weight: 700 }); ctx.restore();
+}
+function drop(x, y, r, c = 'rgba(150,215,255,.95)') {
+  ctx.save(); ctx.fillStyle = c; ctx.beginPath(); ctx.moveTo(x, y - r * 1.8);
+  ctx.bezierCurveTo(x + r, y - r * .5, x + r, y + r, x, y + r); ctx.bezierCurveTo(x - r, y + r, x - r, y - r * .5, x, y - r * 1.8); ctx.fill();
+  ctx.fillStyle = 'rgba(255,255,255,.8)'; ctx.beginPath(); ctx.arc(x - r * .35, y, r * .25, 0, TAU); ctx.fill(); ctx.restore();
+}
+function sparkle(x, y, r, a = 1) {
+  ctx.save(); ctx.globalAlpha *= a; ctx.fillStyle = '#fffbe0'; ctx.translate(x, y);
+  ctx.beginPath();
+  for (let i = 0; i < 8; i++) { const rr = i % 2 ? r * .22 : r; const an = i / 8 * TAU; ctx.lineTo(Math.cos(an) * rr, Math.sin(an) * rr); }
+  ctx.fill(); ctx.restore();
+}
+function meter(label, v, x, y, hot) {
+  ctx.save(); ctx.translate(x, y);
+  ctx.fillStyle = 'rgba(20,24,40,.65)'; roundRect(-10, -26, 300, 52, 12); ctx.fill();
+  text(label, 26, 0, 24, '#fff7e6');
+  ctx.fillStyle = 'rgba(255,255,255,.2)'; roundRect(60, -10, 200, 20, 10); ctx.fill();
+  const g = ctx.createLinearGradient(60, 0, 260, 0);
+  if (hot) { g.addColorStop(0, '#ffcf3a'); g.addColorStop(1, '#ff4b2b'); } else { g.addColorStop(0, '#9fd8ff'); g.addColorStop(1, '#5a7dbf'); }
+  ctx.fillStyle = g; roundRect(60, -10, Math.max(20, 200 * v), 20, 10); ctx.fill();
+  text(v < .05 ? '❄' : (hot && v > .9 ? '🔥' : ''), 278, 0, 22, '#fff');
+  ctx.restore();
+}
+function roundRect(x, y, w, h, r) { ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x, y, w, h, r) : ctx.rect(x, y, w, h); }
+function camera(cx, cy, z, fn) {
+  ctx.save(); ctx.translate(W / 2, H / 2); ctx.scale(z, z); ctx.translate(-cx, -cy); fn(); ctx.restore();
+}
+function plum(x, y, r, t, i, bite = 0) {
+  ctx.save(); ctx.translate(x, y);
+  ctx.strokeStyle = '#5a3b1e'; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(0, -r); ctx.lineTo(r * .1, -r * 1.5); ctx.stroke();
+  ctx.fillStyle = '#4f8a2b'; ctx.beginPath(); ctx.ellipse(r * .45, -r * 1.25, r * .5, r * .2, -.5, 0, TAU); ctx.fill();
+  const g = ctx.createRadialGradient(-r * .35, -r * .35, r * .1, 0, 0, r);
+  g.addColorStop(0, '#e9ffb0'); g.addColorStop(.5, '#9ed43f'); g.addColorStop(1, '#4e8f1f');
+  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, r, 0, TAU); ctx.fill();
+  if (bite > 0) {
+    ctx.fillStyle = '#f6f3c4';
+    for (let k = 0; k < 3; k++) { ctx.beginPath(); ctx.arc(r * .75, -r * .25 + k * r * .3, r * .28 * bite, 0, TAU); ctx.fill(); }
+  }
+  ctx.fillStyle = 'rgba(255,255,255,.75)'; ctx.beginPath(); ctx.ellipse(-r * .38, -r * .42, r * .22, r * .13, -.6, 0, TAU); ctx.fill();
+  ctx.restore();
+}
+function branch() {
+  ctx.save(); ctx.strokeStyle = '#4a2f18'; ctx.lineCap = 'round';
+  ctx.lineWidth = 26; ctx.beginPath(); ctx.moveTo(-60, 40); ctx.bezierCurveTo(300, 120, 700, 40, 1340, 110); ctx.stroke();
+  ctx.lineWidth = 12; ctx.beginPath(); ctx.moveTo(380, 95); ctx.quadraticCurveTo(470, 180, 560, 200); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(860, 75); ctx.quadraticCurveTo(900, 170, 990, 215); ctx.stroke();
+  ctx.restore();
+  ctx.fillStyle = '#5f9a32';
+  for (let i = 0; i < 26; i++) {
+    const x = hash(i) * 1300, y = 50 + hash(i + 40) * 140;
+    ctx.save(); ctx.translate(x, y); ctx.rotate(hash(i + 80) * TAU); ctx.beginPath(); ctx.ellipse(0, 0, 34, 12, 0, 0, TAU); ctx.fill(); ctx.restore();
+  }
+}
+function scroll(k) {  // 古風畫卷
+  const w = lerp(40, 1080, eout(k)), h = 500, x = W / 2 - w / 2, y = 56;
+  ctx.fillStyle = '#5b3a1f'; ctx.fillRect(x - 6, y - 6, w + 12, h + 12);
+  const g = ctx.createLinearGradient(0, y, 0, y + h);
+  g.addColorStop(0, '#f7ecd2'); g.addColorStop(1, '#eadbb8');
+  ctx.fillStyle = g; ctx.fillRect(x, y, w, h);
+  ctx.strokeStyle = '#b08a52'; ctx.lineWidth = 3; ctx.strokeRect(x + 16, y + 16, w - 32, h - 32);
+  for (const xx of [x - 22, x + w + 6]) {
+    ctx.fillStyle = '#3d2412'; ctx.fillRect(xx, y - 30, 16, h + 60);
+    ctx.fillStyle = '#c8a24e'; ctx.fillRect(xx - 4, y - 38, 24, 12); ctx.fillRect(xx - 4, y + h + 26, 24, 12);
+  }
+  return [x, y, w, h];
+}
+function inkFrame(x, y, r) {
+  ctx.save(); ctx.strokeStyle = '#1f2a44'; ctx.lineWidth = 10; ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.stroke();
+  ctx.strokeStyle = '#b3312c'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(x, y, r + 9, 0, TAU); ctx.stroke(); ctx.restore();
+}
+function canteen(x, y, rot, s = 1) {  // 竹水壺
+  ctx.save(); ctx.translate(x, y); ctx.rotate(rot); ctx.scale(s, s);
+  const g = ctx.createLinearGradient(-40, 0, 40, 0);
+  g.addColorStop(0, '#5f8f2f'); g.addColorStop(.5, '#a9cf5a'); g.addColorStop(1, '#4c7a25');
+  ctx.fillStyle = g; roundRect(-38, -110, 76, 220, 18); ctx.fill();
+  ctx.fillStyle = '#3e6a1e'; ctx.fillRect(-40, -40, 80, 10); ctx.fillRect(-40, 40, 80, 10);
+  ctx.fillStyle = '#7a5a2e'; roundRect(-16, 104, 32, 22, 6); ctx.fill();
+  ctx.restore();
+}
+function subtitle(t) {
+  let cur = null;
+  for (const ln of TL.lines) if (t >= ln.start - .1 && t < ln.start + ln.dur + .6) cur = ln;
+  if (!cur) return;
+  const who = { narrator: '旁白', soldierA: '士兵甲', caocao: '曹操', caocaoThink: '曹操（心想）', soldiers: '士兵們' }[cur.who];
+  const a = Math.min(seg(t, cur.start - .1, cur.start + .15), 1 - seg(t, cur.start + cur.dur + .35, cur.start + cur.dur + .6));
+  ctx.save(); ctx.globalAlpha = a; ctx.font = `30px ${FONT}`;
+  const lines = wrap(cur.text, 1000); const h = 22 + lines.length * 42;
+  ctx.fillStyle = 'rgba(16,20,36,.72)'; roundRect(W / 2 - 560, H - 30 - h, 1120, h, 14); ctx.fill();
+  ctx.fillStyle = cur.who === 'narrator' ? '#c9b48a' : '#ff9b8f';
+  ctx.font = `22px ${FONT}`; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+  ctx.fillText(who, W / 2 - 540, H - 30 - h + 30);
+  ctx.font = `30px ${FONT}`; ctx.fillStyle = '#fff7e6'; ctx.textAlign = 'center';
+  lines.forEach((l, i) => ctx.fillText(l, W / 2 + 40, H - 30 - h + 32 + i * 42));
+  ctx.restore();
+}
+function wrap(s, max) {
+  const out = []; let cur = '';
+  for (const ch of s) { if (ctx.measureText(cur + ch).width > max) { out.push(cur); cur = ''; } cur += ch; }
+  if (cur) out.push(cur); return out;
+}
+
+// ---------- 分鏡 ----------
+const SC = {};
+
+// 1 遠景轉特寫：烈日化作張牙舞爪的火球
+SC[1] = (lt, d, t) => {
+  const k = eio(seg(lt, 0, d));
+  camera(lerp(640, 900, k), lerp(380, 190, k), lerp(1, 2.3, k), () => {
+    sky('#ffb347', '#ffd77a', '#ffeab8', 470);
+    sun(930, 170, 70, t, eout(seg(lt, 1.8, 3.2)));
+    ridge(1, 470, 120, '#d9a066'); ridge(4, 500, 70, '#c08049');
+    ground(490, '#d29a58', '#a86f36', true);
+    for (let row = 0; row < 3; row++) for (let i = 0; i < 9; i++) {
+      const x = 1250 - ((lt * 22 + i * 70 + row * 30) % 900), y = 540 + row * 40;
+      sprite('soldier_side', x, y - Math.abs(Math.sin(lt * 5 + i)) * 3, .2 + row * .03);
+    }
+    sprite('caocao_horse', 1220 - lt * 22 - 60, 538 - Math.abs(Math.sin(lt * 4)) * 2, .085, { flip: true });
+  });
+  heatHaze(t, .14);
+  text('烈日當空・荒野行軍', 160, 60, 30, '#7a2d0a', { stroke: 'rgba(255,240,200,.8)', strokeW: 6 });
+};
+
+// 2 特寫：竹水壺倒扣，只滴下一滴水
+SC[2] = (lt, d, t) => {
+  sky('#ffc067', '#ffe0a0', '#ffe9c0', 260); ridge(2, 270, 50, '#d59e63'); ground(280, '#cf9654', '#9d6630');
+  heatHaze(t, .1, 200);
+  if (lt < 2.3) {
+    const x = lerp(780, 700, lt / 2.3), bob = Math.abs(Math.sin(lt * 4)) * 6;
+    sprite('soldier_a', x, 760 - bob, 1.6, { rot: Math.sin(lt * 4) * .02 });
+    const [tx, ty] = spritePt('soldier_a', x, 760 - bob, 1.6, 152, 132);
+    // 倒扣的水壺 & 一滴水
+    const shake = lt > .5 && lt < 1.6 ? Math.sin(lt * 40) * .08 : 0;
+    canteen(tx + 40, ty - 205, Math.PI + .3 + shake, .9);
+    const dk = seg(lt, 1.55, 1.8);
+    if (dk > 0 && dk < 1) drop(tx + 5, lerp(ty - 100, ty, dk * dk), 9);
+    if (lt > 1.8) { sparkle(tx + 5, ty + 2, 26 * (1 - seg(lt, 1.8, 2.3)), 1 - seg(lt, 1.8, 2.3)); pop('叮～', tx + 120, ty - 60, 44, 1.8, lt, '#e9f8ff', '#2b6aa8'); }
+  } else {
+    const k = lt - 2.3;
+    const g = ctx.createRadialGradient(W / 2, H / 2, 100, W / 2, H / 2, 700);
+    g.addColorStop(0, 'rgba(255,220,160,0)'); g.addColorStop(1, 'rgba(120,60,20,.5)'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    const s = lerp(3.0, 3.25, k / 5.7);
+    sprite('face_tired', 640, 740, s, { rot: Math.sin(k * 1.4) * .035, talk: talk('soldierA', t) });
+    for (let i = 0; i < 3; i++) {
+      const p = ((k * .6 + i * .33) % 1);
+      drop(560 + i * 70 + Math.sin(i) * 20, 260 + p * 160, 8, `rgba(170,220,255,${.9 * (1 - p)})`);
+    }
+  }
+  vignette(.35);
+};
+
+// 3 中景橫搖：整支軍隊癱軟，士氣降至冰點
+SC[3] = (lt, d, t) => {
+  const k = eio(seg(lt, 0, d));
+  camera(lerp(620, 1700, k), 380, 1, () => {
+    sky('#e9b46c', '#f2cf92', '#f3dcb0', 330);
+    ridge(3, 340, 90, '#c99560', -W, W * 3.2); ground(350, '#c48c4f', '#8f5d2c', true);
+    const cast = [['soldier_c', 300, 1.2], ['soldier_b', 640, 1.25], ['soldier_horse', 990, 1.3], ['soldier_d', 1330, 1.3], ['soldier_a', 1640, 1.2], ['soldier_c', 1950, 1.2, true], ['soldier_d', 2260, 1.2, true]];
+    cast.forEach(([n, x, s, flip], i) => {
+      const br = Math.sin(lt * 1.6 + i) * .015;
+      sprite(n, x, 690, s, { sy: 1 + br, sx: 1 - br * .6, flip });
+      const [hx, hy] = spritePt(n, x, 690, s, META[n].w / 2, 40, { flip });
+      const p = (lt * .5 + i * .27) % 1;
+      drop(hx + 30, hy + p * 60, 6, `rgba(170,220,255,${.8 * (1 - p)})`);
+    });
+  });
+  ctx.fillStyle = `rgba(40,55,95,${.28 * seg(lt, 1, d)})`; ctx.fillRect(0, 0, W, H);
+  meter('士氣', lerp(.55, 0, seg(lt, .5, d - 1.5)), 40, 50, false);
+  vignette(.45);
+};
+
+// 4 仰角拉近：曹操眉頭緊鎖，望向無水的荒山
+SC[4] = (lt, d, t) => {
+  const k = eio(seg(lt, 0, d));
+  sky('#ffb85c', '#ffd88f', '#ffe7b8', 700); ridge(5, 690, 60, '#c78c51');
+  // 風
+  ctx.strokeStyle = 'rgba(255,255,255,.55)'; ctx.lineWidth = 3;
+  for (let i = 0; i < 10; i++) { const x = ((lt * 900 + i * 230) % 1700) - 200, y = 100 + hash(i) * 500; ctx.beginPath(); ctx.moveTo(x, y); ctx.quadraticCurveTo(x - 80, y - 14, x - 200, y); ctx.stroke(); }
+  const s = lerp(1.05, 1.22, k);
+  sprite('caocao_horse', 500, 830, s, { rot: Math.sin(lt * .9) * .02 });
+  const [ex, ey] = spritePt('caocao_horse', 500, 830, s, 300, 70);
+  drop(ex + 10, ey + 20 + seg(lt % 3, 0, 3) * 40, 9);
+  if (lt > 1.2 && lt < 4.3) {
+    const a = seg(lt, 1.2, 1.5);
+    ctx.save(); ctx.globalAlpha = a; cloud(1000, 230, 330, 250, [ex + 40, ey - 10]);
+    canteen(1000, 220, .5, .7); text('空', 1000, 222, 54, '#fff', { stroke: '#b3312c' }); text('？', 1110, 160, 60, '#b3312c');
+    ctx.restore();
+  }
+  if (lt > 4.3) {
+    const a = seg(lt, 4.3, 4.6);
+    ctx.save(); ctx.globalAlpha = a; cloud(1000, 230, 360, 260, [ex + 40, ey - 10]);
+    ctx.save(); ctx.beginPath(); ctx.ellipse(1000, 230, 150, 100, 0, 0, TAU); ctx.clip();
+    ctx.fillStyle = '#ffe1a6'; ctx.fillRect(840, 120, 320, 220);
+    ctx.fillStyle = '#b07a46'; ctx.beginPath(); ctx.moveTo(850, 320); ctx.lineTo(930, 190); ctx.lineTo(1000, 260); ctx.lineTo(1070, 170); ctx.lineTo(1160, 320); ctx.fill();
+    ctx.restore();
+    ctx.strokeStyle = '#b3312c'; ctx.lineWidth = 12; ctx.lineCap = 'round';
+    const xk = seg(lt, 5, 5.4);
+    ctx.beginPath(); ctx.moveTo(1050, 170); ctx.lineTo(lerp(1050, 1130, xk), lerp(170, 250, xk)); ctx.stroke();
+    const xk2 = seg(lt, 5.3, 5.7);
+    if (xk2 > 0) { ctx.beginPath(); ctx.moveTo(1130, 170); ctx.lineTo(lerp(1130, 1050, xk2), lerp(170, 250, xk2)); ctx.stroke(); }
+    text('水？', 960, 300, 34, '#1f2a44');
+    ctx.restore();
+  }
+  vignette(.35);
+};
+
+// 5 特寫：靈光一閃
+SC[5] = (lt, d, t) => {
+  const g = ctx.createRadialGradient(W / 2, H / 2, 50, W / 2, H / 2, 800);
+  g.addColorStop(0, '#3a3f6b'); g.addColorStop(1, '#14172a'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  const flash = seg(lt, .85, 1.0) * (1 - seg(lt, 1.0, 1.8));
+  if (lt > .85) {  // 金光
+    ctx.save(); ctx.translate(W / 2, 330); ctx.rotate(lt * .4);
+    for (let i = 0; i < 16; i++) { ctx.fillStyle = `rgba(255,214,90,${.25 * seg(lt, .85, 1.3)})`; ctx.beginPath(); ctx.moveTo(0, 0); ctx.arc(0, 0, 900, i / 16 * TAU, i / 16 * TAU + .1); ctx.fill(); }
+    ctx.restore();
+  }
+  const s = lerp(2.45, 2.65, seg(lt, 0, d)) * (1 + .05 * Math.sin(seg(lt, .9, 1.3) * Math.PI));
+  sprite('caocao_face', 640, 735, s);
+  if (lt > .9) {
+    const [ex, ey] = spritePt('caocao_face', 640, 735, s, 112, 128);
+    const a = 1 - seg(lt, 1.6, 2.6);
+    sparkle(ex, ey, 70 * eout(seg(lt, .9, 1.2)), a); sparkle(ex - 140, ey + 8, 40 * eout(seg(lt, 1, 1.3)), a);
+  }
+  if (lt > 1.3) {
+    const k = back(seg(lt, 1.3, 1.65));
+    ctx.save(); ctx.translate(1030, 180); ctx.scale(k, k); cloud(0, 0, 340, 230, [-200, 160]);
+    text('有了！', 0, 0, 76, '#b3312c', { weight: 700 }); ctx.restore();
+  }
+  ctx.fillStyle = `rgba(255,250,220,${flash * .7})`; ctx.fillRect(0, 0, W, H);
+};
+
+// 6 全景快速推鏡：曹操策馬上山丘，馬鞭指向遠方
+SC[6] = (lt, d, t) => {
+  const z = lerp(1, 1.55, eio(seg(lt, 1.3, 2.1)));
+  const climb = eout(seg(lt, 0, 1.2));
+  const cx = lerp(200, 400, climb), cy = lerp(920, 500, climb) - Math.abs(Math.sin(lt * 10)) * 10 * (1 - seg(lt, 1, 1.2));
+  camera(lerp(640, 560, seg(lt, 1.3, 2.1)), lerp(360, 330, seg(lt, 1.3, 2.1)), z, () => {
+    sky('#ffbf63', '#ffdc96', '#ffefc8', 520);
+    sun(1080, 120, 50, t, 0);
+    ridge(6, 470, 120, '#c99a6b', -W, W * 3); ridge(7, 520, 80, '#b88452', -W, W * 3);
+    ground(520, '#c99252', '#9a6430', false);
+    ctx.fillStyle = '#a5703a'; ctx.beginPath(); ctx.moveTo(-300, 760); ctx.quadraticCurveTo(380, 340, 900, 760); ctx.fill();
+    ctx.fillStyle = '#8e5c2c'; ctx.beginPath(); ctx.moveTo(-300, 800); ctx.quadraticCurveTo(380, 470, 900, 800); ctx.fill();
+    // 馬鞭
+    const s = .58;
+    if (lt > 1.1) {
+      const [hx, hy] = spritePt('caocao_horse', cx, cy, s, 360, 388);
+      const wk = eout(seg(lt, 1.1, 1.35));
+      ctx.strokeStyle = '#3b2412'; ctx.lineWidth = 5; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(hx, hy); const ex = hx + 230 * wk, ey = hy - 190 * wk;
+      ctx.quadraticCurveTo(hx + 140 * wk, hy - 40 - 60 * Math.sin(lt * 3) * .2, ex, ey); ctx.stroke();
+      if (lt < 1.6) { ctx.strokeStyle = 'rgba(255,255,255,.8)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(hx + 120, hy - 60, 120, -1.2, -.2); ctx.stroke(); }
+    }
+    sprite('caocao_horse', cx, cy, s, { talk: talk('caocao', t) });
+    for (let i = 0; i < 5; i++) sprite('soldier_back', 880 + i * 95, 860 + (i % 2) * 20, .95, { sy: 1 + Math.sin(lt * 3 + i) * .01 });
+  });
+  if (lt > 1.4 && lt < 2.3) speedLines(t, W / 2, H / 2);
+  if (lt > 1.6) {  // 特寫小圓窗：曹操說話
+    const a = seg(lt, 1.6, 1.9), r = 135, x = 1100, y = 175;
+    ctx.save(); ctx.globalAlpha = a;
+    ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.fillStyle = '#f3e3c3'; ctx.fill(); ctx.clip();
+    sprite('caocao_face', x, y + 190, 1.55, { talk: talk('caocao', t) });
+    ctx.restore(); ctx.save(); ctx.globalAlpha = a; inkFrame(x, y, r); ctx.restore();
+  }
+  pop('青梅林！', 980, 380, 64, 3.6, lt, '#e9ffb0', '#3d6b1c', -.08);
+  pop('酸甜多汁！', 1010, 470, 52, 6.0, lt, '#fff3a0', '#b3312c', .06);
+};
+
+// 7 幻想畫面：晶瑩剔透的青梅、酸汁爆裂
+SC[7] = (lt, d, t) => {
+  const g = ctx.createRadialGradient(W / 2, H / 2, 80, W / 2, H / 2, 820);
+  g.addColorStop(0, '#fbfff0'); g.addColorStop(.5, '#d9f5c6'); g.addColorStop(1, '#f7c9d9');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  for (let i = 0; i < 24; i++) {
+    const x = hash(i) * W, y = (hash(i + 7) * H - lt * 20 * (1 + hash(i + 2))) % H;
+    ctx.fillStyle = `rgba(255,255,255,${.25 + hash(i + 3) * .3})`; ctx.beginPath(); ctx.arc(x, (y + H) % H, 10 + hash(i + 4) * 30, 0, TAU); ctx.fill();
+  }
+  const z = lerp(1, 1.18, seg(lt, 0, d));
+  camera(640, 330, z, () => {
+    branch();
+    const P = [[180, 230, 52], [470, 300, 62], [760, 270, 70], [1000, 320, 58], [1180, 230, 48], [620, 470, 85]];
+    const bites = [2.6, 4.2, 5.8];
+    P.forEach(([x, y, r], i) => {
+      const sw = Math.sin(lt * 1.2 + i) * 8;
+      const bi = i === 5 ? bites.filter(b => lt > b).length / 3 : (i === 2 && lt > 4.2 ? .7 : 0);
+      plum(x + sw, y, r, t, i, bi);
+      const p = (lt * .5 + i * .37) % 1;
+      drop(x + sw + r * .2, y + r + p * 140, 7, `rgba(190,240,140,${.9 * (1 - p)})`);
+    });
+    bites.forEach(b => {
+      const k = seg(lt, b + .05, b + 1.0);
+      if (k <= 0 || k >= 1) return;
+      for (let j = 0; j < 22; j++) {
+        const a = hash(j + b * 10) * TAU, sp = 120 + hash(j + 3 + b) * 260;
+        drop(670 + Math.cos(a) * sp * k, 450 + Math.sin(a) * sp * k + 180 * k * k, 6 + hash(j) * 6, `rgba(200,245,140,${1 - k})`);
+      }
+      pop(['喀滋！', '噗滋～', '爆汁！'][bites.indexOf(b)], 640 + (bites.indexOf(b) - 1) * 260, 610, 50, b, lt, '#fff', '#4e8f1f');
+    });
+  });
+  vignette(.35, '255,255,255');
+  ctx.save(); ctx.globalAlpha = .5 + .5 * Math.sin(lt * 2); text('✦', 140, 560, 40, '#fff'); text('✦', 1150, 520, 30, '#fff'); ctx.restore();
+};
+
+// 8 特寫組鏡頭：咕嚕！口水直流
+SC[8] = (lt, d, t) => {
+  const bg = (c1, c2) => { const g = ctx.createRadialGradient(W / 2, H / 2, 60, W / 2, H / 2, 760); g.addColorStop(0, c1); g.addColorStop(1, c2); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H); };
+  const gulpAt = [.6, 1.6, 2.6, 3.3];
+  const gk = Math.max(...gulpAt.map(g => { const k = seg(lt, g, g + .35); return k > 0 && k < 1 ? Math.sin(k * Math.PI) : 0; }));
+  if (lt < 1.5) {
+    bg('#fff4c2', '#f2a65a'); speedLines(t, W / 2, H / 2, 'rgba(255,255,255,.7)');
+    sprite('face_shock', 640, 740, 3.3, { sy: 1 - gk * .05, sx: 1 + gk * .03 });
+    pop('咕嚕！', 950, 520, 72, .6, lt, '#fff', '#2b6aa8', .1);
+  } else if (lt < 2.9) {
+    bg('#e0f3ff', '#7fb2dd');
+    const s = 2.25, x = 640, y = 1010;
+    sprite('soldier_b', x, y, s, { sy: 1 - gk * .03 });
+    const [mx, my] = spritePt('soldier_b', x, y, s, 136, 185);
+    // 瀑布般的口水
+    const len = H - my;
+    ctx.save(); const lg = ctx.createLinearGradient(0, my, 0, H); lg.addColorStop(0, 'rgba(200,235,255,.95)'); lg.addColorStop(1, 'rgba(140,200,255,.8)');
+    ctx.fillStyle = lg; ctx.beginPath(); ctx.moveTo(mx - 10, my);
+    for (let yy = 0; yy <= len; yy += 10) ctx.lineTo(mx - 10 - yy * .12 + Math.sin(yy * .06 - lt * 14) * 5, my + yy);
+    for (let yy = len; yy >= 0; yy -= 10) ctx.lineTo(mx + 10 + yy * .12 + Math.sin(yy * .06 - lt * 14 + 1) * 5, my + yy);
+    ctx.fill(); ctx.restore();
+    for (let j = 0; j < 10; j++) { const k = ((lt * 1.5 + j * .1) % 1); drop(mx + (hash(j) - .5) * 260 * k, H - 10 - Math.sin(k * Math.PI) * 80, 8); }
+    pop('咕嚕！', 300, 220, 66, 1.6, lt, '#fff', '#2b6aa8', -.1);
+  } else if (lt < 4.1) {
+    bg('#fff3d6', '#d9a86a');
+    const cast = [['soldier_a', 180, 1.0], ['soldier_b', 430, 1.0], ['soldier_c', 650, .9], ['soldier_d', 870, 1.05], ['soldier_horse', 1110, 1.0]];
+    cast.forEach(([n, x, s], i) => {
+      sprite(n, x, 640, s, { sy: 1 - gk * .05 * (i % 2 ? 1 : .7) });
+      const [hx, hy] = spritePt(n, x, 640, s, META[n].w / 2, 0);
+      drop(hx, hy - 40 - Math.sin(lt * 5 + i) * 6, 14);
+    });
+    pop('咕嚕！', 640, 120, 80, 3.3, lt, '#fff', '#2b6aa8');
+  } else {
+    bg('#f5ffe0', '#9fd37a');
+    speedLines(t, W / 2, H / 2, 'rgba(255,255,255,.5)', 30);
+    const faces = [['face_tongue', 270, .0], ['face_happy', 640, .06], ['face_shock', 1010, .12]];
+    faces.forEach(([n, x, dl], i) => {
+      const bounce = Math.abs(Math.sin((lt - 4.1) * 6 + i)) * (lt > 6 ? 14 : 4);
+      sprite(n, x, 660 - bounce, 2.4, { talk: talk('soldiers', t, dl) });
+    });
+    const L = TL.lines.find(l => l.scene === 8), s0 = L.start - TL.scenes[7].start, u = L.dur / 10;
+    pop('咕嚕！', 270, 130, 60, s0, lt, '#fff', '#2b6aa8', -.1);
+    pop('酸梅！', 640, 110, 70, s0 + u * 3, lt, '#e9ffb0', '#3d6b1c');
+    pop('好酸啊！', 1010, 130, 64, s0 + u * 6, lt, '#fff3a0', '#b3312c', .1);
+    if (lt > 6.2) {
+      for (let j = 0; j < 8; j++) { const k = ((lt * .6 + j * .125) % 1); drop(100 + j * 150, 700 - k * 600, 12, `rgba(120,200,255,${1 - k})`); }
+      meter('解渴', lerp(.1, .75, seg(lt, 6.2, 9)), 40, 50, true);
+    }
+  }
+  vignette(.3);
+};
+
+// 9 跟鏡：精神大振，拔腿向前狂奔
+SC[9] = (lt, d, t) => {
+  const run = lt > .8 ? (lt - .8) : 0, sx = run * 520;
+  sky('#ffcf73', '#ffe6a8', '#fff2cf', 420);
+  camera(640 - sx * .1, 360, 1, () => ridge(8, 420, 110, '#d7a56f', -W, W * 4));
+  camera(640 - sx * .4, 360, 1, () => ridge(9, 450, 60, '#c48f57', -W * 2, W * 6));
+  ctx.save(); ctx.translate(sx % (W * 3), 0); ground(450, '#cf9855', '#a06a33', true); ctx.restore();
+  const crew = [];
+  for (let i = 0; i < 9; i++) crew.push({ row: i % 3, x: 260 + (i * 137) % 760 + (i % 3) * 40, ph: hash(i) * 6 });
+  crew.sort((a, b) => a.row - b.row);
+  crew.forEach((c, i) => {
+    const s = .95 + c.row * .25, y = 520 + c.row * 85;
+    const stand = 1 - seg(lt, .3, .9);
+    const bob = run > 0 ? Math.abs(Math.sin(run * 11 + c.ph)) * 22 : 0;
+    const x = c.x - Math.sin(lt * 1.3 + c.ph) * 15;
+    // 揚起的塵土
+    if (run > 0) for (let j = 0; j < 3; j++) { const k = (run * 2 + j / 3 + c.ph) % 1; ctx.fillStyle = `rgba(230,200,150,${.5 * (1 - k)})`; ctx.beginPath(); ctx.arc(x + 40 + k * 120, y - 5 - k * 30, 10 + k * 26, 0, TAU); ctx.fill(); }
+    sprite('soldier_side', x, y - bob, s, { rot: -.16 * (1 - stand), sy: 1 + (stand > 0 ? -.15 * stand : 0) });
+  });
+  if (run > 0) {  // 速度線
+    ctx.strokeStyle = 'rgba(255,255,255,.6)'; ctx.lineWidth = 3;
+    for (let i = 0; i < 14; i++) { const y = 120 + hash(i) * 540, x = ((run * 1400 + i * 211) % 1600) - 200; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + 140, y); ctx.stroke(); }
+  }
+  meter('士氣', lerp(.15, 1, seg(lt, .3, 4)), 40, 50, true);
+  const L = TL.lines.find(l => l.scene === 9), s0 = L.start - TL.scenes[8].start;
+  if (lt > s0 - .4) {
+    const a = seg(lt, s0 - .4, s0 - .1) * (1 - seg(lt, s0 + L.dur + 1.2, s0 + L.dur + 1.6));
+    const r = 125, x = 1110, y = 190;
+    ctx.save(); ctx.globalAlpha = a; ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.fillStyle = '#fff3d0'; ctx.fill(); ctx.clip();
+    sprite('face_happy', x, y + 145, 1.65, { talk: talk('soldiers', t) });
+    ctx.restore(); ctx.save(); ctx.globalAlpha = a; inkFrame(x, y, r); ctx.restore();
+    pop('衝啊！', 760, 170, 96, s0, lt, '#fff', '#b3312c', -.08);
+  }
+  pop('去吃青梅！', 640, 320, 64, s0 + L.dur * .45, lt, '#e9ffb0', '#3d6b1c');
+};
+
+// 10 全景拉遠：曹操意味深長地微笑，縱馬跟上
+SC[10] = (lt, d, t) => {
+  const k = eio(seg(lt, 0, 6));
+  camera(lerp(960, 640, k), lerp(380, 360, k), lerp(1.7, 1, k), () => {
+    sky('#ffc16a', '#ffdca0', '#fff0cc', 430);
+    sun(200, 120, 46, t, 0);
+    ridge(10, 430, 100, '#d4a26c', -W, W * 3); ground(440, '#c99555', '#a06a33', true);
+    // 水源地
+    const reveal = seg(lt, 4, 6);
+    ctx.save(); ctx.globalAlpha = reveal;
+    ctx.fillStyle = '#5fb4e0'; ctx.beginPath(); ctx.ellipse(110, 500, 190, 46, 0, 0, TAU); ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,.6)'; ctx.beginPath(); ctx.ellipse(70, 490, 90, 10, 0, 0, TAU); ctx.fill();
+    ctx.strokeStyle = '#4f8a2b'; ctx.lineWidth = 4;
+    for (let i = 0; i < 14; i++) { const x = -60 + i * 26; ctx.beginPath(); ctx.moveTo(x, 470 + (i % 3) * 30); ctx.quadraticCurveTo(x + 6, 420, x + 12 + Math.sin(lt * 2 + i) * 4, 400 + (i % 3) * 20); ctx.stroke(); }
+    sparkle(150, 480, 22 * (0.6 + .4 * Math.sin(lt * 5)), reveal); text('水源地', 120, 380, 34, '#1f4f7a', { stroke: '#fff' });
+    ctx.restore();
+    // 大軍如潮水般湧去
+    for (let i = 0; i < 26; i++) {
+      const row = i % 3, x = 900 - ((lt * (90 + row * 12) + i * 47) % 900), y = 520 + row * 32;
+      sprite('soldier_side', x, y - Math.abs(Math.sin(lt * 9 + i)) * 5, .3 + row * .04, { rot: -.15 });
+    }
+    ctx.fillStyle = 'rgba(230,200,150,.35)';
+    for (let i = 0; i < 10; i++) { ctx.beginPath(); ctx.arc(300 + i * 60 + Math.sin(lt + i) * 10, 560 + (i % 2) * 20, 40, 0, TAU); ctx.fill(); }
+    const ride = seg(lt, 7.3, d);
+    const cx = lerp(1010, 520, ride), cy = 600 - Math.abs(Math.sin(lt * 9)) * 6 * (ride > 0 ? 1 : 0);
+    sprite('caocao_horse', cx, cy, .42, { rot: ride > 0 ? -.05 : 0 });
+    if (lt > 1.5 && lt < 3.2) {
+      const [ex, ey] = spritePt('caocao_horse', cx, cy, .42, 290, 112);
+      sparkle(ex, ey, 26 * Math.sin(seg(lt, 1.5, 3.2) * Math.PI));
+    }
+  });
+};
+
+// 11 尾聲：古風畫卷定格，浮現成語註解
+SC[11] = (lt, d, t) => {
+  ctx.fillStyle = '#2a2320'; ctx.fillRect(0, 0, W, H);
+  const [x, y, w, h] = scroll(seg(lt, 0, 1));
+  if (lt < .9) return;
+  ctx.save(); ctx.beginPath(); ctx.rect(x, y, w, h); ctx.clip();
+  const a = seg(lt, .9, 1.5);
+  ctx.globalAlpha = a;
+  sprite('caocao_front', 240, 500, 1.05);
+  plum(1040, 350, 40, t, 0); plum(1110, 400, 34, t, 1); plum(985, 420, 30, t, 2);
+  const s = lerp(1.25, 1, eout(a));
+  ctx.save(); ctx.translate(W / 2, 220); ctx.scale(s, s); text('望梅止渴', 0, 0, 130, '#1f2a44', { weight: 700 }); ctx.restore();
+  ctx.globalAlpha = seg(lt, 1.8, 2.4);
+  text('比喻願望無法實現，', W / 2, 375, 38, '#4a3b2a');
+  text('只能用空想來慰藉自己。', W / 2, 430, 38, '#4a3b2a');
+  ctx.globalAlpha = 1;
+  const st = back(seg(lt, 2.8, 3.2));
+  if (st > 0) {
+    ctx.save(); ctx.translate(890, 490); ctx.rotate(-.08); ctx.scale(st, st);
+    ctx.fillStyle = '#b3312c'; roundRect(-48, -48, 96, 96, 10); ctx.fill();
+    text('成語', 0, -16, 32, '#fff3e6'); text('故事', 0, 22, 32, '#fff3e6'); ctx.restore();
+  }
+  ctx.restore();
+};
+
+// ---------- 主迴圈 ----------
+function sceneAt(t) {
+  let s = TL.scenes[0];
+  for (const sc of TL.scenes) if (t >= sc.start) s = sc;
+  return s;
+}
+function render(t) {
+  t = clamp(t, 0, TL.total - .001);
+  const sc = sceneAt(t), lt = t - sc.start;
+  ctx.save(); ctx.clearRect(0, 0, W, H);
+  SC[sc.id](lt, sc.dur, t);
+  ctx.restore();
+  // 轉場淡入淡出
+  const fin = 1 - seg(lt, 0, .25), fout = seg(lt, sc.dur - .2, sc.dur);
+  const f = sc.id === 1 ? 1 - seg(lt, 0, .8) : Math.max(fin, fout) * .9;
+  if (f > 0) { ctx.fillStyle = `rgba(10,10,14,${f})`; ctx.fillRect(0, 0, W, H); }
+  subtitle(t);
+  ctx.fillStyle = 'rgba(255,255,255,.75)'; ctx.font = `20px ${FONT}`; ctx.textAlign = 'right'; ctx.textBaseline = 'top';
+  ctx.fillText(`鏡 ${sc.id}`, W - 20, 16);
+}
+window.__render = render;
+window.__ready = (async () => {
+  await Promise.all(Object.keys(META).map(loadImg));
+  try { await document.fonts.load(`40px Iansui`, '望梅止渴'); } catch (e) {}
+})();
+
+// ---------- 播放控制 ----------
+const startBtn = document.getElementById('start'), playBtn = document.getElementById('play');
+const seek = document.getElementById('seek'), timeEl = document.getElementById('time'), chips = document.getElementById('chips');
+const fmt = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+TL.scenes.forEach(sc => {
+  const b = document.createElement('button'); b.textContent = `鏡 ${sc.id}`; b.dataset.id = sc.id;
+  b.onclick = () => { audio.currentTime = sc.start + .01; if (audio.paused) draw(); };
+  chips.appendChild(b);
+});
+function draw() {
+  const t = audio.currentTime;
+  render(t);
+  seek.value = Math.round(t / TL.total * 1000);
+  timeEl.textContent = `${fmt(t)} / ${fmt(TL.total)}`;
+  const id = sceneAt(t).id;
+  for (const b of chips.children) b.classList.toggle('on', +b.dataset.id === id);
+}
+function loop() { draw(); if (!audio.paused) requestAnimationFrame(loop); }
+function play() { startBtn.hidden = true; audio.play(); }
+audio.addEventListener('play', () => { playBtn.textContent = '❚❚ 暫停'; requestAnimationFrame(loop); });
+audio.addEventListener('pause', () => { playBtn.textContent = '▶ 播放'; draw(); });
+audio.addEventListener('ended', () => { playBtn.textContent = '↻ 重播'; });
+playBtn.onclick = () => audio.paused ? play() : audio.pause();
+startBtn.onclick = play;
+seek.oninput = () => { audio.currentTime = seek.value / 1000 * TL.total; if (audio.paused) draw(); };
+const params = new URLSearchParams(location.search);
+window.__ready.then(() => {
+  if (params.has('capture')) { startBtn.hidden = true; document.body.style.margin = 0; return; }
+  startBtn.querySelector('span').textContent = '點擊播放（請開啟聲音）';
+  render(params.has('t') ? +params.get('t') : 4.5);
+  timeEl.textContent = `0:00 / ${fmt(TL.total)}`;
+});
+})();
+</script>
+</body>
+</html>
