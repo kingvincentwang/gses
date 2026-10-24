@@ -97,16 +97,21 @@ function waitVoices() {
 }
 
 // 嘴形控制：依旁白逐字推進，每個字一次開合；有 boundary 事件時以實際朗讀位置校正
+// 影片輸出模式時改用模擬時鐘與實際語音音量
+let simClock = null, audioAt = null;
+const clock = () => simClock ?? performance.now();
+const atime = () => audioAt ?? AC.currentTime;
 const lip = {
   who: null, text: '', pos0: 0, t0: 0, cps: 4.6 * RATE, open: 0, active: false,
-  start(who, text) { this.who = who; this.text = text; this.pos0 = 0; this.t0 = performance.now(); this.active = true; },
-  sync(i) { if (i >= this.pos0) { this.pos0 = i; this.t0 = performance.now(); } },
+  start(who, text) { this.who = who; this.text = text; this.pos0 = 0; this.t0 = clock(); this.active = true; },
+  sync(i) { if (i >= this.pos0) { this.pos0 = i; this.t0 = clock(); } },
   stop() { this.active = false; },
   target(who) {
     if (!this.active || this.who !== who) return 0;
-    const pos = this.pos0 + (performance.now() - this.t0) / 1000 * this.cps;
+    if (this.env) return this.env[Math.floor((clock() - this.t0) / 10)] || 0;
+    const pos = this.pos0 + (clock() - this.t0) / 1000 * this.cps;
     const i = Math.floor(pos), f = pos - i;
-    if (i >= this.text.length) return 0.35 + 0.25 * Math.sin(performance.now() / 70);
+    if (i >= this.text.length) return 0.35 + 0.25 * Math.sin(clock() / 70);
     const ch = this.text[i];
     if (/[，。！？、：；…「」\s]/.test(ch)) return 0;
     const k = 0.55 + 0.45 * ((ch.charCodeAt(0) * 7919) % 100) / 100;
@@ -141,9 +146,9 @@ function showSub(line) {
 
 /* ---------- 音效與配樂（Web Audio 即時合成） ---------- */
 let AC, master, noiseBuf, windGain, windFilter;
-function initAudio() {
-  if (AC) return;
-  AC = new (window.AudioContext || window.webkitAudioContext)();
+function initAudio(offline) {
+  if (AC && !offline) return;
+  AC = offline || new (window.AudioContext || window.webkitAudioContext)();
   master = AC.createGain(); master.gain.value = 0.55; master.connect(AC.destination);
   noiseBuf = AC.createBuffer(1, AC.sampleRate * 2, AC.sampleRate);
   const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
@@ -151,14 +156,14 @@ function initAudio() {
   const n = AC.createBufferSource(); n.buffer = noiseBuf; n.loop = true;
   windFilter = AC.createBiquadFilter(); windFilter.type = 'bandpass'; windFilter.Q.value = 0.8; windFilter.frequency.value = 600;
   const lfo = AC.createOscillator(), lg = AC.createGain(); lfo.frequency.value = 0.23; lg.gain.value = 350;
-  lfo.connect(lg); lg.connect(windFilter.frequency); lfo.start();
+  lfo.connect(lg); lg.connect(windFilter.frequency); lfo.start(0);
   windGain = AC.createGain(); windGain.gain.value = 0;
-  n.connect(windFilter); windFilter.connect(windGain); windGain.connect(master); n.start();
+  n.connect(windFilter); windFilter.connect(windGain); windGain.connect(master); n.start(0);
 }
-function setWind(v, t = 0.8) { if (!AC) return; windGain.gain.setTargetAtTime(v, AC.currentTime, t / 3); }
+function setWind(v, t = 0.8) { if (!AC) return; windGain.gain.setTargetAtTime(v, atime(), t / 3); }
 let bus = null;
 function newBus() {
-  if (bus) { const b = bus; b.gain.setTargetAtTime(0, AC.currentTime, 0.15); setTimeout(() => b.disconnect(), 1500); }
+  if (bus) { const b = bus; b.gain.setTargetAtTime(0, atime(), 0.15); if (audioAt == null) setTimeout(() => b.disconnect(), 1500); }
   bus = AC.createGain(); bus.gain.value = 1; bus.connect(master); return bus;
 }
 function env(g, t, a, peak, dec) { g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(peak, t + a); g.gain.exponentialRampToValueAtTime(0.0001, t + a + dec); }
@@ -193,7 +198,8 @@ function woodblock(b, t) {
     noiseHit(b, t + dt, 'bandpass', 2400, 0.03, 0.2);
   });
 }
-function crunch() { if (AC) { noiseHit(master, AC.currentTime, 'highpass', 1800, 0.13, 0.22); noiseHit(master, AC.currentTime + 0.04, 'bandpass', 900, 0.08, 0.12); } }
+let crunchLog = null;
+function crunch() { if (crunchLog) return crunchLog.push(simClock / 1000); if (AC) { const t = atime(); noiseHit(master, t, 'highpass', 1800, 0.13, 0.22); noiseHit(master, t + 0.04, 'bandpass', 900, 0.08, 0.12); } }
 function strings(b, t, dur, notes, vol = 0.05) { // 緊張弦樂
   const lp = AC.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 900; lp.connect(b);
   const g = AC.createGain(); g.connect(lp);
@@ -205,14 +211,14 @@ function strings(b, t, dur, notes, vol = 0.05) { // 緊張弦樂
 }
 const N = { D3: 146.8, F3: 174.6, A3: 220, D4: 293.7, E4: 329.6, Fs4: 370, A4: 440, B4: 493.9, D5: 587.3, E5: 659.3, Fs5: 740, A5: 880 };
 const MUSIC = [
-  b => { const t = AC.currentTime; setWind(0.5); strings(b, t, 9, [73.4, 110, N.F3]); [0, 2, 4, 6].forEach((d, i) => pluck(b, [N.D4, N.F3 * 2, N.D4, N.A3][i], t + 0.5 + d, 0.08)); },
-  b => { const t = AC.currentTime; setWind(0.18); strings(b, t, 7, [73.4, 110], 0.025); woodblock(b, t + 1.1); },
-  b => { const t = AC.currentTime; setWind(0.22); for (let i = 0; i < 16; i++) drum(b, t + 0.3 + i * 0.75, i % 4 === 0 ? 0.55 : 0.3); strings(b, t, 12, [73.4, 110, 146.8], 0.02); },
-  b => { const t = AC.currentTime; setWind(0, 0.4);
+  b => { const t = atime(); setWind(0.5); strings(b, t, 9, [73.4, 110, N.F3]); [0, 2, 4, 6].forEach((d, i) => pluck(b, [N.D4, N.F3 * 2, N.D4, N.A3][i], t + 0.5 + d, 0.08)); },
+  b => { const t = atime(); setWind(0.18); strings(b, t, 7, [73.4, 110], 0.025); woodblock(b, t + 1.1); },
+  b => { const t = atime(); setWind(0.22); for (let i = 0; i < 16; i++) drum(b, t + 0.3 + i * 0.75, i % 4 === 0 ? 0.55 : 0.3); strings(b, t, 12, [73.4, 110, 146.8], 0.02); },
+  b => { const t = atime(); setWind(0, 0.4);
     const mel = [N.D5, N.E5, N.Fs5, N.A5, N.Fs5, N.E5, N.D5, N.B4, N.A4, N.B4, N.D5, N.E5, N.D5];
     mel.forEach((f, i) => flute(b, f, t + 0.3 + i * 0.6, 0.5));
     for (let i = 0; i < 24; i++) pluck(b, [N.D4, N.A4, N.Fs4, N.A4, N.E4, N.A4, N.D5, N.A4][i % 8], t + i * 0.3, 0.12); },
-  b => { const t = AC.currentTime; [N.D4, N.Fs4, N.A4, N.D5].forEach((f, i) => pluck(b, f, t + 0.2 + i * 0.18, 0.15)); flute(b, N.A4, t + 1, 2.4, 0.06); flute(b, N.D5, t + 3.4, 2.4, 0.06);
+  b => { const t = atime(); [N.D4, N.Fs4, N.A4, N.D5].forEach((f, i) => pluck(b, f, t + 0.2 + i * 0.18, 0.15)); flute(b, N.A4, t + 1, 2.4, 0.06); flute(b, N.D5, t + 3.4, 2.4, 0.06);
     [110, 164, 247, 371].forEach(f => { const o = AC.createOscillator(), g = AC.createGain(); o.frequency.value = f; env(g, t + 0.2, 0.01, 0.06, 4); o.connect(g); g.connect(b); o.start(t + 0.2); o.stop(t + 5); }); },
 ];
 
@@ -463,6 +469,70 @@ async function play() {
 document.getElementById('btnPlay').onclick = play;
 document.getElementById('btnAgain').onclick = play;
 document.getElementById('btnRe').onclick = () => { playing = false; setTimeout(play, 60); };
+/* ---------- 影片輸出模式（供自動化逐格錄製使用） ---------- */
+function drawSubCanvas(line) {
+  if (!line) return;
+  const txt = WHO[line.who] ? `${WHO[line.who]}「${line.text}」` : line.text;
+  ctx.font = '34px Iansui, "Noto Serif TC", serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  const w = ctx.measureText(txt).width + 40;
+  ctx.fillStyle = 'rgba(0,0,0,.55)'; ctx.beginPath(); ctx.roundRect(W / 2 - w / 2, H - 82, w, 54, 10); ctx.fill();
+  if (WHO[line.who]) {
+    const nw = ctx.measureText(WHO[line.who]).width;
+    ctx.textAlign = 'left'; ctx.fillStyle = '#ffd27a'; ctx.fillText(WHO[line.who], W / 2 - w / 2 + 20, H - 55);
+    ctx.fillStyle = '#fff'; ctx.fillText(`「${line.text}」`, W / 2 - w / 2 + 20 + nw, H - 55);
+  } else { ctx.fillStyle = '#fff'; ctx.fillText(txt, W / 2, H - 55); }
+  ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+}
+window.RENDER = {
+  // voice: 依 SCENES 順序每句的 {dur 秒, env 每 10ms 一格的嘴形開合 0~1}
+  async init(voice) {
+    await loaded; await document.fonts.load('40px Iansui');
+    document.querySelectorAll('.overlay,#ctrl,#sub,#bar').forEach(e => e.classList.add('hidden'));
+    this.voice = voice; this.fps = 30; this.f = 0; this.log = { scenes: [], lines: [] }; crunchLog = [];
+    this.sc = 0; this.st = 0; this.li = 0; this.ls = 0.3; this.gi = 0; this.cur = null; this.sub = null; this.done = false;
+    simClock = 0; scene = 0; puffs = []; this.log.scenes.push(0);
+  },
+  step() { // 前進一格並畫出；回傳 JPEG dataURL，結束時回傳 null
+    if (this.done) return null;
+    const dt = 1 / this.fps, T = this.f * dt; simClock = T * 1000;
+    const lines = SCENES[this.sc].lines;
+    if (this.li < lines.length) {
+      const v = this.voice[this.gi];
+      if (!this.cur && this.st >= this.ls) {
+        this.cur = lines[this.li]; this.sub = this.cur; lip.start(this.cur.who, this.cur.text); lip.env = v.env;
+        this.log.lines.push(T); this.lineEnd = this.st + v.dur;
+      } else if (this.cur && this.st >= this.lineEnd) {
+        lip.stop(); this.cur = null; this.li++; this.gi++; this.ls = this.st + 0.25;
+      }
+    }
+    ctx.save(); DRAW[this.sc](this.st, dt); ctx.restore();
+    drawSubCanvas(this.sub);
+    const url = cv.toDataURL('image/jpeg', 0.92);
+    this.st += dt; this.f++;
+    if (this.st >= SCENES[this.sc].dur && this.li >= lines.length) {
+      if (this.sc + 1 < SCENES.length) { this.sc++; scene = this.sc; this.st = 0; this.li = 0; this.ls = 0.3; puffs = []; this.log.scenes.push(this.f / this.fps); }
+      else if (this.st >= SCENES[this.sc].dur + 1.2) this.done = true;
+    }
+    return url;
+  },
+  async audio() { // 以 OfflineAudioContext 合成配樂與音效，回傳 16-bit WAV base64
+    const sr = 44100, len = Math.ceil((this.f / this.fps + 1) * sr);
+    const off = new OfflineAudioContext(1, len, sr);
+    audioAt = 0; bus = null; initAudio(off);
+    this.log.scenes.forEach((t, i) => { audioAt = t; MUSIC[i](newBus()); });
+    crunchLog.forEach(t => { audioAt = t; noiseHit(master, t, 'highpass', 1800, 0.13, 0.22); noiseHit(master, t + 0.04, 'bandpass', 900, 0.08, 0.12); });
+    audioAt = this.log.scenes[this.log.scenes.length - 1] + 6; setWind(0, 0.6);
+    const buf = await off.startRendering(), d = buf.getChannelData(0);
+    const out = new DataView(new ArrayBuffer(44 + d.length * 2));
+    const str = (o, s) => [...s].forEach((c, i) => out.setUint8(o + i, c.charCodeAt(0)));
+    str(0, 'RIFF'); out.setUint32(4, 36 + d.length * 2, true); str(8, 'WAVEfmt '); out.setUint32(16, 16, true); out.setUint16(20, 1, true); out.setUint16(22, 1, true);
+    out.setUint32(24, sr, true); out.setUint32(28, sr * 2, true); out.setUint16(32, 2, true); out.setUint16(34, 16, true); str(36, 'data'); out.setUint32(40, d.length * 2, true);
+    for (let i = 0; i < d.length; i++) out.setInt16(44 + i * 2, Math.max(-1, Math.min(1, d[i])) * 32767, true);
+    const bytes = new Uint8Array(out.buffer); let bin = '';
+    for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+    return btoa(bin);
+  },
+};
 // 封面預覽
 loaded.then(() => { DRAW[0](0, 0.016); });
 </script>
