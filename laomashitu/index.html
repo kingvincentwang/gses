@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>老馬識途 動畫</title>
+<style>
+@font-face{font-family:"Iansui";src:url("../Iansui-Regular.ttf") format("truetype");font-display:swap}
+:root{--ink:#2b211a;--paper:#f3e7cf;--red:#a3271f}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#111;color:#fff;font-family:"Iansui","Noto Serif TC","PMingLiU",serif;overflow:hidden}
+#stage{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+#wrap{position:relative;aspect-ratio:16/9;width:min(100vw,calc(100vh*16/9));background:#000;box-shadow:0 0 40px #000}
+canvas{width:100%;height:100%;display:block}
+#sub{position:absolute;left:5%;right:5%;bottom:5%;text-align:center;font-size:clamp(14px,2.6vw,30px);line-height:1.4;pointer-events:none}
+#sub span{background:rgba(0,0,0,.55);padding:.15em .6em;border-radius:.3em;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+#sub b{color:#ffd27a;font-weight:normal;margin-right:.4em}
+#bar{position:absolute;left:0;bottom:0;height:4px;background:#d9a441;width:0}
+.overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.2em;
+  background:radial-gradient(ellipse at center,#f6ecd6 0%,#e4d1aa 70%,#c9b081 100%);color:var(--ink);text-align:center;padding:16px}
+.overlay h1{margin:0;font-size:clamp(40px,10vw,120px);letter-spacing:.1em;font-weight:normal}
+.overlay p{margin:0;font-size:clamp(13px,2vw,20px);max-width:36em}
+button{font:inherit;font-size:clamp(16px,2.4vw,26px);padding:.4em 1.4em;border:0;border-radius:2em;background:var(--red);color:#fff;cursor:pointer;box-shadow:0 4px 0 #6d1712}
+button:active{transform:translateY(2px);box-shadow:0 2px 0 #6d1712}
+#note{font-size:clamp(11px,1.6vw,15px);opacity:.75}
+.hidden{display:none!important}
+#ctrl{position:absolute;top:10px;right:10px;display:flex;gap:6px}
+#ctrl button{font-size:14px;padding:.3em .8em;box-shadow:none;background:rgba(0,0,0,.45)}
+</style>
+</head>
+<body>
+<div id="stage"><div id="wrap">
+  <canvas id="cv" width="1280" height="720"></canvas>
+  <div id="sub"></div>
+  <div id="bar"></div>
+  <div id="ctrl" class="hidden"><button id="btnRe">↻ 重播</button></div>
+  <div id="start" class="overlay">
+    <h1>老馬識途</h1>
+    <p>齊桓公與管仲出征歸途，在風雪中迷了路……<br>看看老馬怎麼帶大家走出困境！</p>
+    <button id="btnPlay">▶ 開始播放</button>
+    <div id="note">建議使用 Chrome / Edge，並開啟喇叭（旁白由瀏覽器語音朗讀）</div>
+  </div>
+  <div id="end" class="overlay hidden">
+    <h1>老馬識途</h1>
+    <p>比喻有經驗的人對事情非常熟悉，能夠指引方向，帶領大家走出困境。</p>
+    <button id="btnAgain">↻ 再看一次</button>
+  </div>
+</div></div>
+
+<script>
+const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
+const W = 1280, H = 720;
+const subEl = document.getElementById('sub'), barEl = document.getElementById('bar');
+
+/* ---------- 角色圖片（取自角色設定圖） ---------- */
+const IMG = {};
+const NAMES = ['duke', 'guan', 'soldier', 'oldhorse', 'troop', 'h_old', 'h_war', 'h_ji'];
+const loaded = Promise.all(NAMES.map(n => new Promise(r => {
+  const i = new Image(); i.onload = r; i.onerror = r; i.src = 'img/' + n + '.webp'; IMG[n] = i;
+})));
+// 嘴巴在原圖中的位置（像素）
+const MOUTH = { duke: { x: 163, y: 80, w: 15 }, guan: { x: 133, y: 95, w: 13 } };
+
+/* ---------- 腳本 ---------- */
+const SCENES = [
+  { dur: 5.5, lines: [{ who: 'narr', text: '公元前663年，齊桓公出征大勝，卻在回師途中於山谷迷路，面臨斷糧危機……' }] },
+  { dur: 5, lines: [{ who: 'narr', text: '此時智囊管仲靈機一動，說道：' }, { who: 'guan', text: '老馬之智可用也！' }] },
+  { dur: 8, lines: [{ who: 'narr', text: '他們挑選了幾匹熟悉地形的老馬，解開韁繩，任由老馬在雪地中自導方向。' }] },
+  { dur: 7, lines: [{ who: 'narr', text: '老馬憑著驚人的記憶力，真的帶領全軍順利走出迷宮般的荒野！' }, { who: 'duke', text: '真是老馬識途啊！' }] },
+  { dur: 5, lines: [{ who: 'narr', text: '老馬識途，比喻有經驗的人對事情非常熟悉，能夠指引方向，帶領大家走出困境。' }] },
+];
+const WHO = { narr: '', guan: '管仲', duke: '齊桓公' };
+
+/* ---------- 語音與嘴形同步 ---------- */
+const synth = window.speechSynthesis;
+let voices = { narr: null, guan: null, duke: null }, hasVoice = false;
+const RATE = 1.12;
+function pickVoices() {
+  if (!synth) return;
+  const all = synth.getVoices();
+  const tw = all.filter(v => /zh[-_]TW|zh[-_]Hant/i.test(v.lang));
+  const zh = tw.length ? tw : all.filter(v => /^zh|cmn/i.test(v.lang));
+  if (!zh.length) return;
+  hasVoice = true;
+  const male = zh.find(v => /zhiwei|yunjhe|yunxi|yunyang|male|男|kangkang/i.test(v.name));
+  voices.narr = zh.find(v => /yating|hsiaochen|hsiaoyu|google/i.test(v.name)) || zh[0];
+  voices.guan = male || voices.narr;
+  voices.duke = male || voices.narr;
+}
+function waitVoices() {
+  return new Promise(res => {
+    if (!synth) return res();
+    pickVoices(); if (hasVoice) return res();
+    const t = setTimeout(res, 1500);
+    synth.onvoiceschanged = () => { pickVoices(); if (hasVoice) { clearTimeout(t); res(); } };
+  });
+}
+
+// 嘴形控制：依旁白逐字推進，每個字一次開合；有 boundary 事件時以實際朗讀位置校正
+const lip = {
+  who: null, text: '', pos0: 0, t0: 0, cps: 4.6 * RATE, open: 0, active: false,
+  start(who, text) { this.who = who; this.text = text; this.pos0 = 0; this.t0 = performance.now(); this.active = true; },
+  sync(i) { if (i >= this.pos0) { this.pos0 = i; this.t0 = performance.now(); } },
+  stop() { this.active = false; },
+  target(who) {
+    if (!this.active || this.who !== who) return 0;
+    const pos = this.pos0 + (performance.now() - this.t0) / 1000 * this.cps;
+    const i = Math.floor(pos), f = pos - i;
+    if (i >= this.text.length) return 0.35 + 0.25 * Math.sin(performance.now() / 70);
+    const ch = this.text[i];
+    if (/[，。！？、：；…「」\s]/.test(ch)) return 0;
+    const k = 0.55 + 0.45 * ((ch.charCodeAt(0) * 7919) % 100) / 100;
+    return Math.pow(Math.sin(Math.PI * f), 0.7) * k;
+  },
+  value(who) { const tg = this.target(who); this.open += (tg - this.open) * 0.45; return this.who === who ? this.open : 0; }
+};
+
+let runId = 0;
+function sayLine(line, id) {
+  return new Promise(res => {
+    const len = line.text.length;
+    showSub(line);
+    let done = false;
+    const finish = () => { if (done) return; done = true; lip.stop(); res(); };
+    lip.start(line.who, line.text);
+    if (!hasVoice) { setTimeout(finish, len / lip.cps * 1000 + 300); return; }
+    const u = new SpeechSynthesisUtterance(line.text);
+    u.voice = voices[line.who]; u.lang = u.voice ? u.voice.lang : 'zh-TW';
+    u.rate = line.who === 'narr' ? RATE : 1.02;
+    u.pitch = line.who === 'narr' ? 1 : (voices[line.who] === voices.narr ? (line.who === 'duke' ? 0.6 : 0.75) : 0.95);
+    u.onstart = () => { if (id === runId) lip.start(line.who, line.text); };
+    u.onboundary = e => { if (id === runId) lip.sync(e.charIndex); };
+    u.onend = finish; u.onerror = finish;
+    setTimeout(finish, len / 2.5 * 1000 + 2500);
+    synth.speak(u);
+  });
+}
+function showSub(line) {
+  subEl.innerHTML = line ? `<span>${WHO[line.who] ? `<b>${WHO[line.who]}</b>「${line.text}」` : line.text}</span>` : '';
+}
+
+/* ---------- 音效與配樂（Web Audio 即時合成） ---------- */
+let AC, master, noiseBuf, windGain, windFilter;
+function initAudio() {
+  if (AC) return;
+  AC = new (window.AudioContext || window.webkitAudioContext)();
+  master = AC.createGain(); master.gain.value = 0.55; master.connect(AC.destination);
+  noiseBuf = AC.createBuffer(1, AC.sampleRate * 2, AC.sampleRate);
+  const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  // 風聲
+  const n = AC.createBufferSource(); n.buffer = noiseBuf; n.loop = true;
+  windFilter = AC.createBiquadFilter(); windFilter.type = 'bandpass'; windFilter.Q.value = 0.8; windFilter.frequency.value = 600;
+  const lfo = AC.createOscillator(), lg = AC.createGain(); lfo.frequency.value = 0.23; lg.gain.value = 350;
+  lfo.connect(lg); lg.connect(windFilter.frequency); lfo.start();
+  windGain = AC.createGain(); windGain.gain.value = 0;
+  n.connect(windFilter); windFilter.connect(windGain); windGain.connect(master); n.start();
+}
+function setWind(v, t = 0.8) { if (!AC) return; windGain.gain.setTargetAtTime(v, AC.currentTime, t / 3); }
+let bus = null;
+function newBus() {
+  if (bus) { const b = bus; b.gain.setTargetAtTime(0, AC.currentTime, 0.15); setTimeout(() => b.disconnect(), 1500); }
+  bus = AC.createGain(); bus.gain.value = 1; bus.connect(master); return bus;
+}
+function env(g, t, a, peak, dec) { g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(peak, t + a); g.gain.exponentialRampToValueAtTime(0.0001, t + a + dec); }
+function pluck(b, f, t, vol = 0.18) { // 古箏撥弦
+  [1, 2, 3].forEach((h, k) => {
+    const o = AC.createOscillator(), g = AC.createGain();
+    o.type = k ? 'sine' : 'triangle'; o.frequency.setValueAtTime(f * h * 1.01, t); o.frequency.exponentialRampToValueAtTime(f * h, t + 0.08);
+    env(g, t, 0.005, vol / (h * h), 1.6 / h); o.connect(g); g.connect(b); o.start(t); o.stop(t + 2);
+  });
+}
+function flute(b, f, t, dur, vol = 0.09) { // 笛子
+  const o = AC.createOscillator(), g = AC.createGain(), v = AC.createOscillator(), vg = AC.createGain();
+  o.type = 'sine'; o.frequency.value = f; v.frequency.value = 5.2; vg.gain.value = f * 0.012;
+  v.connect(vg); vg.connect(o.frequency);
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.08); g.gain.setValueAtTime(vol, t + dur - 0.1); g.gain.exponentialRampToValueAtTime(0.0001, t + dur + 0.15);
+  o.connect(g); g.connect(b); o.start(t); v.start(t); o.stop(t + dur + 0.2); v.stop(t + dur + 0.2);
+}
+function drum(b, t, vol = 0.5) {
+  const o = AC.createOscillator(), g = AC.createGain();
+  o.frequency.setValueAtTime(110, t); o.frequency.exponentialRampToValueAtTime(42, t + 0.25);
+  env(g, t, 0.005, vol, 0.45); o.connect(g); g.connect(b); o.start(t); o.stop(t + 0.6);
+}
+function noiseHit(b, t, type, freq, dur, vol) {
+  const s = AC.createBufferSource(), f = AC.createBiquadFilter(), g = AC.createGain();
+  s.buffer = noiseBuf; f.type = type; f.frequency.value = freq; f.Q.value = 1.2;
+  env(g, t, 0.004, vol, dur); s.connect(f); f.connect(g); g.connect(b); s.start(t, Math.random()); s.stop(t + dur + 0.1);
+}
+function woodblock(b, t) {
+  [0, 0.16].forEach(dt => {
+    const o = AC.createOscillator(), g = AC.createGain(); o.frequency.value = 820;
+    env(g, t + dt, 0.002, 0.45, 0.09); o.connect(g); g.connect(b); o.start(t + dt); o.stop(t + dt + 0.2);
+    noiseHit(b, t + dt, 'bandpass', 2400, 0.03, 0.2);
+  });
+}
+function crunch() { if (AC) { noiseHit(master, AC.currentTime, 'highpass', 1800, 0.13, 0.22); noiseHit(master, AC.currentTime + 0.04, 'bandpass', 900, 0.08, 0.12); } }
+function strings(b, t, dur, notes, vol = 0.05) { // 緊張弦樂
+  const lp = AC.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 900; lp.connect(b);
+  const g = AC.createGain(); g.connect(lp);
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 1.2); g.gain.setValueAtTime(vol, t + dur - 0.6); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  const trem = AC.createOscillator(), tg = AC.createGain(); trem.frequency.value = 7; tg.gain.value = vol * 0.5; trem.connect(tg); tg.connect(g.gain); trem.start(t); trem.stop(t + dur);
+  notes.forEach(f => [0.997, 1.003].forEach(dt => {
+    const o = AC.createOscillator(); o.type = 'sawtooth'; o.frequency.value = f * dt; o.connect(g); o.start(t); o.stop(t + dur);
+  }));
+}
+const N = { D3: 146.8, F3: 174.6, A3: 220, D4: 293.7, E4: 329.6, Fs4: 370, A4: 440, B4: 493.9, D5: 587.3, E5: 659.3, Fs5: 740, A5: 880 };
+const MUSIC = [
+  b => { const t = AC.currentTime; setWind(0.5); strings(b, t, 9, [73.4, 110, N.F3]); [0, 2, 4, 6].forEach((d, i) => pluck(b, [N.D4, N.F3 * 2, N.D4, N.A3][i], t + 0.5 + d, 0.08)); },
+  b => { const t = AC.currentTime; setWind(0.18); strings(b, t, 7, [73.4, 110], 0.025); woodblock(b, t + 1.1); },
+  b => { const t = AC.currentTime; setWind(0.22); for (let i = 0; i < 16; i++) drum(b, t + 0.3 + i * 0.75, i % 4 === 0 ? 0.55 : 0.3); strings(b, t, 12, [73.4, 110, 146.8], 0.02); },
+  b => { const t = AC.currentTime; setWind(0, 0.4);
+    const mel = [N.D5, N.E5, N.Fs5, N.A5, N.Fs5, N.E5, N.D5, N.B4, N.A4, N.B4, N.D5, N.E5, N.D5];
+    mel.forEach((f, i) => flute(b, f, t + 0.3 + i * 0.6, 0.5));
+    for (let i = 0; i < 24; i++) pluck(b, [N.D4, N.A4, N.Fs4, N.A4, N.E4, N.A4, N.D5, N.A4][i % 8], t + i * 0.3, 0.12); },
+  b => { const t = AC.currentTime; [N.D4, N.Fs4, N.A4, N.D5].forEach((f, i) => pluck(b, f, t + 0.2 + i * 0.18, 0.15)); flute(b, N.A4, t + 1, 2.4, 0.06); flute(b, N.D5, t + 3.4, 2.4, 0.06);
+    [110, 164, 247, 371].forEach(f => { const o = AC.createOscillator(), g = AC.createGain(); o.frequency.value = f; env(g, t + 0.2, 0.01, 0.06, 4); o.connect(g); g.connect(b); o.start(t + 0.2); o.stop(t + 5); }); },
+];
+
+/* ---------- 繪圖工具 ---------- */
+function rnd(seed) { let s = seed; return () => (s = (s * 16807) % 2147483647) / 2147483647; }
+function sprite(name, x, yb, s, o = {}) {
+  const img = IMG[name]; if (!img || !img.naturalWidth) return;
+  const w = img.naturalWidth, h = img.naturalHeight;
+  ctx.save();
+  ctx.translate(x + w * s / 2, yb);
+  if (o.rot) ctx.rotate(o.rot);
+  ctx.scale(o.flip ? -s : s, s * (o.sy || 1));
+  if (o.filter) ctx.filter = o.filter;
+  if (o.alpha != null) ctx.globalAlpha = o.alpha;
+  ctx.drawImage(img, -w / 2, -h);
+  ctx.filter = 'none';
+  const m = MOUTH[name];
+  if (m && o.open > 0.04) { // 嘴形
+    const op = o.open, cx = m.x - w / 2, cy = m.y - h + op * 1.2;
+    ctx.fillStyle = '#4a1a1a';
+    ctx.beginPath(); ctx.ellipse(cx, cy, m.w / 2 * (0.55 + 0.3 * op), 0.6 + op * 3.4, 0, 0, Math.PI * 2); ctx.fill();
+    if (op > 0.35) {
+      ctx.fillStyle = '#b8505a'; ctx.beginPath(); ctx.ellipse(cx, cy + op * 1.8, m.w / 4, op * 1.3, 0, 0, Math.PI * 2); ctx.fill();
+    }
+    if (op > 0.55) {
+      ctx.fillStyle = 'rgba(243,236,226,.9)'; ctx.fillRect(cx - m.w / 4, cy - 0.4 - op * 2.9, m.w / 2, 1.1);
+    }
+  }
+  ctx.restore();
+}
+function mountains(seed, baseY, amp, color, off = 0, step = 90) {
+  const r = rnd(seed), pts = []; for (let i = 0; i < 40; i++) pts.push(r());
+  ctx.fillStyle = color; ctx.beginPath(); ctx.moveTo(0, H);
+  const span = pts.length * step, o = ((off % span) + span) % span;
+  for (let x = -step; x <= W + step; x += 12) {
+    const gx = (x + o) / step, i = Math.floor(gx), f = gx - i;
+    const a = pts[((i % pts.length) + pts.length) % pts.length], b = pts[(((i + 1) % pts.length) + pts.length) % pts.length];
+    const y = baseY - amp * (a + (b - a) * (1 - Math.cos(f * Math.PI)) / 2);
+    ctx.lineTo(x, y);
+  }
+  ctx.lineTo(W, H); ctx.fill();
+}
+function snowGround(y0, off = 0) {
+  const g = ctx.createLinearGradient(0, y0 - 30, 0, H); g.addColorStop(0, '#eef3f8'); g.addColorStop(1, '#c9d6e3');
+  ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(0, H);
+  for (let x = 0; x <= W; x += 10) ctx.lineTo(x, y0 + Math.sin((x + off) / 140) * 12 + Math.sin((x + off) / 47) * 4);
+  ctx.lineTo(W, H); ctx.fill();
+}
+function snowDrift(y0, off = 0) {
+  ctx.fillStyle = 'rgba(245,249,253,.96)'; ctx.beginPath(); ctx.moveTo(0, H);
+  for (let x = 0; x <= W; x += 10) ctx.lineTo(x, y0 + Math.sin((x + off) / 90) * 9 + Math.sin((x + off) / 33) * 4);
+  ctx.lineTo(W, H); ctx.fill();
+}
+const flakes = Array.from({ length: 320 }, () => ({ x: Math.random() * W, y: Math.random() * H, z: Math.random() * 0.8 + 0.4 }));
+function snow(dt, wind, fall, alpha = 1) {
+  ctx.fillStyle = `rgba(255,255,255,${0.85 * alpha})`;
+  for (const f of flakes) {
+    f.x += (wind * f.z + Math.sin(f.y / 30) * 0.6) * dt * 60; f.y += fall * f.z * dt * 60;
+    if (f.x < -10) f.x += W + 20; if (f.x > W + 10) f.x -= W + 20; if (f.y > H + 5) { f.y = -5; f.x = Math.random() * W; }
+    ctx.beginPath(); ctx.arc(f.x, f.y, 1.4 * f.z + 0.4, 0, 7); ctx.fill();
+    if (Math.abs(wind) > 4) { ctx.fillRect(f.x, f.y, -wind * f.z * 1.8, 1); }
+  }
+}
+function vignette(a = 0.55) {
+  const g = ctx.createRadialGradient(W / 2, H / 2, H * 0.35, W / 2, H / 2, H * 0.95);
+  g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, `rgba(0,0,0,${a})`); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+}
+function camera(cx, cy, z) { ctx.translate(W / 2, H / 2); ctx.scale(z, z); ctx.translate(-cx, -cy); }
+const ease = t => t < 0 ? 0 : t > 1 ? 1 : t * t * (3 - 2 * t);
+const lerp = (a, b, t) => a + (b - a) * t;
+let puffs = [];
+function puff(x, y, vx, vy, r, col) { puffs.push({ x, y, vx, vy, r, a: 0.7, col }); }
+function drawPuffs(dt) {
+  puffs = puffs.filter(p => p.a > 0.02);
+  for (const p of puffs) { p.x += p.vx * dt; p.y += p.vy * dt; p.r += 14 * dt; p.a -= dt * 0.8; ctx.fillStyle = `rgba(${p.col},${Math.max(0, p.a)})`; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 7); ctx.fill(); }
+}
+function sparkle(x, y, r, a) {
+  ctx.save(); ctx.translate(x, y); ctx.globalAlpha = a; ctx.fillStyle = '#fff8c8';
+  ctx.beginPath(); for (let i = 0; i < 8; i++) { const rr = i % 2 ? r * 0.22 : r; const an = i * Math.PI / 4; ctx.lineTo(Math.cos(an) * rr, Math.sin(an) * rr); } ctx.fill(); ctx.restore();
+}
+const shake = (k = 1) => (Math.random() - 0.5) * k;
+
+/* ---------- 各分鏡 ---------- */
+const DRAW = [
+  // 01 風雪迷途：遠景推近到兩人焦慮的表情
+  (t, dt) => {
+    const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#46505e'); g.addColorStop(1, '#a9b4c0'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    const k = ease(t / 5);
+    ctx.save(); camera(lerp(640, 690, k), lerp(360, 230, k), lerp(1, 1.75, k));
+    mountains(3, 430, 170, '#6c7888', t * 4); mountains(9, 520, 120, '#8995a4', t * 8);
+    snowGround(600);
+    sprite('h_war', 120, 625, 1.15, { flip: true });
+    sprite('h_ji', 950, 630, 1.1);
+    sprite('duke', 300 + shake(1.2), 645, 1.05, { open: lip.value('duke') });
+    sprite('guan', 760 + shake(1.2), 645, 1.07, { open: lip.value('guan') });
+    if (t > 2.2) { // 冒冷汗
+      const a = Math.min(1, (t - 2.2) * 2);
+      ctx.fillStyle = `rgba(190,225,255,${a})`;
+      [[505, 175 + (t % 1) * 8], [935, 190 + ((t + .5) % 1) * 8]].forEach(([x, y]) => { ctx.beginPath(); ctx.moveTo(x, y - 9); ctx.quadraticCurveTo(x + 6, y + 2, x, y + 5); ctx.quadraticCurveTo(x - 6, y + 2, x, y - 9); ctx.fill(); });
+    }
+    ctx.restore();
+    snow(dt, -9, 3.5); vignette(0.65);
+  },
+  // 02 管仲提議：士兵發抖，特寫管仲自信眼神
+  (t, dt) => {
+    const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#58637a'); g.addColorStop(1, '#bcc6d2'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    const k = ease((t - 1.6) / 2.4);
+    ctx.save(); camera(lerp(640, 905, k), lerp(360, 250, k), lerp(1, 2.1, k));
+    mountains(21, 470, 200, '#76829a'); snowGround(610);
+    sprite('troop', 60 + shake(3), 655, 1.25);
+    sprite('soldier', 400 + shake(2.5), 655, 0.95);
+    const op = lip.value('guan'), talk = lip.who === 'guan' && lip.active;
+    sprite('guan', 790, 660, 1.2, { open: op, rot: talk ? Math.sin(t * 9) * 0.006 : 0, sy: 1 + op * 0.004 });
+    if (t > 1.1) { // 靈光一閃
+      const a = Math.max(0, 1 - Math.abs(t - 1.6) * 1.2);
+      sparkle(790 + 150 * 1.2, 660 - (465 - 64) * 1.2, 14 + a * 10, a);
+      sparkle(790 + 30 * 1.2, 660 - (465 - 25) * 1.2, 10, a * 0.8);
+    }
+    ctx.restore();
+    snow(dt, -3, 2.2); vignette(0.5);
+    if (t > 1.1 && t < 1.5) { ctx.fillStyle = `rgba(255,250,220,${(1.5 - t) * 1.2})`; ctx.fillRect(0, 0, W, H); }
+  },
+  // 03 老馬帶路：老馬嗅聞後邁步，鏡頭橫移跟隨
+  (() => { let phase = 0, last = 0, scroll = 0, prints = [];
+    return (t, dt) => {
+      if (t < dt * 2) { phase = 0; last = 0; scroll = 0; prints = []; }
+      const walking = t > 1.8, speed = walking ? Math.min(1, (t - 1.8) * 1.5) : 0;
+      scroll += speed * 150 * dt; phase += speed * dt * 8;
+      const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#6b7891'); g.addColorStop(1, '#d2dae4'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+      mountains(5, 400, 160, '#8592a8', scroll * 0.15, 120); mountains(14, 500, 110, '#a3aec0', scroll * 0.4, 100);
+      snowGround(590, scroll);
+      // 雪地蹄印
+      if (walking && Math.floor(phase / Math.PI) !== last) { last = Math.floor(phase / Math.PI); prints.push({ x: 880 + scroll, y: 652 + (last % 2) * 10 }); crunch(); }
+      ctx.fillStyle = 'rgba(120,140,165,.45)';
+      prints = prints.filter(p => p.x - scroll > -50);
+      prints.forEach(p => { ctx.beginPath(); ctx.ellipse(p.x - scroll, p.y, 13, 5, 0, 0, 7); ctx.fill(); });
+      const bob = i => Math.abs(Math.sin(phase + i)) * 7 * speed;
+      sprite('h_war', -40, 660 - bob(2), 1.0);
+      sprite('troop', 150, 668 - bob(1.3), 1.05);
+      sprite('soldier', 420, 668 - bob(0.7), 0.92);
+      const sniff = !walking ? Math.sin(t * 7) * 0.035 - 0.03 : Math.sin(phase) * 0.012;
+      sprite('h_old', 640, 668 - bob(0), 1.3, { rot: sniff });
+      if (!walking && Math.random() < dt * 6) puff(640 + 240 * 1.3, 668 - 230 * 1.3, 30, -25, 4, '255,255,255');
+      if (walking && Math.random() < dt * 3) puff(640 + 240 * 1.3, 668 - 230 * 1.3, 40, -10, 4, '255,255,255');
+      if (walking && Math.random() < dt * 12) puff(650 + Math.random() * 300, 670, -60, -20, 5, '240,245,250');
+      drawPuffs(dt);
+      snowDrift(685, scroll * 1.3);
+      if (!walking) { ctx.fillStyle = 'rgba(255,255,255,.9)'; ctx.font = '42px Iansui, serif'; ctx.fillText('嗅…嗅…', 980, 210 + Math.sin(t * 7) * 4); }
+      snow(dt, -4 - speed * 3, 2.4, 0.9); vignette(0.45);
+    }; })(),
+  // 04 走出困境：陽光山谷，由中景拉成全景
+  (t, dt) => {
+    const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#6fb4f2'); g.addColorStop(0.65, '#fde6b0'); g.addColorStop(1, '#fbd890'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    const k = ease(t / 4);
+    ctx.save(); camera(lerp(760, 640, k), lerp(330, 360, k), lerp(1.5, 1, k));
+    ctx.save(); ctx.translate(1060, 130); ctx.rotate(t * 0.15);
+    for (let i = 0; i < 12; i++) { ctx.rotate(Math.PI / 6); ctx.fillStyle = 'rgba(255,240,170,.35)'; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(700, -50); ctx.lineTo(700, 50); ctx.fill(); }
+    ctx.restore();
+    ctx.fillStyle = '#fff3b0'; ctx.beginPath(); ctx.arc(1060, 130, 60, 0, 7); ctx.fill();
+    mountains(31, 330, 200, '#e8eef5', 0, 70); // 身後雪山
+    mountains(32, 440, 120, '#8cc47a', 400, 110); mountains(33, 540, 80, '#6aa95a', 900, 130);
+    ctx.fillStyle = '#9fd17a'; ctx.fillRect(0, 600, W, H);
+    ctx.fillStyle = '#d9c08a'; ctx.beginPath(); ctx.moveTo(0, 640); ctx.quadraticCurveTo(640, 590, W, 640); ctx.lineTo(W, 700); ctx.quadraticCurveTo(640, 650, 0, 700); ctx.fill();
+    const r = rnd(7); for (let i = 0; i < 60; i++) { ctx.fillStyle = ['#ff8fa3', '#fff', '#ffd23f'][i % 3]; ctx.beginPath(); ctx.arc(r() * W, 610 + r() * 110, 3, 0, 7); ctx.fill(); }
+    const tx = lerp(-260, 90, ease(t / 3.5)), wb = t < 3.5 ? Math.abs(Math.sin(t * 8)) * 6 : 0;
+    sprite('troop', tx, 690 - wb, 1.0);
+    sprite('soldier', tx + 250, 690 - wb, 0.85);
+    const nod = Math.sin(t * 5) * 0.02;
+    sprite('oldhorse', 640, 690, 1.05, { rot: nod });
+    const op = lip.value('duke'), talk = lip.who === 'duke' && lip.active;
+    sprite('duke', 845, 695, 0.98, { open: op, rot: talk ? Math.sin(t * 8) * 0.008 : Math.sin(t * 3) * 0.006 });
+    // 撫摸老馬：手部愛心
+    for (let i = 0; i < 3; i++) { const p = ((t * 0.6 + i / 3) % 1); ctx.globalAlpha = 1 - p; ctx.fillStyle = '#ff5c7a'; ctx.font = `${26 + p * 14}px serif`; ctx.fillText('❤', 760 + Math.sin(p * 6 + i) * 20, 330 - p * 120); }
+    ctx.globalAlpha = 1;
+    ctx.restore();
+    vignette(0.25);
+    if (t < 0.6) { ctx.fillStyle = `rgba(255,255,255,${1 - t / 0.6})`; ctx.fillRect(0, 0, W, H); }
+  },
+  // 05 寓意：繪本風格，書法大字
+  (t, dt) => {
+    const g = ctx.createRadialGradient(W / 2, H / 2, 100, W / 2, H / 2, 800); g.addColorStop(0, '#f6ebd2'); g.addColorStop(1, '#d6bd8c'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    const r = rnd(11); for (let i = 0; i < 40; i++) { ctx.fillStyle = `rgba(150,110,60,${r() * 0.06})`; ctx.beginPath(); ctx.arc(r() * W, r() * H, 20 + r() * 80, 0, 7); ctx.fill(); }
+    ctx.strokeStyle = 'rgba(90,60,30,.5)'; ctx.lineWidth = 3; ctx.strokeRect(40, 40, W - 80, H - 80);
+    // 水墨小插畫
+    ctx.globalAlpha = Math.min(1, t * 1.5);
+    mountains(41, 650, 110, 'rgba(80,70,60,.18)', 0, 120);
+    sprite('h_old', 120, 660, 0.55, { filter: 'grayscale(1) sepia(.6) brightness(.55) contrast(1.3)' });
+    sprite('troop', 300, 662, 0.38, { filter: 'grayscale(1) sepia(.6) brightness(.55) contrast(1.3)' });
+    ctx.globalAlpha = 1;
+    // 書法字逐字顯現
+    ctx.font = '190px Iansui, "Noto Serif TC", serif'; ctx.textBaseline = 'alphabetic'; ctx.fillStyle = '#1e1610';
+    '老馬識途'.split('').forEach((c, i) => {
+      const a = Math.max(0, Math.min(1, (t - 0.3 - i * 0.45) * 2.5)); if (!a) return;
+      ctx.save(); ctx.globalAlpha = a; ctx.translate(165 + i * 200, 330); ctx.scale(1 + (1 - a) * 0.3, 1 + (1 - a) * 0.3); ctx.fillText(c, 0, 0); ctx.restore();
+    });
+    if (t > 2.2) { // 印章
+      const a = Math.min(1, (t - 2.2) * 3);
+      ctx.save(); ctx.globalAlpha = a; ctx.translate(1010, 210); ctx.rotate(-0.06); ctx.fillStyle = '#b3261e'; ctx.fillRect(0, 0, 110, 110);
+      ctx.fillStyle = '#f6ebd2'; ctx.font = '44px Iansui, serif'; ctx.fillText('成語', 12, 50); ctx.fillText('典故', 12, 98); ctx.restore();
+    }
+    ctx.globalAlpha = Math.max(0, Math.min(1, (t - 1.6) * 1.5));
+    ctx.fillStyle = '#3b2c20'; ctx.font = '38px Iansui, serif';
+    ctx.fillText('比喻有經驗的人對事情非常熟悉，', 520, 470); ctx.fillText('能夠指引方向，帶領大家走出困境。', 520, 525);
+    ctx.globalAlpha = 1;
+    if (t < 0.5) { ctx.fillStyle = `rgba(0,0,0,${1 - t / 0.5})`; ctx.fillRect(0, 0, W, H); }
+  },
+];
+
+/* ---------- 播放控制 ---------- */
+let scene = -1, sceneT = 0, linesDone = false, lastNow = 0, playing = false, totalT = 0;
+const TOTAL = SCENES.reduce((a, s) => a + s.dur, 0);
+async function runLines(i, id) {
+  linesDone = false;
+  for (const ln of SCENES[i].lines) { if (id !== runId) return; await sayLine(ln, id); }
+  if (id === runId) { linesDone = true; }
+}
+function enterScene(i) {
+  scene = i; sceneT = 0; puffs = [];
+  if (AC) MUSIC[i](newBus());
+  runLines(i, runId);
+}
+function frame(now) {
+  if (!playing) return;
+  const dt = Math.min(0.05, (now - lastNow) / 1000 || 0.016); lastNow = now;
+  sceneT += dt; totalT += dt;
+  ctx.save(); DRAW[scene](sceneT, dt); ctx.restore();
+  barEl.style.width = Math.min(100, totalT / TOTAL * 100) + '%';
+  if (sceneT >= SCENES[scene].dur && linesDone && sceneT > 0.5) {
+    if (scene + 1 < SCENES.length) enterScene(scene + 1);
+    else if (sceneT >= SCENES[scene].dur + 0.8) return finish();
+  }
+  requestAnimationFrame(frame);
+}
+function finish() {
+  playing = false; showSub(null); setWind(0);
+  document.getElementById('end').classList.remove('hidden'); document.getElementById('ctrl').classList.add('hidden');
+}
+async function play() {
+  runId++; if (synth) synth.cancel();
+  initAudio(); if (AC.state === 'suspended') await AC.resume();
+  await loaded; await waitVoices();
+  document.getElementById('start').classList.add('hidden'); document.getElementById('end').classList.add('hidden');
+  document.getElementById('ctrl').classList.remove('hidden');
+  if (!hasVoice) showSub({ who: 'narr', text: '（此裝置找不到中文語音，將以字幕播放）' });
+  totalT = 0; playing = true; lastNow = performance.now();
+  enterScene(0); requestAnimationFrame(frame);
+}
+document.getElementById('btnPlay').onclick = play;
+document.getElementById('btnAgain').onclick = play;
+document.getElementById('btnRe').onclick = () => { playing = false; setTimeout(play, 60); };
+// 封面預覽
+loaded.then(() => { DRAW[0](0, 0.016); });
+</script>
+</body>
+</html>
