@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --glass-bg: rgba(10, 30, 65, 0.55);
+      --glass-bg-light: rgba(15, 40, 85, 0.40);
+      --glass-border: rgba(80, 160, 255, 0.22);
+      --glass-border-bright: rgba(100, 180, 255, 0.45);
+      --accent-blue: #3A8EF6;
+      --accent-cyan: #36D9F0;
+      --accent-glow: rgba(58, 142, 246, 0.30);
+      --text-primary: #E8F4FF;
+      --text-secondary: rgba(180, 215, 255, 0.75);
+      --text-muted: rgba(140, 185, 235, 0.55);
+      --deep-bg: #020C1B;
+      --panel-bg: rgba(5, 20, 50, 0.70);
+      --row-hover: rgba(58, 142, 246, 0.08);
+      --row-even: rgba(10, 35, 75, 0.35);
+      --footer-row: rgba(58, 142, 246, 0.18);
+      --section-row: rgba(54, 217, 240, 0.10);
+      --grand-total-row: rgba(255, 90, 90, 0.15);
+      --success: #36D9A0;
+      --tab-active-bg: rgba(58, 142, 246, 0.20);
+    }
+
+    html, body {
+      min-height: 100vh;
+      font-family: 'Inter', 'Noto Sans TC', sans-serif;
+      background: var(--deep-bg);
+      color: var(--text-primary);
+    }
+
+    /* 星空背景 */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 10%, rgba(10, 60, 140, 0.55) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 80% 80%, rgba(5, 40, 100, 0.45) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 40% at 60% 20%, rgba(20, 80, 160, 0.30) 0%, transparent 50%),
+        linear-gradient(160deg, #020C1B 0%, #040E22 40%, #020C1B 100%);
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        radial-gradient(1px 1px at 15% 25%, rgba(150,200,255,0.6) 0%, transparent 100%),
+        radial-gradient(1px 1px at 72% 18%, rgba(150,200,255,0.5) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 45% 60%, rgba(150,200,255,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 88% 45%, rgba(150,200,255,0.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 30% 80%, rgba(150,200,255,0.35) 0%, transparent 100%),
+        radial-gradient(1px 1px at 62% 88%, rgba(150,200,255,0.4) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 5% 55%, rgba(200,230,255,0.45) 0%, transparent 100%),
+        radial-gradient(1px 1px at 95% 70%, rgba(150,200,255,0.4) 0%, transparent 100%);
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* 載入動畫 */
+    .loading-overlay {
+      position: fixed; inset: 0;
+      background: rgba(2, 12, 27, 0.92);
+      display: flex; flex-direction: column;
+      justify-content: center; align-items: center;
+      z-index: 999;
+      gap: 20px;
+    }
+    .spinner-ring {
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      border: 2px solid rgba(58, 142, 246, 0.15);
+      border-top-color: var(--accent-blue);
+      border-right-color: var(--accent-cyan);
+      animation: spin 0.9s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text {
+      font-size: 14px;
+      color: var(--text-secondary);
+      letter-spacing: 0.05em;
+    }
+
+    /* 主容器 */
+    .app-wrap {
+      position: relative; z-index: 1;
+      max-width: 1400px; margin: 0 auto;
+      padding: 24px 20px 40px;
+    }
+
+    /* Header */
+    .app-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 28px;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .header-title-group { display: flex; flex-direction: column; gap: 6px; }
+    .header-eyebrow {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--accent-cyan);
+      font-weight: 600;
+    }
+    .header-eyebrow::before {
+      content: '';
+      display: inline-block; width: 20px; height: 1px;
+      background: var(--accent-cyan);
+    }
+    .header-h1 {
+      font-size: 22px; font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.02em;
+    }
+    .header-sub {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    .header-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+
+    /* 玻璃按鈕 */
+    .btn {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 9px 18px;
+      border-radius: 8px;
+      border: 1px solid var(--glass-border-bright);
+      background: var(--glass-bg-light);
+      backdrop-filter: blur(12px);
+      color: var(--text-primary);
+      font-size: 13px; font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+      font-family: inherit;
+    }
+    .btn:hover {
+      background: rgba(58, 142, 246, 0.25);
+      border-color: var(--accent-blue);
+      color: #fff;
+    }
+    .btn-primary {
+      background: rgba(58, 142, 246, 0.25);
+      border-color: var(--accent-blue);
+    }
+    .btn svg { width: 15px; height: 15px; stroke: currentColor; flex-shrink: 0; }
+
+    /* 主面板玻璃卡片 */
+    .glass-panel {
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow:
+        0 0 0 1px rgba(58, 142, 246, 0.06) inset,
+        0 24px 60px rgba(0, 0, 0, 0.50),
+        0 0 80px rgba(10, 50, 120, 0.20);
+    }
+
+    /* 頂部發光線 */
+    .glass-panel::before {
+      content: '';
+      display: block;
+      height: 1px;
+      background: linear-gradient(90deg, transparent 0%, rgba(100, 180, 255, 0.60) 30%, rgba(54, 217, 240, 0.50) 60%, transparent 100%);
+    }
+
+    /* Tab 列 */
+    .tab-bar {
+      display: flex;
+      overflow-x: auto;
+      border-bottom: 1px solid var(--glass-border);
+      padding: 0 8px;
+      gap: 2px;
+      scrollbar-width: none;
+    }
+    .tab-bar::-webkit-scrollbar { display: none; }
+
+    .tab-btn {
+      display: flex; align-items: center; gap: 7px;
+      padding: 14px 18px;
+      font-size: 13px; font-weight: 500;
+      color: var(--text-muted);
+      background: none; border: none;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+      font-family: inherit;
+      position: relative;
+      margin-bottom: -1px;
+    }
+    .tab-btn:hover { color: var(--text-secondary); }
+    .tab-btn.tab-active {
+      color: var(--accent-blue);
+      border-bottom-color: var(--accent-blue);
+      background: var(--tab-active-bg);
+      border-radius: 6px 6px 0 0;
+    }
+    .tab-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--accent-cyan);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .tab-btn.tab-active .tab-dot { opacity: 1; }
+
+    /* 表格區域 */
+    .table-wrap {
+      padding: 16px;
+    }
+    .table-meta {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+    .print-title { display: none; }
+    .table-container {
+      overflow-x: auto;
+      overflow-y: auto;
+      max-height: 72vh;
+      border-radius: 10px;
+      border: 1px solid var(--glass-border);
+    }
+    .table-container::-webkit-scrollbar { width: 6px; height: 6px; }
+    .table-container::-webkit-scrollbar-track { background: rgba(10, 30, 65, 0.3); }
+    .table-container::-webkit-scrollbar-thumb { background: rgba(58, 142, 246, 0.40); border-radius: 3px; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    /* 所有表頭列（學校用書表每個區塊都有自己的表頭） */
+    th {
+      background: rgba(5, 20, 55, 0.90);
+      color: var(--accent-cyan);
+      font-weight: 600;
+      font-size: 12px;
+      letter-spacing: 0.04em;
+      padding: 11px 14px;
+      text-align: center;
+      border-bottom: 1px solid var(--glass-border-bright);
+      border-right: 1px solid rgba(58, 142, 246, 0.10);
+      white-space: nowrap;
+    }
+    tr:first-child th {
+      position: sticky; top: 0; z-index: 10;
+    }
+
+    td {
+      padding: 9px 14px;
+      text-align: center;
+      border-bottom: 1px solid rgba(40, 80, 140, 0.20);
+      border-right: 1px solid rgba(40, 80, 140, 0.12);
+      color: var(--text-primary);
+      white-space: nowrap;
+    }
+
+    tr:nth-child(even) td { background: var(--row-even); }
+    tr:hover td { background: var(--row-hover); }
+
+    /* 合計列 */
+    .footer-row td {
+      background: var(--footer-row) !important;
+      color: #A8D8FF;
+      font-weight: 600;
+      border-top: 1px solid rgba(58, 142, 246, 0.35);
+    }
+
+    /* 區塊標題列 */
+    .section-header th {
+      background: var(--section-row) !important;
+      color: var(--accent-cyan) !important;
+      text-align: left !important;
+      padding-left: 20px !important;
+      letter-spacing: 0.06em;
+      font-size: 12px;
+      border-top: 1px solid rgba(54, 217, 240, 0.25);
+      border-bottom: 1px solid rgba(54, 217, 240, 0.25);
+    }
+
+    /* 總計列 */
+    .grand-total td {
+      background: var(--grand-total-row) !important;
+      color: #FFB5B5 !important;
+      font-weight: 700 !important;
+      font-size: 14px !important;
+      border-top: 1px solid rgba(255, 90, 90, 0.35);
+    }
+
+    /* 空白提示 */
+    .empty-tip {
+      padding: 60px 20px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    /* 列印樣式 */
+    @media print {
+      @page { size: A4 landscape; margin: 1cm; }
+      body::before, body::after { display: none; }
+      body { background: white; }
+      .app-header, .tab-bar, .no-print { display: none !important; }
+      .print-title {
+        display: block;
+        text-align: center; font-size: 16px; font-weight: 700;
+        margin-bottom: 8px; color: #111;
+      }
+      .table-meta { color: #555; text-align: right; }
+      .glass-panel { background: white; border: none; box-shadow: none; border-radius: 0; }
+      .glass-panel::before { display: none; }
+      .table-container { overflow: visible; max-height: none; border: none; }
+      table { font-size: 8pt; }
+      th { background: #1a3a6a !important; color: white !important; -webkit-print-color-adjust: exact; }
+      tr:first-child th { position: static; }
+      .footer-row td { background: #dbeafe !important; -webkit-print-color-adjust: exact; }
+      .section-header th { background: #d1fae5 !important; color: #111 !important; -webkit-print-color-adjust: exact; }
+      .grand-total td { background: #fee2e2 !important; -webkit-print-color-adjust: exact; }
+      td { color: #111 !important; border-color: #ccc !important; }
+      tr { page-break-inside: avoid; }
+      .table-wrap { padding: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="loader" class="loading-overlay no-print">
+    <div class="spinner-ring"></div>
+    <div class="loading-text">正在從試算表抓取最新統計數據⋯</div>
+  </div>
+
+  <div class="app-wrap">
+
+    <header class="app-header no-print">
+      <div class="header-title-group">
+        <div class="header-eyebrow">Education Management System</div>
+        <h1 class="header-h1">教科書費用統計查詢系統</h1>
+        <p class="header-sub">顯示試算表「📋 教科書工具」最近一次產生的統計結果</p>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-primary" onclick="window.print()">
+          <svg fill="none" viewBox="0 0 24 24" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0110.56 0m-10.56 0L6.75 19.817m-.8-5.988a4.5 4.5 0 01-.168-3.644A4.5 4.5 0 0110.5 7.5h3a4.5 4.5 0 014.218 2.685 4.5 4.5 0 01-.168 3.644M6.72 13.83L6.75 19.817m0 0a2.25 2.25 0 002.25 2.25h6a2.25 2.25 0 002.25-2.25m-10.5 0V19.5m10.5.317V19.5m0 0a2.25 2.25 0 00-2.25-2.25m0 0H9.75m5.25 0v-2.25m-5.25 2.25v-2.25"/></svg>
+          列印報表
+        </button>
+        <button class="btn" onclick="fetchData()">
+          <svg fill="none" viewBox="0 0 24 24" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
+          重新整理
+        </button>
+      </div>
+    </header>
+
+    <div class="glass-panel">
+
+      <div id="tab-bar" class="tab-bar no-print"></div>
+
+      <div class="table-wrap">
+        <h2 id="print-title" class="print-title">教科書統計報表</h2>
+        <div id="table-meta" class="table-meta"></div>
+        <div id="table-display" class="table-container"></div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    var TAB_LABELS = {
+      '年級費用統計': '年級費用總表',
+      '學校用書統計': '學校用書專表'
+    };
+    var PRINT_TITLES = {
+      '年級費用統計': '教科書費用統計 — 年級費用總表',
+      '學校用書統計': '教科書費用統計 — 學校用書專屬報表'
+    };
+
+    var sheetsByName = {};
+    var tabOrder = [];
+    var currentTab = '年級費用統計';
+
+    window.onload = fetchData;
+
+    function fetchData() {
+      document.getElementById('loader').style.display = 'flex';
+      google.script.run
+        .withSuccessHandler(function(data) {
+          sheetsByName = {};
+          tabOrder = [];
+          data.sheets.forEach(function(s) {
+            sheetsByName[s.name] = s;
+            tabOrder.push(s.name);
+          });
+          if (tabOrder.indexOf(currentTab) < 0) currentTab = tabOrder[0] || '';
+          renderTabs();
+          renderTable(currentTab);
+          document.getElementById('loader').style.display = 'none';
+        })
+        .withFailureHandler(function(err) {
+          alert('讀取失敗：' + (err && err.message ? err.message : err));
+          document.getElementById('loader').style.display = 'none';
+        })
+        .getWebAppData();
+    }
+
+    function tabLabel(name) {
+      return TAB_LABELS[name] || name.replace(/統計$/, '') + '明細';
+    }
+
+    function renderTabs() {
+      var bar = document.getElementById('tab-bar');
+      bar.innerHTML = '';
+      tabOrder.forEach(function(name) {
+        var btn = document.createElement('button');
+        btn.className = 'tab-btn' + (name === currentTab ? ' tab-active' : '');
+        btn.innerHTML = '<span class="tab-dot"></span>' + escapeHtml(tabLabel(name));
+        btn.onclick = function() { switchTab(name); };
+        bar.appendChild(btn);
+      });
+    }
+
+    function switchTab(name) {
+      currentTab = name;
+      renderTabs();
+      renderTable(name);
+    }
+
+    function renderTable(name) {
+      var container = document.getElementById('table-display');
+      var meta = document.getElementById('table-meta');
+      var sheet = sheetsByName[name];
+
+      document.getElementById('print-title').textContent =
+        PRINT_TITLES[name] || ('教科書費用統計 — ' + tabLabel(name));
+
+      if (!sheet || isEmpty(sheet.values)) {
+        meta.textContent = '';
+        container.innerHTML = '<div class="empty-tip">目前' +
+          (name ? '「' + escapeHtml(name) + '」工作表' : '') +
+          '沒有資料，請先在試算表執行「📋 教科書工具 → 全部重新生成」。</div>';
+        return;
+      }
+
+      meta.textContent = sheet.generatedAt ? '資料產生時間：' + sheet.generatedAt : '';
+
+      var width = Math.max.apply(null, sheet.values.map(function(r) { return r.length; }));
+      var html = '<table>';
+      sheet.values.forEach(function(row) {
+        var first = String(row[0]);
+        var isHeader = first === '年級';
+        var isSection = first.indexOf('版本 - 學校用書明細') >= 0;
+        var isGrandTotal = first === '全校學校用書總計';
+        var isFooter = !isGrandTotal && /合計$/.test(first);
+
+        if (isSection) {
+          html += '<tr class="section-header"><th colspan="' + width + '">' + escapeHtml(first) + '</th></tr>';
+          return;
+        }
+
+        var rowClass = isGrandTotal ? 'grand-total' : (isFooter ? 'footer-row' : '');
+        var tag = isHeader ? 'th' : 'td';
+        html += '<tr class="' + rowClass + '">';
+        row.forEach(function(cell) {
+          html += '<' + tag + '>' + formatCell(cell) + '</' + tag + '>';
+        });
+        html += '</tr>';
+      });
+      html += '</table>';
+      container.innerHTML = html;
+    }
+
+    function isEmpty(values) {
+      return !values || !values.some(function(row) {
+        return row.some(function(cell) { return cell !== '' && cell !== null; });
+      });
+    }
+
+    function formatCell(cell) {
+      if (cell === null || cell === '') return '';
+      if (typeof cell === 'number') return cell.toLocaleString('zh-TW');
+      return escapeHtml(cell);
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+  </script>
+</body>
+</html>
