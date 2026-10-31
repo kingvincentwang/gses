@@ -36,8 +36,6 @@ body{background:radial-gradient(circle at 50% 35%,var(--desk2),var(--desk));colo
 .art.plate{inset:16.5% 6%;border-radius:1cqw;overflow:hidden;box-shadow:0 0 0 .25cqw #d9c7a2,0 .4cqw 1.2cqw rgba(70,45,15,.25)}
 
 .txt{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:7% 10% 9%}
-.tag{align-self:flex-start;font-size:1.7cqw;color:#fff;background:var(--accent);border-radius:50%;width:3.2cqw;height:3.2cqw;
-  display:flex;align-items:center;justify-content:center;margin-bottom:1.8cqw}
 .story{font-size:2.75cqw;line-height:1.85;margin:0;text-align:justify}
 .cue{border-radius:.4cqw;transition:background .25s;padding:.1em 0;-webkit-box-decoration-break:clone;box-decoration-break:clone}
 .cue.on{background:var(--hl)}
@@ -75,7 +73,6 @@ body.single .face.front{border-radius:12px}
 body.single .face.front::after{display:none}
 body.single .art.top{inset:0 0 50% 0}
 body.single .txt.bottom{inset:50% 0 0 0;padding:4% 7% 7%;justify-content:flex-start}
-body.single .tag{font-size:4cqw;width:7.5cqw;height:7.5cqw;margin-bottom:2cqw}
 body.single .story{font-size:4.7cqw;line-height:1.65}
 body.single .pno{font-size:3.4cqw}
 body.single .cover h1{font-size:9cqw}
@@ -270,7 +267,7 @@ const ART={
 const book=document.getElementById('book'),LAST=12;
 const cueHTML=i=>STORY[i].cues.map((c,k)=>`<span class="cue" data-p="${i}" data-k="${k}">${c.s}</span>`).join('');
 const artHTML=(n,cls='')=>`<div class="art ${cls}">${ART[n]()}<img alt="" src="images/p${String(n).padStart(2,'0')}.jpg" onload="this.style.opacity=1" onerror="this.remove()"></div>`;
-const textHTML=(n,cls='')=>`<div class="txt ${cls}"><div class="tag">${STORY[n].tag}</div><p class="story">${cueHTML(n)}</p><div class="pno">第 ${n} 頁</div></div>`;
+const textHTML=(n,cls='')=>`<div class="txt ${cls}"><p class="story">${cueHTML(n)}</p><div class="pno">第 ${n} 頁</div></div>`;
 const coverHTML=()=>`<div class="cover"><div class="art">${ART.cover()}</div><h1>巴迪的修補計畫</h1><p>成語繪本・亡羊補牢</p></div>`;
 const endA=()=>`<div class="txt end"><h2>亡羊補牢，猶未遲也</h2><p class="story">${cueHTML(11)}</p><p class="src">出處：《戰國策・楚策四》</p></div>`;
 const QUESTIONS=['巴迪發現破洞時，為什麼沒有馬上修補？','奧斯卡對巴迪說了什麼，讓他不再哭泣？','你有沒有做錯事以後，趕快補救的經驗？'];
