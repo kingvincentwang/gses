@@ -33,7 +33,7 @@ body{background:radial-gradient(circle at 50% 35%,var(--desk2),var(--desk));colo
 .art{position:absolute;inset:0;background:#dfe9d8}
 .art svg,.art img{position:absolute;inset:0;width:100%;height:100%;display:block}
 .art img{object-fit:cover;opacity:0}
-.art.plate{inset:16.5% 6%;border-radius:1cqw;overflow:hidden;box-shadow:0 0 0 .25cqw #d9c7a2,0 .4cqw 1.2cqw rgba(70,45,15,.25)}
+.art.plate{inset:20.6% 3%;border-radius:1cqw;overflow:hidden;box-shadow:0 0 0 .25cqw #d9c7a2,0 .4cqw 1.2cqw rgba(70,45,15,.25)}
 
 .txt{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:7% 10% 9%}
 .story{font-size:2.75cqw;line-height:1.85;margin:0;text-align:justify}
@@ -41,10 +41,9 @@ body{background:radial-gradient(circle at 50% 35%,var(--desk2),var(--desk));colo
 .cue.on{background:var(--hl)}
 .pno{position:absolute;bottom:4%;right:7%;font-size:1.6cqw;color:#8d7458}
 
-.cover{position:absolute;inset:0;background:var(--cover);color:#fff8e6;text-align:center}
-.cover .art{inset:5% 6% 30%;border-radius:1cqw;overflow:hidden;border:.35cqw solid var(--gold)}
-.cover h1{position:absolute;left:0;right:0;top:72%;margin:0;font-size:4.5cqw;font-weight:700;letter-spacing:.1em}
-.cover p{position:absolute;left:0;right:0;top:83%;margin:0;font-size:1.9cqw;color:var(--gold);letter-spacing:.08em}
+.cover{position:absolute;inset:0;overflow:hidden;background:var(--cover)}
+.cover .blur{position:absolute;inset:-6%;background:url(images/p00.jpg) center/cover;filter:blur(2cqw) brightness(.8)}
+.cover img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:block}
 .backcover{position:absolute;inset:0;background:var(--cover);color:#fff8e6;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2cqw;padding:10%;text-align:center}
 .backcover h2{margin:0;font-size:3.4cqw;color:var(--gold)}
 .backcover p{margin:0;font-size:2cqw;line-height:1.7}
@@ -71,12 +70,10 @@ body.single .leaf{left:0;width:100%}
 body.single .leaf.flipped{transform:rotateY(-115deg);opacity:0;pointer-events:none}
 body.single .face.front{border-radius:12px}
 body.single .face.front::after{display:none}
-body.single .art.top{inset:0 0 50% 0}
-body.single .txt.bottom{inset:50% 0 0 0;padding:4% 7% 7%;justify-content:flex-start}
+body.single .art.top{inset:0 0 62% 0}
+body.single .txt.bottom{inset:38% 0 0 0;padding:4% 7% 7%;justify-content:flex-start}
 body.single .story{font-size:4.7cqw;line-height:1.65}
 body.single .pno{font-size:3.4cqw}
-body.single .cover h1{font-size:9cqw}
-body.single .cover p{font-size:4.2cqw}
 body.single .backcover h2{font-size:7.5cqw}
 body.single .backcover p{font-size:4.6cqw}
 body.single .again{font-size:4.6cqw}
@@ -219,7 +216,6 @@ const svg=b=>`<svg viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" ro
 
 /* ---------- 各頁插圖 ---------- */
 const ART={
- cover:()=>svg(sky('#8fd3f4','#e7f6d5')+sun(660,95,44)+cloud(170,90,1.1)+cloud(480,70,.7)+hills('#9bcf6e','#7dbb57',330)+fence(40,260,720,170,{posts:12})+sheep(450,445,.75)+goat(620,530,.85,{flip:true})+dogSit(250,550,1.25)),
  1:()=>svg(sky('#6fc3f0','#dff3fb')+sun(660,90)+cloud(180,90,1.2)+cloud(470,60,.8)+hills('#a4d672','#84c25a',300)+fence(90,170,620,270,{posts:9})
     +sheep(170,420,.8)+sheep(590,400,.75,{flip:true})+sheep(690,450,.85,{flip:true})+dogStand(370,560,1.75,{h:.92})),
  2:()=>svg(`<rect width="800" height="600" fill="#bfe4f2"/><rect y="510" width="800" height="90" fill="#86bf5b"/>`+fence(-20,60,760,470,{posts:6,pw:88,hole:[250,415,92]})
@@ -268,7 +264,7 @@ const book=document.getElementById('book'),LAST=12;
 const cueHTML=i=>STORY[i].cues.map((c,k)=>`<span class="cue" data-p="${i}" data-k="${k}">${c.s}</span>`).join('');
 const artHTML=(n,cls='')=>`<div class="art ${cls}">${ART[n]()}<img alt="" src="images/p${String(n).padStart(2,'0')}.jpg" onload="this.style.opacity=1" onerror="this.remove()"></div>`;
 const textHTML=(n,cls='')=>`<div class="txt ${cls}"><p class="story">${cueHTML(n)}</p><div class="pno">第 ${n} 頁</div></div>`;
-const coverHTML=()=>`<div class="cover"><div class="art">${ART.cover()}</div><h1>巴迪的修補計畫</h1><p>成語繪本・亡羊補牢</p></div>`;
+const coverHTML=()=>`<div class="cover"><div class="blur"></div><img src="images/p00.jpg" alt="巴迪的修補計畫封面"></div>`;
 const endA=()=>`<div class="txt end"><h2>亡羊補牢，猶未遲也</h2><p class="story">${cueHTML(11)}</p><p class="src">出處：《戰國策・楚策四》</p></div>`;
 const QUESTIONS=['巴迪發現破洞時，為什麼沒有馬上修補？','奧斯卡對巴迪說了什麼，讓他不再哭泣？','你有沒有做錯事以後，趕快補救的經驗？'];
 const endB=()=>`<div class="txt end"><h2>想一想</h2><ol>${QUESTIONS.map(q=>`<li>${q}</li>`).join('')}</ol></div>`;
@@ -296,6 +292,7 @@ function build(){
 }
 function render(instant){
   const ls=[...book.children];
+  if(instant) book.style.transition='none';
   ls.forEach((l,i)=>{
     if(instant) l.style.transition='none';
     l.classList.toggle('flipped',i<s);
@@ -304,6 +301,7 @@ function render(instant){
   });
   book.classList.toggle('at-front',!single&&s===0);
   book.classList.toggle('at-back',!single&&s===LAST);
+  if(instant){void book.offsetWidth;book.style.transition=''}
   document.getElementById('prev').disabled=s===0;
   document.getElementById('next').disabled=s===LAST;
   document.getElementById('label').textContent=s===0?'封面':s<=10?`第 ${s} / 10 頁`:s===11?'成語小學堂':'封底';
