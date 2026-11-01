@@ -4,6 +4,7 @@
   "cover_narration": "逆風飛翔的秘密。一個關於逆境與成長的故事。",
   "voice": "zh-TW-HsiaoChenNeural",
   "rate": "-8%",
+  "cover_title": true,
   "zhuyin": true,
   "zhuyin_fix": {
     "揮著": "ㄏㄨㄟ ˙ㄓㄜ", "笑著": "ㄒㄧㄠˋ ˙ㄓㄜ", "迎著": "ㄧㄥˊ ˙ㄓㄜ", "抗著": "ㄎㄤˋ ˙ㄓㄜ",
