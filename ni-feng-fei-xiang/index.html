@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>逆風飛翔的秘密</title>
+<style>
+:root{
+  --desk:#3b2a20; --desk2:#5a4030; --paper:#fbf4e3; --ink:#3d2c1e; --accent:#c8552b;
+  --hl:#ffdf8a; --cover:#2f6b4f; --gold:#f2c14e; --r:1.6;
+  --kai:"DFKai-SB","標楷體","BiauKai","Kaiti TC","KaiTi","Noto Serif TC",serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:radial-gradient(circle at 50% 35%,var(--desk2),var(--desk));color:var(--ink);font-family:var(--kai);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:12px 16px;overflow:hidden}
+.stage{width:min(100%,calc((100dvh - 96px)*2));aspect-ratio:2;container-type:size}
+.book{position:relative;width:100%;height:100%;perspective:2400px;transition:transform .8s ease;cursor:pointer;user-select:none;touch-action:pan-y}
+.book.at-front{transform:translateX(-25%)}
+.book.at-back{transform:translateX(25%)}
+.leaf{position:absolute;top:0;left:50%;width:50%;height:100%;transform-origin:left center;transform-style:preserve-3d;
+  transition:transform .85s cubic-bezier(.45,.05,.35,1),opacity .85s}
+.leaf.flipped{transform:rotateY(-180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden;background:var(--paper)}
+.face.back{transform:rotateY(180deg)}
+/* 書脊陰影 */
+.face.front::after,.face.back::after{content:"";position:absolute;inset:0;pointer-events:none}
+.face.front::after{background:linear-gradient(90deg,rgba(60,35,10,.28),transparent 7%)}
+.face.back::after{background:linear-gradient(270deg,rgba(60,35,10,.28),transparent 7%)}
+.face.front{border-radius:0 1.2cqw 1.2cqw 0;box-shadow:.3cqw .5cqw 1.5cqw rgba(0,0,0,.4)}
+.face.back{border-radius:1.2cqw 0 0 1.2cqw;box-shadow:-.3cqw .5cqw 1.5cqw rgba(0,0,0,.4)}
+
+.art{overflow:hidden;background:#e9dfc8}
+.art img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.art .missing{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;color:#8d7458;font-size:1.8cqw;padding:1em}
+.art.plate{position:absolute;left:3%;right:3%;top:50%;transform:translateY(-50%);aspect-ratio:var(--r);border-radius:1cqw;box-shadow:0 0 0 .25cqw #d9c7a2,0 .4cqw 1.2cqw rgba(70,45,15,.25)}
+
+.txt{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:7% 10% 9%}
+.story{font-size:calc(2.75cqw*var(--fit,1));line-height:1.85;margin:0;text-align:justify}
+.cue{border-radius:.4cqw;transition:background .25s;padding:.1em 0;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.cue.on{background:var(--hl)}
+/* 注音：每字一格，符號直排在字的右側 */
+.zy .story{text-align:left;line-height:1.5}
+.zg{display:inline-flex;white-space:nowrap}
+.zc{display:inline-flex;align-items:center;border-radius:.3cqw;transition:background .25s}
+.cue.on .zc{background:var(--hl)}
+.zc .bp{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;width:.42em;margin:0 .2em 0 .03em;font-size:1em;line-height:1}
+.zc .bp i{font-style:normal;font-size:.42em;line-height:1}
+.zc .bp .tn{position:absolute;left:78%;top:50%;transform:translateY(-50%);font-size:.42em}
+.zc .bp .dot{font-size:.42em;line-height:.6}
+.pno{position:absolute;bottom:4%;right:7%;font-size:1.6cqw;color:#8d7458}
+
+.cover{position:absolute;inset:0;overflow:hidden;background:var(--cover);color:#fff8e6;text-align:center}
+.cover .blur{position:absolute;inset:-6%;background-position:center;background-size:cover;filter:blur(2cqw) brightness(.8)}
+.cover img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:block}
+.cover .plain{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.5cqw;padding:8%}
+.cover h1{margin:0;font-size:4.5cqw;letter-spacing:.08em}
+.cover p{margin:0;font-size:1.9cqw;color:var(--gold);letter-spacing:.08em}
+.backcover{position:absolute;inset:0;background:var(--cover);color:#fff8e6;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2cqw;padding:10%;text-align:center}
+.backcover h2{margin:0;font-size:3.4cqw;color:var(--gold)}
+.backcover p{margin:0;font-size:2cqw;line-height:1.7}
+.again{font:inherit;font-size:2cqw;padding:.7em 1.3em;border:0;border-radius:99px;background:var(--gold);color:var(--ink);cursor:pointer}
+
+.end h2{font-size:3.6cqw;color:var(--accent);margin:0 0 .4em;letter-spacing:.08em}
+.end .src{font-size:1.6cqw;color:#8d7458;margin:.9em 0 0}
+.end ol{font-size:2.25cqw;line-height:1.6;margin:0;padding-left:1.4em}
+.end ol li{margin-bottom:.7em}
+.end .story{font-size:calc(2.35cqw*var(--fit,1));line-height:1.75}
+
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;color:#fff8e6}
+.bar button{font:inherit;font-size:17px;min-height:42px;padding:6px 14px;border:1px solid rgba(255,248,230,.45);border-radius:99px;background:rgba(255,248,230,.1);color:inherit;cursor:pointer}
+.bar button:hover{background:rgba(255,248,230,.22)}
+.bar button:disabled{opacity:.35;cursor:default}
+.bar button.main{background:var(--gold);border-color:var(--gold);color:var(--ink);font-weight:700}
+.bar button[aria-pressed="false"]{opacity:.6;text-decoration:line-through}
+.bar :focus-visible{outline:3px solid #fff;outline-offset:2px}
+#label{min-width:5.5em;text-align:center;font-size:16px}
+
+/* 直式手機：單頁模式，每頁上圖下文 */
+body.single .stage{width:min(100%,calc((100dvh - 150px)*.68));aspect-ratio:.68}
+body.single .leaf{left:0;width:100%}
+body.single .leaf.flipped{transform:rotateY(-115deg);opacity:0;pointer-events:none}
+body.single .face.front{border-radius:12px}
+body.single .face.front::after{display:none}
+body.single .sp{position:absolute;inset:0;display:flex;flex-direction:column}
+body.single .art.top{position:relative;flex:none;width:100%;aspect-ratio:var(--r)}
+body.single .art .missing{font-size:4cqw}
+body.single .sp .txt{position:relative;inset:auto;flex:1;min-height:0;padding:5% 7% 10%;justify-content:flex-start}
+body.single .story{font-size:calc(4.7cqw*var(--fit,1));line-height:1.65}
+body.single.zy .story{font-size:calc(5.6cqw*var(--fit,1));line-height:1.45}
+body.single .pno{font-size:3.4cqw}
+body.single .cover h1{font-size:9cqw}
+body.single .cover p{font-size:4.2cqw}
+body.single .backcover h2{font-size:7.5cqw}
+body.single .backcover p{font-size:4.6cqw}
+body.single .again{font-size:4.6cqw}
+body.single .end .txt{justify-content:flex-start;padding:7%}
+body.single .end h2{font-size:7cqw}
+body.single .end .story{font-size:calc(4.3cqw*var(--fit,1));line-height:1.6}
+body.single .end .src{font-size:3.3cqw}
+body.single .end ol{font-size:4cqw;margin-top:1em}
+@media (prefers-reduced-motion:reduce){.leaf,.book{transition-duration:.01s}}
+</style>
+</head>
+<body>
+<div class="stage"><div class="book" id="book"></div></div>
+<div class="bar">
+  <button id="prev" aria-label="上一頁">◀ 上一頁</button>
+  <button id="play" class="main">▶ 開始聽故事</button>
+  <button id="next" aria-label="下一頁">下一頁 ▶</button>
+  <span id="label" aria-live="polite"></span>
+  <button id="voice" aria-pressed="true">🔊 旁白</button>
+  <button id="auto" aria-pressed="true">📖 自動翻頁</button>
+</div>
+<script>
+const BOOK = {"title": "逆風飛翔的秘密", "subtitle": "繪本故事・逆境與成長", "closing": "阻力，其實是向上的力量", "thanks": "謝謝你讀完這個故事", "ratio": 1.6, "coverCues": [{"s": "逆風飛翔的秘密。", "t": 0.1}, {"s": "一個關於逆境與成長的故事。", "t": 2.58}], "pages": [{"cues": [{"s": "小客機達達準備出國旅行了！", "t": 0.1}, {"s": "朋友們揮著手，大聲祝福他：「達達，祝你一路順風！」", "t": 3.74}, {"s": "達達聽了，卻笑著搖搖頭說：「你們說錯啦！", "t": 9.05}, {"s": "對我來說，應該要是『一路逆風』才對喔！」", "t": 14.04}]}, {"cues": [{"s": "朋友們好驚訝。", "t": 0.1}, {"s": "達達解釋說：「以前的人坐帆船，需要順風才能往前跑；但是我們現代的飛機，必須要有『逆風』迎面吹來，產生足夠的阻力，才能飛得高、降落得穩呀！」", "t": 2.43}, {"s": "原來，逆風不是壞事，而是飛上藍天的秘密力量！", "t": 17.0}]}, {"cues": [{"s": "在大自然的另一邊，有一座高高的懸崖。", "t": 0.1}, {"s": "這裡寸草不生，風颳起來就像刀子一樣冷冽。", "t": 4.66}, {"s": "但是，老鷹媽媽卻選擇在這個最嚴酷的地方築巢，生下了小鷹「亞瑞」。", "t": 9.82}]}, {"cues": [{"s": "亞瑞覺得好冷、好害怕，他多希望媽媽能帶他去溫暖避風的森林。", "t": 0.1}, {"s": "但老鷹媽媽沒有這麼做。", "t": 7.07}, {"s": "當亞瑞剛剛學會站立，媽媽就帶他來到懸崖邊，要他迎著最強烈的風，一次又一次地練習拍打翅膀。", "t": 10.04}]}, {"cues": [{"s": "「媽媽，風好大，阻力好強，我飛得好辛苦啊！」", "t": 0.1}, {"s": "亞瑞氣喘吁吁地說。", "t": 5.01}, {"s": "媽媽嚴格卻充滿期盼地說：「孩子，只有在最困難的環境裡抗著強風，強大的阻力才能把你的雙翅訓練得結實有力。」", "t": 7.68}]}, {"cues": [{"s": "經過無數次的逆風練習，亞瑞長大了！", "t": 0.1}, {"s": "他的翅膀比任何鳥類都要強壯。", "t": 4.62}, {"s": "現在，無論是最寒冷的高山，還是最酷熱的沙漠，他都能自由自在地生存。", "t": 8.38}, {"s": "他終於明白，當初的逆風，讓他成為了大自然裡真正的強者。", "t": 16.4}]}, {"cues": [{"s": "不管是小飛機達達，還是老鷹亞瑞，他們都知道了一個秘密：阻力，其實是向上的力量。", "t": 0.1}]}, {"cues": [{"s": "我們也常常喜歡輕鬆舒服的日子，害怕遇到困難。", "t": 0.1}, {"s": "但是，當我們遇到挫折、覺得辛苦的時候，就像是遇到了「逆風」。", "t": 5.53}, {"s": "不要害怕逆境！", "t": 12.5}, {"s": "因為只有勇敢面對挑戰，才能磨練出我們堅強的意志，讓我們飛得更高、更遠！", "t": 14.69}]}], "ending": null, "zhuyin": {"逆風飛翔的秘密。": ["ㄋㄧˋ", "ㄈㄥ", "ㄈㄟ", "ㄒㄧㄤˊ", "˙ㄉㄜ", "ㄇㄧˋ", "ㄇㄧˋ", ""], "一個關於逆境與成長的故事。": ["ㄧ", "ㄍㄜˋ", "ㄍㄨㄢ", "ㄩˊ", "ㄋㄧˋ", "ㄐㄧㄥˋ", "ㄩˇ", "ㄔㄥˊ", "ㄓㄤˇ", "˙ㄉㄜ", "ㄍㄨˋ", "ㄕˋ", ""], "小客機達達準備出國旅行了！": ["ㄒㄧㄠˇ", "ㄎㄜˋ", "ㄐㄧ", "ㄉㄚˊ", "ㄉㄚˊ", "ㄓㄨㄣˇ", "ㄅㄟˋ", "ㄔㄨ", "ㄍㄨㄛˊ", "ㄌㄩˇ", "ㄒㄧㄥˊ", "˙ㄌㄜ", ""], "朋友們揮著手，大聲祝福他：「達達，祝你一路順風！」": ["ㄆㄥˊ", "ㄧㄡˇ", "˙ㄇㄣ", "ㄏㄨㄟ", "˙ㄓㄜ", "ㄕㄡˇ", "", "ㄉㄚˋ", "ㄕㄥ", "ㄓㄨˋ", "ㄈㄨˊ", "ㄊㄚ", "", "", "ㄉㄚˊ", "ㄉㄚˊ", "", "ㄓㄨˋ", "ㄋㄧˇ", "ㄧ", "ㄌㄨˋ", "ㄕㄨㄣˋ", "ㄈㄥ", "", ""], "達達聽了，卻笑著搖搖頭說：「你們說錯啦！": ["ㄉㄚˊ", "ㄉㄚˊ", "ㄊㄧㄥ", "˙ㄌㄜ", "", "ㄑㄩㄝˋ", "ㄒㄧㄠˋ", "˙ㄓㄜ", "ㄧㄠˊ", "ㄧㄠˊ", "ㄊㄡˊ", "ㄕㄨㄛ", "", "", "ㄋㄧˇ", "˙ㄇㄣ", "ㄕㄨㄛ", "ㄘㄨㄛˋ", "˙ㄌㄚ", ""], "對我來說，應該要是『一路逆風』才對喔！」": ["ㄉㄨㄟˋ", "ㄨㄛˇ", "ㄌㄞˊ", "ㄕㄨㄛ", "", "ㄧㄥ", "ㄍㄞ", "ㄧㄠˋ", "ㄕˋ", "", "ㄧ", "ㄌㄨˋ", "ㄋㄧˋ", "ㄈㄥ", "", "ㄘㄞˊ", "ㄉㄨㄟˋ", "ㄛ", "", ""], "朋友們好驚訝。": ["ㄆㄥˊ", "ㄧㄡˇ", "˙ㄇㄣ", "ㄏㄠˇ", "ㄐㄧㄥ", "ㄧㄚˋ", ""], "達達解釋說：「以前的人坐帆船，需要順風才能往前跑；但是我們現代的飛機，必須要有『逆風』迎面吹來，產生足夠的阻力，才能飛得高、降落得穩呀！」": ["ㄉㄚˊ", "ㄉㄚˊ", "ㄐㄧㄝˇ", "ㄕˋ", "ㄕㄨㄛ", "", "", "ㄧˇ", "ㄑㄧㄢˊ", "˙ㄉㄜ", "ㄖㄣˊ", "ㄗㄨㄛˋ", "ㄈㄢˊ", "ㄔㄨㄢˊ", "", "ㄒㄩ", "ㄧㄠˋ", "ㄕㄨㄣˋ", "ㄈㄥ", "ㄘㄞˊ", "ㄋㄥˊ", "ㄨㄤˇ", "ㄑㄧㄢˊ", "ㄆㄠˇ", "", "ㄉㄢˋ", "ㄕˋ", "ㄨㄛˇ", "˙ㄇㄣ", "ㄒㄧㄢˋ", "ㄉㄞˋ", "˙ㄉㄜ", "ㄈㄟ", "ㄐㄧ", "", "ㄅㄧˋ", "ㄒㄩ", "ㄧㄠˋ", "ㄧㄡˇ", "", "ㄋㄧˋ", "ㄈㄥ", "", "ㄧㄥˊ", "ㄇㄧㄢˋ", "ㄔㄨㄟ", "ㄌㄞˊ", "", "ㄔㄢˇ", "ㄕㄥ", "ㄗㄨˊ", "ㄍㄡˋ", "˙ㄉㄜ", "ㄗㄨˇ", "ㄌㄧˋ", "", "ㄘㄞˊ", "ㄋㄥˊ", "ㄈㄟ", "˙ㄉㄜ", "ㄍㄠ", "", "ㄐㄧㄤˋ", "ㄌㄨㄛˋ", "˙ㄉㄜ", "ㄨㄣˇ", "˙ㄧㄚ", "", ""], "原來，逆風不是壞事，而是飛上藍天的秘密力量！": ["ㄩㄢˊ", "ㄌㄞˊ", "", "ㄋㄧˋ", "ㄈㄥ", "ㄅㄨˋ", "ㄕˋ", "ㄏㄨㄞˋ", "ㄕˋ", "", "ㄦˊ", "ㄕˋ", "ㄈㄟ", "ㄕㄤˋ", "ㄌㄢˊ", "ㄊㄧㄢ", "˙ㄉㄜ", "ㄇㄧˋ", "ㄇㄧˋ", "ㄌㄧˋ", "ㄌㄧㄤˋ", ""], "在大自然的另一邊，有一座高高的懸崖。": ["ㄗㄞˋ", "ㄉㄚˋ", "ㄗˋ", "ㄖㄢˊ", "˙ㄉㄜ", "ㄌㄧㄥˋ", "ㄧ", "ㄅㄧㄢ", "", "ㄧㄡˇ", "ㄧ", "ㄗㄨㄛˋ", "ㄍㄠ", "ㄍㄠ", "˙ㄉㄜ", "ㄒㄩㄢˊ", "ㄧㄚˊ", ""], "這裡寸草不生，風颳起來就像刀子一樣冷冽。": ["ㄓㄜˋ", "ㄌㄧˇ", "ㄘㄨㄣˋ", "ㄘㄠˇ", "ㄅㄨˋ", "ㄕㄥ", "", "ㄈㄥ", "ㄍㄨㄚ", "ㄑㄧˇ", "ㄌㄞˊ", "ㄐㄧㄡˋ", "ㄒㄧㄤˋ", "ㄉㄠ", "˙ㄗ", "ㄧ", "ㄧㄤˋ", "ㄌㄥˇ", "ㄌㄧㄝˋ", ""], "但是，老鷹媽媽卻選擇在這個最嚴酷的地方築巢，生下了小鷹「亞瑞」。": ["ㄉㄢˋ", "ㄕˋ", "", "ㄌㄠˇ", "ㄧㄥ", "ㄇㄚ", "˙ㄇㄚ", "ㄑㄩㄝˋ", "ㄒㄩㄢˇ", "ㄗㄜˊ", "ㄗㄞˋ", "ㄓㄜˋ", "ㄍㄜˋ", "ㄗㄨㄟˋ", "ㄧㄢˊ", "ㄎㄨˋ", "˙ㄉㄜ", "ㄉㄧˋ", "ㄈㄤ", "ㄓㄨˊ", "ㄔㄠˊ", "", "ㄕㄥ", "ㄒㄧㄚˋ", "˙ㄌㄜ", "ㄒㄧㄠˇ", "ㄧㄥ", "", "ㄧㄚˋ", "ㄖㄨㄟˋ", "", ""], "亞瑞覺得好冷、好害怕，他多希望媽媽能帶他去溫暖避風的森林。": ["ㄧㄚˋ", "ㄖㄨㄟˋ", "ㄐㄩㄝˊ", "˙ㄉㄜ", "ㄏㄠˇ", "ㄌㄥˇ", "", "ㄏㄠˇ", "ㄏㄞˋ", "ㄆㄚˋ", "", "ㄊㄚ", "ㄉㄨㄛ", "ㄒㄧ", "ㄨㄤˋ", "ㄇㄚ", "˙ㄇㄚ", "ㄋㄥˊ", "ㄉㄞˋ", "ㄊㄚ", "ㄑㄩˋ", "ㄨㄣ", "ㄋㄨㄢˇ", "ㄅㄧˋ", "ㄈㄥ", "˙ㄉㄜ", "ㄙㄣ", "ㄌㄧㄣˊ", ""], "但老鷹媽媽沒有這麼做。": ["ㄉㄢˋ", "ㄌㄠˇ", "ㄧㄥ", "ㄇㄚ", "˙ㄇㄚ", "ㄇㄟˊ", "ㄧㄡˇ", "ㄓㄜˋ", "˙ㄇㄜ", "ㄗㄨㄛˋ", ""], "當亞瑞剛剛學會站立，媽媽就帶他來到懸崖邊，要他迎著最強烈的風，一次又一次地練習拍打翅膀。": ["ㄉㄤ", "ㄧㄚˋ", "ㄖㄨㄟˋ", "ㄍㄤ", "ㄍㄤ", "ㄒㄩㄝˊ", "ㄏㄨㄟˋ", "ㄓㄢˋ", "ㄌㄧˋ", "", "ㄇㄚ", "˙ㄇㄚ", "ㄐㄧㄡˋ", "ㄉㄞˋ", "ㄊㄚ", "ㄌㄞˊ", "ㄉㄠˋ", "ㄒㄩㄢˊ", "ㄧㄚˊ", "ㄅㄧㄢ", "", "ㄧㄠˋ", "ㄊㄚ", "ㄧㄥˊ", "˙ㄓㄜ", "ㄗㄨㄟˋ", "ㄑㄧㄤˊ", "ㄌㄧㄝˋ", "˙ㄉㄜ", "ㄈㄥ", "", "ㄧ", "ㄘˋ", "ㄧㄡˋ", "ㄧ", "ㄘˋ", "˙ㄉㄜ", "ㄌㄧㄢˋ", "ㄒㄧˊ", "ㄆㄞ", "ㄉㄚˇ", "ㄔˋ", "ㄅㄤˇ", ""], "「媽媽，風好大，阻力好強，我飛得好辛苦啊！」": ["", "ㄇㄚ", "˙ㄇㄚ", "", "ㄈㄥ", "ㄏㄠˇ", "ㄉㄚˋ", "", "ㄗㄨˇ", "ㄌㄧˋ", "ㄏㄠˇ", "ㄑㄧㄤˊ", "", "ㄨㄛˇ", "ㄈㄟ", "˙ㄉㄜ", "ㄏㄠˇ", "ㄒㄧㄣ", "ㄎㄨˇ", "˙ㄚ", "", ""], "亞瑞氣喘吁吁地說。": ["ㄧㄚˋ", "ㄖㄨㄟˋ", "ㄑㄧˋ", "ㄔㄨㄢˇ", "ㄒㄩ", "ㄒㄩ", "˙ㄉㄜ", "ㄕㄨㄛ", ""], "媽媽嚴格卻充滿期盼地說：「孩子，只有在最困難的環境裡抗著強風，強大的阻力才能把你的雙翅訓練得結實有力。」": ["ㄇㄚ", "˙ㄇㄚ", "ㄧㄢˊ", "ㄍㄜˊ", "ㄑㄩㄝˋ", "ㄔㄨㄥ", "ㄇㄢˇ", "ㄑㄧˊ", "ㄆㄢˋ", "˙ㄉㄜ", "ㄕㄨㄛ", "", "", "ㄏㄞˊ", "˙ㄗ", "", "ㄓˇ", "ㄧㄡˇ", "ㄗㄞˋ", "ㄗㄨㄟˋ", "ㄎㄨㄣˋ", "ㄋㄢˊ", "˙ㄉㄜ", "ㄏㄨㄢˊ", "ㄐㄧㄥˋ", "ㄌㄧˇ", "ㄎㄤˋ", "˙ㄓㄜ", "ㄑㄧㄤˊ", "ㄈㄥ", "", "ㄑㄧㄤˊ", "ㄉㄚˋ", "˙ㄉㄜ", "ㄗㄨˇ", "ㄌㄧˋ", "ㄘㄞˊ", "ㄋㄥˊ", "ㄅㄚˇ", "ㄋㄧˇ", "˙ㄉㄜ", "ㄕㄨㄤ", "ㄔˋ", "ㄒㄩㄣˋ", "ㄌㄧㄢˋ", "˙ㄉㄜ", "ㄐㄧㄝˊ", "ㄕˊ", "ㄧㄡˇ", "ㄌㄧˋ", "", ""], "經過無數次的逆風練習，亞瑞長大了！": ["ㄐㄧㄥ", "ㄍㄨㄛˋ", "ㄨˊ", "ㄕㄨˋ", "ㄘˋ", "˙ㄉㄜ", "ㄋㄧˋ", "ㄈㄥ", "ㄌㄧㄢˋ", "ㄒㄧˊ", "", "ㄧㄚˋ", "ㄖㄨㄟˋ", "ㄓㄤˇ", "ㄉㄚˋ", "˙ㄌㄜ", ""], "他的翅膀比任何鳥類都要強壯。": ["ㄊㄚ", "˙ㄉㄜ", "ㄔˋ", "ㄅㄤˇ", "ㄅㄧˇ", "ㄖㄣˋ", "ㄏㄜˊ", "ㄋㄧㄠˇ", "ㄌㄟˋ", "ㄉㄡ", "ㄧㄠˋ", "ㄑㄧㄤˊ", "ㄓㄨㄤˋ", ""], "現在，無論是最寒冷的高山，還是最酷熱的沙漠，他都能自由自在地生存。": ["ㄒㄧㄢˋ", "ㄗㄞˋ", "", "ㄨˊ", "ㄌㄨㄣˋ", "ㄕˋ", "ㄗㄨㄟˋ", "ㄏㄢˊ", "ㄌㄥˇ", "˙ㄉㄜ", "ㄍㄠ", "ㄕㄢ", "", "ㄏㄞˊ", "ㄕˋ", "ㄗㄨㄟˋ", "ㄎㄨˋ", "ㄖㄜˋ", "˙ㄉㄜ", "ㄕㄚ", "ㄇㄛˋ", "", "ㄊㄚ", "ㄉㄡ", "ㄋㄥˊ", "ㄗˋ", "ㄧㄡˊ", "ㄗˋ", "ㄗㄞˋ", "˙ㄉㄜ", "ㄕㄥ", "ㄘㄨㄣˊ", ""], "他終於明白，當初的逆風，讓他成為了大自然裡真正的強者。": ["ㄊㄚ", "ㄓㄨㄥ", "ㄩˊ", "ㄇㄧㄥˊ", "ㄅㄞˊ", "", "ㄉㄤ", "ㄔㄨ", "˙ㄉㄜ", "ㄋㄧˋ", "ㄈㄥ", "", "ㄖㄤˋ", "ㄊㄚ", "ㄔㄥˊ", "ㄨㄟˊ", "˙ㄌㄜ", "ㄉㄚˋ", "ㄗˋ", "ㄖㄢˊ", "ㄌㄧˇ", "ㄓㄣ", "ㄓㄥˋ", "˙ㄉㄜ", "ㄑㄧㄤˊ", "ㄓㄜˇ", ""], "不管是小飛機達達，還是老鷹亞瑞，他們都知道了一個秘密：阻力，其實是向上的力量。": ["ㄅㄨˋ", "ㄍㄨㄢˇ", "ㄕˋ", "ㄒㄧㄠˇ", "ㄈㄟ", "ㄐㄧ", "ㄉㄚˊ", "ㄉㄚˊ", "", "ㄏㄞˊ", "ㄕˋ", "ㄌㄠˇ", "ㄧㄥ", "ㄧㄚˋ", "ㄖㄨㄟˋ", "", "ㄊㄚ", "˙ㄇㄣ", "ㄉㄡ", "ㄓ", "ㄉㄠˋ", "˙ㄌㄜ", "ㄧ", "ㄍㄜˋ", "ㄇㄧˋ", "ㄇㄧˋ", "", "ㄗㄨˇ", "ㄌㄧˋ", "", "ㄑㄧˊ", "ㄕˊ", "ㄕˋ", "ㄒㄧㄤˋ", "ㄕㄤˋ", "˙ㄉㄜ", "ㄌㄧˋ", "ㄌㄧㄤˋ", ""], "我們也常常喜歡輕鬆舒服的日子，害怕遇到困難。": ["ㄨㄛˇ", "˙ㄇㄣ", "ㄧㄝˇ", "ㄔㄤˊ", "ㄔㄤˊ", "ㄒㄧˇ", "ㄏㄨㄢ", "ㄑㄧㄥ", "ㄙㄨㄥ", "ㄕㄨ", "ㄈㄨˊ", "˙ㄉㄜ", "ㄖˋ", "˙ㄗ", "", "ㄏㄞˋ", "ㄆㄚˋ", "ㄩˋ", "ㄉㄠˋ", "ㄎㄨㄣˋ", "ㄋㄢˊ", ""], "但是，當我們遇到挫折、覺得辛苦的時候，就像是遇到了「逆風」。": ["ㄉㄢˋ", "ㄕˋ", "", "ㄉㄤ", "ㄨㄛˇ", "˙ㄇㄣ", "ㄩˋ", "ㄉㄠˋ", "ㄘㄨㄛˋ", "ㄓㄜˊ", "", "ㄐㄩㄝˊ", "˙ㄉㄜ", "ㄒㄧㄣ", "ㄎㄨˇ", "˙ㄉㄜ", "ㄕˊ", "ㄏㄡˋ", "", "ㄐㄧㄡˋ", "ㄒㄧㄤˋ", "ㄕˋ", "ㄩˋ", "ㄉㄠˋ", "˙ㄌㄜ", "", "ㄋㄧˋ", "ㄈㄥ", "", ""], "不要害怕逆境！": ["ㄅㄨˋ", "ㄧㄠˋ", "ㄏㄞˋ", "ㄆㄚˋ", "ㄋㄧˋ", "ㄐㄧㄥˋ", ""], "因為只有勇敢面對挑戰，才能磨練出我們堅強的意志，讓我們飛得更高、更遠！": ["ㄧㄣ", "ㄨㄟˋ", "ㄓˇ", "ㄧㄡˇ", "ㄩㄥˇ", "ㄍㄢˇ", "ㄇㄧㄢˋ", "ㄉㄨㄟˋ", "ㄊㄧㄠˇ", "ㄓㄢˋ", "", "ㄘㄞˊ", "ㄋㄥˊ", "ㄇㄛˊ", "ㄌㄧㄢˋ", "ㄔㄨ", "ㄨㄛˇ", "˙ㄇㄣ", "ㄐㄧㄢ", "ㄑㄧㄤˊ", "˙ㄉㄜ", "ㄧˋ", "ㄓˋ", "", "ㄖㄤˋ", "ㄨㄛˇ", "˙ㄇㄣ", "ㄈㄟ", "˙ㄉㄜ", "ㄍㄥˋ", "ㄍㄠ", "", "ㄍㄥˋ", "ㄩㄢˇ", ""], "逆風飛翔的秘密": ["ㄋㄧˋ", "ㄈㄥ", "ㄈㄟ", "ㄒㄧㄤˊ", "˙ㄉㄜ", "ㄇㄧˋ", "ㄇㄧˋ"], "阻力，其實是向上的力量": ["ㄗㄨˇ", "ㄌㄧˋ", "", "ㄑㄧˊ", "ㄕˊ", "ㄕˋ", "ㄒㄧㄤˋ", "ㄕㄤˋ", "˙ㄉㄜ", "ㄌㄧˋ", "ㄌㄧㄤˋ"], "謝謝你讀完這個故事": ["ㄒㄧㄝˋ", "˙ㄒㄧㄝ", "ㄋㄧˇ", "ㄉㄨˊ", "ㄨㄢˊ", "ㄓㄜˋ", "ㄍㄜˋ", "ㄍㄨˋ", "ㄕˋ"]}};
+</script>
+<script>
+/* 狀態 s = 已翻過的紙張數：0 封面、1..N 故事頁、N+1 結尾頁（可省略）、最後是封底 */
+const N=BOOK.pages.length,END=BOOK.ending,LAST=N+(END?2:1);
+document.documentElement.style.setProperty('--r',BOOK.ratio);
+const book=document.getElementById('book'),$=id=>document.getElementById(id);
+const esc=x=>String(x).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const pad=n=>String(n).padStart(2,'0');
+/* 注音：開頭標點黏下一字、結尾標點黏上一字，避免標點落單在行首行尾 */
+const bpHTML=z=>{
+  if(!z) return '';
+  const dot=z[0]==='˙',tone=/[ˊˇˋ]$/.exec(z);
+  const syms=[...z.replace(/[˙ˊˇˋ]/g,'')].map(c=>`<i>${c}</i>`).join('');
+  return `<span class="bp">${dot?'<span class="dot">˙</span>':''}${syms}${tone?`<span class="tn">${tone[0]}</span>`:''}</span>`;
+};
+function T(str){
+  const zs=BOOK.zhuyin&&BOOK.zhuyin[str];
+  if(!zs) return esc(str);
+  const chars=[...str],groups=[];let open='';
+  chars.forEach((c,i)=>{
+    const cell=`<span class="zc">${esc(c)}${bpHTML(zs[i])}</span>`;
+    if(/[「『（《〈]/.test(c)){open+=cell;return}
+    if(!zs[i]&&groups.length&&!open) groups[groups.length-1]+=cell;
+    else{groups.push(open+cell);open=''}
+  });
+  if(open) groups.push(open);
+  return groups.map(g=>`<span class="zg">${g}</span>`).join('');
+}
+const cueHTML=(cues,t)=>cues.map((c,k)=>`<span class="cue" data-p="${t}" data-k="${k}">${T(c.s)}</span>`).join('');
+if(BOOK.zhuyin) document.body.classList.add('zy');
+const artHTML=(n,cls)=>`<div class="art ${cls}"><div class="missing">插圖尚未放入<br>images/p${pad(n)}.jpg</div><img alt="" src="images/p${pad(n)}.jpg" onerror="this.remove()"></div>`;
+const textHTML=n=>`<div class="txt"><p class="story">${cueHTML(BOOK.pages[n-1].cues,n)}</p><div class="pno">第 ${n} 頁</div></div>`;
+const plainCover=`<div class="plain"><h1>${esc(BOOK.title)}</h1>${BOOK.subtitle?`<p>${esc(BOOK.subtitle)}</p>`:''}</div>`;
+/* 封面圖本身通常已含書名，所以有圖就不再疊字；圖片載入失敗才顯示純文字封面 */
+const coverHTML=()=>`<div class="cover">${plainCover}<div class="blur" style="background-image:url(images/p00.jpg)"></div><img src="images/p00.jpg" alt="${esc(BOOK.title)}封面" onerror="this.previousElementSibling.remove();this.remove()"></div>`;
+const endA=()=>`<div class="txt end"><h2>${T(END.heading)}</h2><p class="story">${cueHTML(END.cues,N+1)}</p>${END.source?`<p class="src">出處：${T(END.source)}</p>`:''}</div>`;
+const endB=()=>`<div class="txt end"><h2>想一想</h2><ol>${(END.questions||[]).map(q=>`<li>${T(q)}</li>`).join('')}</ol></div>`;
+const endBoth=()=>`<div class="end" style="position:absolute;inset:0"><div class="txt"><h2>${T(END.heading)}</h2><p class="story">${cueHTML(END.cues,N+1)}</p>${END.source?`<p class="src">出處：${T(END.source)}</p>`:''}${(END.questions||[]).length?`<ol>${END.questions.map(q=>`<li>${T(q)}</li>`).join('')}</ol>`:''}</div></div>`;
+const backHTML=()=>`<div class="backcover"><h2>${T(BOOK.closing||'故事說完了')}</h2>${BOOK.thanks?`<p>${T(BOOK.thanks)}</p>`:''}<button class="again" data-again>↺ 再看一次</button></div>`;
+
+let single=false,s=0;
+const leafEl=(front,back)=>`<div class="leaf"><div class="face front">${front}</div><div class="face back">${back}</div></div>`;
+function build(){
+  let html='';
+  if(single){
+    const pages=[coverHTML()];
+    for(let n=1;n<=N;n++) pages.push(`<div class="sp">${artHTML(n,'top')}${textHTML(n)}</div>`);
+    if(END) pages.push(endBoth());
+    pages.push(backHTML());
+    html=pages.map(p=>leafEl(p,'')).join('');
+  }else{
+    /* 第 i 張紙：正面在右、背面在左；翻過 s 張時左右兩面正好是第 s 個跨頁 */
+    html+=leafEl(coverHTML(),artHTML(1,'plate'));
+    for(let n=1;n<N;n++) html+=leafEl(textHTML(n),artHTML(n+1,'plate'));
+    if(END){html+=leafEl(textHTML(N),endA());html+=leafEl(endB(),backHTML())}
+    else html+=leafEl(textHTML(N),backHTML());
+  }
+  book.innerHTML=html;
+  render(true);
+  fitText();
+}
+/* 文字超出頁面時逐步縮小，故事長短不一也不會被切掉。
+   內容是垂直置中，往上溢出不計入 scrollHeight，所以直接比內容高度與可用高度 */
+function overflows(t){
+  const cs=getComputedStyle(t);let h=0;
+  for(const c of t.children){
+    const m=getComputedStyle(c);
+    if(m.position!=='absolute') h+=c.offsetHeight+parseFloat(m.marginTop)+parseFloat(m.marginBottom);
+  }
+  return h>t.clientHeight-parseFloat(cs.paddingTop)-parseFloat(cs.paddingBottom)+1;
+}
+function fitText(){
+  book.querySelectorAll('.txt').forEach(t=>{
+    let f=1;t.style.setProperty('--fit',1);
+    while(overflows(t)&&f>.55){f-=.05;t.style.setProperty('--fit',f)}
+  });
+}
+function updateBar(){
+  $('prev').disabled=s===0;
+  $('next').disabled=s===LAST;
+  $('label').textContent=s===0?'封面':s<=N?`第 ${s} / ${N} 頁`:s===LAST?'封底':'想一想';
+}
+function setShift(){
+  book.classList.toggle('at-front',!single&&s===0);
+  book.classList.toggle('at-back',!single&&s===LAST);
+}
+function render(instant){
+  const ls=[...book.children];
+  if(instant) book.style.transition='none';
+  ls.forEach((l,i)=>{
+    if(instant) l.style.transition='none';
+    l.classList.toggle('flipped',i<s);
+    l.style.zIndex=i<s?i:ls.length-i;
+    if(instant){void l.offsetWidth;l.style.transition=''}
+  });
+  setShift();
+  if(instant){void book.offsetWidth;book.style.transition=''}
+  updateBar();
+}
+
+/* ---------- 翻頁與旁白 ---------- */
+const audio=new Audio();audio.preload='auto';
+let voiceOn=true,autoOn=true,started=false,timer=null;
+const btnPlay=$('play');
+const track=()=>s<LAST?s:null;
+const cuesOf=t=>t===0?BOOK.coverCues:t<=N?BOOK.pages[t-1].cues:END.cues;
+function clearHL(){book.querySelectorAll('.cue.on').forEach(e=>e.classList.remove('on'))}
+function setPlayLabel(){btnPlay.textContent=!audio.paused?'⏸ 暫停':s===LAST?'↺ 再聽一次':started?'▶ 繼續':'▶ 開始聽故事'}
+function stopAudio(){audio.pause();clearTimeout(timer);clearHL();setPlayLabel()}
+function playCurrent(){
+  const t=track();
+  if(t===null||!voiceOn){setPlayLabel();return}
+  const src=`audio/p${pad(t)}.mp3`;
+  if(!audio.src.endsWith(src)) audio.src=src;
+  audio.currentTime=0;
+  audio.play().then(setPlayLabel).catch(setPlayLabel);
+}
+function go(to,speak=true){
+  to=Math.max(0,Math.min(LAST,to));
+  if(to===s) return;
+  stopAudio();
+  const ls=[...book.children],a=Math.min(s,to),b=Math.max(s,to);
+  /* 正在翻的紙暫時放到最上層 */
+  ls.forEach((l,i)=>{if(i>=a&&i<b) l.style.zIndex=ls.length+b-i});
+  s=to;
+  ls.forEach((l,i)=>l.classList.toggle('flipped',i<s));
+  setShift();updateBar();
+  const mine=++go.id;
+  setTimeout(()=>{if(mine===go.id) render(false)},880);
+  if(speak&&started&&voiceOn) timer=setTimeout(playCurrent,900);
+}
+go.id=0;
+audio.addEventListener('timeupdate',()=>{
+  const t=track();if(t===null) return;
+  let k=0;cuesOf(t).forEach((c,i)=>{if(audio.currentTime>=c.t) k=i});
+  book.querySelectorAll('.cue').forEach(e=>e.classList.toggle('on',+e.dataset.p===t&&+e.dataset.k===k));
+});
+audio.addEventListener('play',setPlayLabel);
+audio.addEventListener('pause',setPlayLabel);
+audio.addEventListener('ended',()=>{
+  clearHL();setPlayLabel();
+  if(autoOn&&s<LAST) timer=setTimeout(()=>go(s+1),1000);
+});
+btnPlay.onclick=()=>{
+  clearTimeout(timer);
+  if(!audio.paused){audio.pause();return}
+  if(!voiceOn){voiceOn=true;syncToggles()}
+  if(s===LAST){started=true;go(0);return}
+  const resume=started&&audio.currentTime>0&&!audio.ended&&audio.src.endsWith(`p${pad(track())}.mp3`);
+  started=true;
+  if(resume) audio.play().catch(setPlayLabel); else playCurrent();
+};
+function syncToggles(){
+  $('voice').setAttribute('aria-pressed',voiceOn);
+  $('auto').setAttribute('aria-pressed',autoOn);
+}
+$('prev').onclick=()=>go(s-1);
+$('next').onclick=()=>go(s+1);
+$('voice').onclick=()=>{voiceOn=!voiceOn;syncToggles();if(!voiceOn) stopAudio()};
+$('auto').onclick=()=>{autoOn=!autoOn;syncToggles()};
+let px=null,swiped=false;
+book.addEventListener('click',e=>{
+  if(e.target.closest('[data-again]')){go(0,false);stopAudio();return}
+  if(swiped){swiped=false;return}
+  const r=book.getBoundingClientRect();
+  (single?e.clientX>r.left+r.width*.35:e.clientX>r.left+r.width/2)?go(s+1):go(s-1);
+});
+book.addEventListener('pointerdown',e=>{px=e.clientX;swiped=false});
+book.addEventListener('pointerup',e=>{
+  if(px===null) return;const d=e.clientX-px;px=null;
+  if(Math.abs(d)>50){swiped=true;go(s+(d<0?1:-1))}
+});
+addEventListener('keydown',e=>{
+  if(e.target.tagName==='BUTTON'&&e.key===' ') return;
+  if(e.key==='ArrowRight') go(s+1);
+  else if(e.key==='ArrowLeft') go(s-1);
+  else if(e.key===' '){e.preventDefault();btnPlay.click()}
+});
+/* 直式窄螢幕切單頁 */
+const mq=matchMedia('(max-aspect-ratio: 1/1)');
+function applyMode(){single=mq.matches;document.body.classList.toggle('single',single);stopAudio();build()}
+mq.addEventListener('change',applyMode);
+addEventListener('resize',fitText);
+applyMode();
+if(document.fonts&&document.fonts.ready) document.fonts.ready.then(fitText);
+</script>
+</body>
+</html>
