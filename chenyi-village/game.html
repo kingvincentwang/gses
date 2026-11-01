@@ -25,7 +25,10 @@ button{font-family:var(--fui);color:var(--ink);cursor:pointer;border:0}
 h2{margin:0 0 12px;text-align:center;letter-spacing:.2em;font-size:25px}
 /* HUD */
 #hud{position:absolute;left:12px;top:12px;display:flex;align-items:center;z-index:10;pointer-events:none;max-width:calc(100% - 70px)}
-#avatar{width:60px;height:60px;border-radius:50%;background:var(--gold);border:3px solid #fff;display:flex;align-items:center;justify-content:center;font:700 28px var(--ftxt);z-index:1;flex:none}
+#avatar{width:60px;height:60px;border-radius:50%;background:#fff6dc;border:3px solid var(--gold);overflow:hidden;z-index:1;flex:none}
+#avatar img{width:150%;margin:2px 0 0 -25%;display:block;max-width:none}
+#tHero{position:absolute;left:max(4vw,8px);bottom:0;height:min(62%,560px);pointer-events:none;filter:drop-shadow(0 8px 14px #0005)}
+@media (max-width:640px){#tHero{height:34%;left:0}}
 #hudBox{background:#fbf4e2ee;border-radius:0 16px 16px 0;margin-left:-10px;padding:7px 14px 7px 18px;min-width:170px}
 #hudAct{font-size:11px;color:#a5642a}#hudName{font-size:15px}
 #hpWrap{display:flex;align-items:center;gap:7px;margin-top:3px;font-size:12px}
@@ -92,7 +95,7 @@ h2{margin:0 0 12px;text-align:center;letter-spacing:.2em;font-size:25px}
 <div id="app">
 <canvas id="c"></canvas>
 
-<div id="hud" class="hide"><div id="avatar">書</div><div id="hudBox"><div id="hudAct"></div><div id="hudName"></div>
+<div id="hud" class="hide"><div id="avatar"><img src="images/hero.png" alt="主角"></div><div id="hudBox"><div id="hudAct"></div><div id="hudName"></div>
 <div id="hpWrap"><div id="hpBar"><div id="hpFill"></div></div><span id="hpNum">100</span></div><div id="hudItems"></div></div></div>
 <div id="quest" class="hide"><b id="qT"></b><span id="qO"></span></div>
 <div id="menu" class="hide"><button id="mHelp">說明</button><button id="mStages">關卡</button><button id="mSave">存檔</button><button id="mSound">音效</button></div>
@@ -115,18 +118,17 @@ h2{margin:0 0 12px;text-align:center;letter-spacing:.2em;font-size:25px}
 <div class="mid"><button id="sClose" class="btn">關閉</button></div></div></div>
 
 <div id="tut" class="overlay hide"><div class="panel"><h2>操　作</h2>
-<div class="tRow"><b>移動</b><span>鍵盤 WASD 或方向鍵；觸控用左下搖桿</span></div><div class="tRow"><b>轉鏡頭</b><span>按住畫面左右、上下拖曳</span></div><div class="tRow"><b>互動</b><span>跟著金色星星走，靠近後按 E 或點白色泡泡</span></div><div class="tRow"><b>任務</b><span>你會化身故事裡的人物，親手查出真相，再把成語用在新情境。</span></div>
+<div class="tRow"><b>移動</b><span>鍵盤 WASD 或方向鍵；觸控用左下搖桿</span></div><div class="tRow"><b>轉鏡頭</b><span>按住畫面左右、上下拖曳</span></div><div class="tRow"><b>互動</b><span>跟著金色星星走，靠近後按 E 或點白色泡泡</span></div><div class="tRow"><b>任務</b><span>你要走進三個成語故事，親手查出真相，再把成語用在新情境。</span></div>
 <div class="mid"><button id="tutGo" class="btn">我知道了</button></div></div></div>
 
-<div id="cardBox" class="overlay hide"><div class="panel"><h2>獲得成語卡</h2><div id="idiomCard"><h3>杯弓蛇影</h3>
-<p><b>意思：</b>把弓的倒影誤認成蛇。比喻因疑神疑鬼而自相驚擾。</p><p><b>出處：</b>《晉書・樂廣傳》</p><p><b>例句：</b>只是風吹得窗戶響，他卻杯弓蛇影，以為家裡遭了小偷。</p></div><div class="mid"><button id="cardGo" class="btn">收進圖鑑</button></div></div></div>
+<div id="cardBox" class="overlay hide"><div class="panel"><h2>獲得成語卡</h2><div id="idiomCard"><h3 id="cName"></h3><p><b>意思：</b><span id="cMean"></span></p><p><b>出處：</b><span id="cFrom"></span></p><p><b>例句：</b><span id="cEx"></span></p></div><div class="mid"><button id="cardGo" class="btn">收進圖鑑</button></div></div></div>
 
 <div id="end" class="overlay hide"><div class="panel"><h2>完成探查</h2><p id="endInfo" style="text-align:center;font-size:16px;line-height:1.7"></p>
 <div id="teacher2" style="display:flex;gap:8px"><input id="endName" maxlength="12" placeholder="輸入你的名字" aria-label="你的名字" autocomplete="off"><button id="endGo" class="btn">產生證書</button></div></div></div>
 
 <div id="cert" class="overlay hide"><div class="panel"><h2>通關證書</h2><img id="certImg" alt="通關證書"><div class="mid"><a id="certDl" class="btn" href="#">下載證書</a><button id="certAgain" class="btn ghost">從頭再玩</button><button id="certTitle" class="btn ghost">回到標題</button></div></div></div>
 
-<div id="title" class="hide"><div><div id="tSub">走進故事・親手查明真相</div><div id="tName">成語村</div><div id="tSub2" class="pill" style="font-size:15px;background:#fbf4e2e6">試作版：杯弓蛇影</div></div>
+<div id="title" class="hide"><img id="tHero" src="images/hero.png" alt=""><div><div id="tSub">成語闖關遊戲・親手查明真相</div><div id="tName">成語村</div><div id="tSub2" class="pill" style="font-size:15px;background:#fbf4e2e6">杯弓蛇影・守株待兔・刻舟求劍</div></div>
 <div><div id="tBtns"><button id="tStart" class="btn">開始遊戲</button><button id="tCont" class="btn ghost">繼續遊戲</button></div><div id="tNote">電腦與平板皆可・建議開啟聲音</div></div></div>
 
 <div id="loading"><div id="ldName">成語村</div><div id="ldBar"><div id="ldFill"></div></div><div id="ldText">載入遊戲引擎……</div></div>
@@ -149,46 +151,103 @@ const TOUCH=matchMedia('(pointer:coarse)').matches;
 const setLoad=(p,t)=>{$('ldFill').style.width=p+'%';if(t)$('ldText').textContent=t};
 
 /* ---------- 關卡資料：新增成語時只改這裡與對應場景 ---------- */
-const ACTS={1:{name:'成語村'},2:{name:'杯弓蛇影・樂廣的廳堂'},3:{name:'杯弓蛇影・活用成語'}};
-const POV={visitor:{n:'小書生',ch:'書'},friend:{n:'朋友',ch:'友'},leguang:{n:'樂廣',ch:'樂'}};
+const ACTS={1:{name:'成語村'},2:{name:'杯弓蛇影'},3:{name:'守株待兔'},4:{name:'刻舟求劍'},5:{name:'綜合挑戰'}};
+const IDIOMS={
+ beigong:{name:'杯弓蛇影',first:1,door:()=>V3(0,1,-7.2),mean:'把弓的倒影誤認成蛇。比喻因疑神疑鬼而自相驚擾。',from:'《晉書・樂廣傳》',ex:'只是風吹得窗戶響，他卻杯弓蛇影，以為家裡遭了小偷。'},
+ shouzhu:{name:'守株待兔',first:11,door:()=>V3(-7.4,1,-1.2),mean:'比喻不知變通，抱著僥倖的心理，不肯努力而等待意外的收穫。',from:'《韓非子・五蠹》',ex:'不用功又想考高分，只靠猜題碰運氣，簡直是守株待兔。'},
+ kezhou:{name:'刻舟求劍',first:17,door:()=>V3(7.4,1,-1.2),mean:'比喻拘泥固執，情況已經改變，做法卻不知跟著改變。',from:'《呂氏春秋・察今》',ex:'考試範圍早就改了，他還只讀舊範圍，真是刻舟求劍。'},
+};
 const ST=[
-{id:0,kind:'story',free:true,world:'village',env:'hutong',pov:'visitor',name:'成語村',quest:'走進成語村',obj:'往金色星星走，走進杯弓蛇影的那戶人家。',prompt:'走進去',target:()=>V3(0,1,-7.2),para:'村莊導言',speaker:'村長',spawn:[0,0,8],
- text:'歡迎來到成語村！這裡的每一戶人家，都藏著一個成語的故事。今天先去看看樂廣的家吧。'},
-{id:1,kind:'story',world:'hall',env:'hall',pov:'friend',scene:'banquet',cam:'table',name:'樂廣宴客',para:'故事',speaker:'旁白',dialogBtn:'入席',
+{id:0,kind:'story',hub:true,world:'village',env:'hutong',name:'成語村',para:'村莊導言',speaker:'村長',spawn:[0,0,8],
+ text:'歡迎來到成語村！這裡的每一戶人家，都藏著一個成語的故事。跟著金色星星，挑一戶去探險吧！破解三個成語之後，再回來找我。'},
+{id:1,idiom:'beigong',first:true,kind:'story',world:'hall',env:'hall',scene:'banquet',cam:'table',name:'樂廣宴客',para:'故事',speaker:'旁白',dialogBtn:'入席',
  text:'在遙遠的晉朝，有一位名叫樂廣的官員，他為人熱情好客，結交了許多好朋友。這一天，樂廣邀請了一位許久未見的摯友來到家中作客，兩人在廳堂裡擺上了一桌豐盛的酒菜，準備好好敘舊。'},
-{id:2,kind:'story',world:'hall',env:'hall',pov:'friend',scene:'banquet',cam:'cup',name:'杯中異象',para:'故事',speaker:'朋友',dialogBtn:'這是什麼？！',
+{id:2,kind:'story',world:'hall',env:'hall',scene:'banquet',cam:'cup',name:'杯中異象',para:'故事',speaker:'朋友',dialogBtn:'這是什麼？！',
  text:'兩人相談甚歡，正當朋友端起酒杯準備一飲而盡時，他突然嚇得臉色發白。因為他看見自己手中那杯清澈的酒水裡，竟然有一條黑色的幼蛇正扭動著身軀，在裡面游來游去！'},
-{id:3,kind:'story',world:'hall',env:'hall',pov:'friend',scene:'banquet',cam:'table',name:'勉強吞下',para:'故事',speaker:'朋友',dialogBtn:'回家',
+{id:3,kind:'story',world:'hall',env:'hall',scene:'banquet',cam:'table',name:'勉強吞下',para:'故事',speaker:'朋友',dialogBtn:'回家',
  text:'朋友心裡害怕極了，但礙於在別人家作客的禮貌，實在不好意思當面大呼小叫，更不想破壞了樂廣的好興致。於是，他只好閉上眼睛、捏住鼻子，硬著頭皮把那杯有「蛇」的酒給喝下肚。'},
-{id:4,kind:'story',world:'hall',env:'hallDim',pov:'friend',scene:'empty',cam:'wall',name:'憂心成疾',para:'故事',speaker:'旁白',img:'images/p04.jpg',imgAlt:'朋友生病躺在床上，腦中浮現杯中的蛇',
+{id:4,kind:'story',world:'hall',env:'hallDim',scene:'empty',cam:'wall',name:'憂心成疾',para:'故事',speaker:'旁白',img:'images/p04.jpg',imgAlt:'朋友生病躺在床上，腦中浮現杯中的蛇',
  text:'宴會結束後，朋友一回到家就倒下了。他總覺得肚子裡有一條蛇在爬動，心裡越想越噁心、越想越害怕，結果茶不思、飯不想，連覺都睡不好。沒過幾天，他竟然就這樣憂鬱得生了一場重病，躺在床上起不來了。'},
-{id:5,kind:'story',world:'hall',env:'hallDim',pov:'leguang',scene:'empty',cam:'wall',name:'探訪查明',para:'故事',speaker:'旁白',img:'images/p05.jpg',imgAlt:'樂廣到朋友家探望',dialogBtn:'我去查清楚',
+{id:5,kind:'story',world:'hall',env:'hallDim',scene:'empty',cam:'wall',name:'探訪查明',para:'故事',speaker:'旁白',img:'images/p05.jpg',imgAlt:'樂廣到朋友家探望',dialogBtn:'我去查清楚',
  text:'樂廣聽說好朋友突然生了重病，連忙趕到他家中探望。看著朋友日漸消瘦的模樣，樂廣關切地詢問原因。朋友這才嘆了一口氣，把那天在樂廣家喝下「蛇酒」的恐懼，一五一十地說了出來。'},
-{id:6,kind:'story',free:true,world:'hall',env:'hall',pov:'leguang',scene:'investigate',spawn:[0,0,2.8],name:'尋找真相',quest:'親手做實驗',obj:'現在你是樂廣。走到朋友當時的座位坐下，查出蛇從哪裡來。',prompt:'坐下查看',target:()=>V3(0,.8,.1),para:'故事',speaker:'樂廣',mid:'experiment',dialogBtn:'再驗證一次',
+{id:6,kind:'story',free:true,world:'hall',env:'hall',scene:'investigate',spawn:[0,0,2.8],name:'尋找真相',quest:'親手做實驗',obj:'樂廣請你一起查案。走到朋友當時的座位坐下，查出蛇從哪裡來。',prompt:'坐下查看',target:()=>V3(0,.8,.1),para:'故事',speaker:'樂廣',mid:'experiment',dialogBtn:'再驗證一次',
  text:'樂廣聽了覺得非常奇怪，自己家裡怎麼會有蛇掉進酒杯裡呢？他滿腹狐疑地趕回家，走到那天請客的廳堂，坐在朋友當時的位置上仔細觀察。猛然間，他抬頭一看，發現牆上正掛著一把彎彎的紅漆角弓。'},
-{id:7,world:'hall',env:'hall',pov:'leguang',scene:'investigate',spawn:[0,0,2.8],name:'恍然大悟',quest:'看看杯子',obj:'走到桌邊再看一次杯中的倒影。',prompt:'看杯子',target:()=>V3(0,.9,-.75),para:'故事',speaker:'旁白',cam:'cup',dialogBtn:'接受挑戰',
+{id:7,world:'hall',env:'hall',scene:'investigate',spawn:[0,0,2.8],name:'恍然大悟',quest:'看看杯子',obj:'走到桌邊再看一次杯中的倒影。',prompt:'看杯子',target:()=>V3(0,.9,-.75),para:'故事',speaker:'旁白',cam:'cup',dialogBtn:'接受挑戰',
  text:'樂廣馬上讓人端來一杯酒，放在朋友那天坐的位置。果然，那把掛在牆上的角弓，影子正好倒映在酒杯裡，隨著酒水波紋輕輕晃動，看起來簡直就和一條游動的小黑蛇一模一樣！樂廣這才恍然大悟。',
  steps:[
  {type:'order',level:'統整',q:'根據故事，樂廣是怎麼查出真相的？依序點選。',items:['坐到朋友當時的位置觀察','端一杯酒放在原位驗證','接朋友回來說明真相'],labels:['最先','最後'],hint:'先想想：要先發現線索，才能驗證，最後才告訴朋友。'},
  {type:'choice',level:'推論',q:'根據故事，朋友生重病的真正原因是什麼？',options:['心裡一直害怕肚裡有蛇','喝下的酒早已經壞掉','杯中的毒蛇咬傷了他','宴席上吃得實在太多'],answer:0,hint:'杯裡只是影子。再讀一次：他「越想越害怕」之後發生了什麼？'},
  ]},
-{id:8,kind:'story',world:'hall',env:'hall',pov:'friend',scene:'reveal',cam:'table',name:'重回故地',para:'故事',speaker:'樂廣',
+{id:8,kind:'story',world:'hall',env:'hall',scene:'reveal',cam:'table',name:'重回故地',para:'故事',speaker:'樂廣',
  text:'樂廣立刻派人用馬車把生病的朋友接來，讓他坐在原來的位置上，並再次為他斟滿一杯酒。樂廣笑著指了指杯子，又指了指牆上的弓，對朋友說：「你看，這杯裡的蛇，其實只是牆上那把弓的影子啊！」'},
-{id:9,kind:'story',world:'hall',env:'hallBright',pov:'friend',scene:'reveal',cam:'table',name:'疑雲頓消',para:'故事',speaker:'旁白',dialogBtn:'回到村莊',
+{id:9,kind:'story',world:'hall',env:'hallBright',scene:'reveal',cam:'table',name:'疑雲頓消',para:'故事',speaker:'旁白',dialogBtn:'回到村莊',
  text:'朋友看了看牆上的弓，再看看杯裡的倒影，終於明白了事情的真相。壓在他心頭好幾天的恐懼瞬間消失得無影無蹤，他的心情一下子輕鬆了起來。說也奇怪，他的病竟然就這樣不藥而癒了！'},
-{id:10,world:'village',env:'hutong',pov:'visitor',spawn:[0,0,8],area:{x0:-15,x1:15,z0:-9,z1:15},name:'活用成語',quest:'幫村長解決問題',obj:'村民最近遇到一些事，去問問村長。',prompt:'問村長',target:()=>V3(4,1.2,2),para:'寓意',speaker:'村長',dialogBtn:'我來幫忙',
+{id:10,idiom:'beigong',last:true,world:'village',env:'hutong',spawn:[0,0,8],area:{x0:-15,x1:15,z0:-9,z1:15},name:'活用：杯弓蛇影',quest:'幫村長解決問題',obj:'村民最近遇到一些事，去問問村長。',prompt:'問村長',target:()=>V3(4,1.2,2),para:'寓意',speaker:'村長',dialogBtn:'我來幫忙',
  text:'這就是「杯弓蛇影」的由來，提醒我們遇到疑慮時要查明真相，不要無中生有、自己嚇自己。',
  steps:[
  {type:'choice',level:'詮釋',q:'從故事來看，現在我們用「杯弓蛇影」形容什麼樣的情況？',options:['疑神疑鬼，自己嚇自己','箭術高超，百發百中','待客周到，賓主盡歡','膽大心細，不怕危險'],answer:0,hint:'蛇其實不存在，朋友卻被嚇病了。這個成語在說他的哪種狀態？'},
  {type:'match',level:'詮釋',q:'村民遇到這些事，哪些可以用「杯弓蛇影」形容？',cards:['聽到窗外沙沙作響，就認定有小偷，嚇得整晚不敢睡','同學晚一點回訊息，就以為對方討厭自己，難過了好幾天','看到天上烏雲密布，決定出門時帶雨傘'],zones:['適用','不適用'],answer:{'聽到窗外沙沙作響，就認定有小偷，嚇得整晚不敢睡':'適用','同學晚一點回訊息，就以為對方討厭自己，難過了好幾天':'適用','看到天上烏雲密布，決定出門時帶雨傘':'不適用'},hint:'判斷重點：這個擔心有根據嗎？還是把沒發生的事想成真的？'},
  {type:'choice',level:'評鑑',q:'村裡的告示寫了四句話，哪一句的「杯弓蛇影」用得正確？',options:['只聽到一點傳聞，他就杯弓蛇影，擔心店要倒了。','他做事杯弓蛇影，每個細節都檢查得很仔細。','這幅畫杯弓蛇影，把蛇畫得像真的一樣生動。','他射箭杯弓蛇影，每一箭都正中靶子的紅心。'],answer:0,hint:'不要只看字面上有弓、有蛇。找找哪一句的人物是在「自己嚇自己」。'},
  ]},
+/* 守株待兔 */
+{id:11,idiom:'shouzhu',first:true,kind:'story',world:'field',env:'noon',scene:'farm',cam:'farm',name:'勤勞的農夫',para:'故事',speaker:'旁白',
+ text:'古時候的宋國，有一位農夫每天辛勤地在田裡耕作。他的田中間，有一截粗粗的老樹樁。'},
+{id:12,kind:'story',world:'field',env:'noon',scene:'rabbit',cam:'stump',name:'兔子撞樹樁',para:'故事',speaker:'旁白',
+ text:'有一天，一隻兔子飛快地跑過田地，一頭撞上樹樁，倒在地上再也跑不動了。農夫毫不費力就撿到了兔子，開心極了。'},
+{id:13,kind:'story',world:'field',env:'noon',scene:'waiting',cam:'farm',name:'丟下鋤頭',para:'故事',speaker:'農夫',dialogBtn:'真的等得到嗎？',
+ text:'農夫心想：「不用工作就有兔子，真是太好了！」於是他丟下鋤頭，每天坐在樹樁旁邊，等著下一隻兔子撞上來。'},
+{id:14,kind:'story',free:true,world:'field',env:'noon',scene:'waiting',spawn:[0,0,4.5],name:'陪農夫等兔子',quest:'陪農夫等幾天',obj:'走到樹樁旁，陪農夫等等看，觀察田裡的變化。',prompt:'一起等',target:()=>V3(0,.9,-1.5),para:'故事',speaker:'旁白',mid:'wait',dialogBtn:'我懂了',
+ text:'日子一天天過去，農夫再也沒有等到兔子，田裡卻長滿了雜草，連宋國的人都笑他。'},
+{id:15,world:'field',env:'noon',scene:'overgrown',spawn:[1,0,4.5],name:'田裡長滿草',quest:'和農夫聊聊',obj:'農夫看著荒廢的田，走過去和他聊聊。',prompt:'聊一聊',target:()=>V3(-1.5,1.1,-1),para:'寓意',speaker:'農夫',dialogBtn:'接受挑戰',
+ text:'這就是「守株待兔」的由來，提醒我們不能只靠一次的好運氣，要用心努力，才會有真正的收穫。',
+ steps:[
+ {type:'fill',level:'推論',q:'根據故事，選出最適合填入空格的詞語。',sentence:'農夫撿到兔子，其實只是一次＿的意外。',tiles:['偶然','苦練','計畫','學問'],answer:'偶然',hint:'那天他並沒有做什麼特別的事，兔子是自己撞上來的。'},
+ {type:'tf',level:'擷取訊息',q:'農夫一直守在樹樁旁，最後等到了更多兔子。',answer:false,hint:'回想你陪他等的那幾天：樹樁旁發生了什麼，田裡又變成什麼樣子？'},
+ ]},
+{id:16,idiom:'shouzhu',last:true,world:'village',env:'hutong',spawn:[0,0,8],name:'活用：守株待兔',quest:'幫村長解決問題',obj:'村民又遇到一些事，去問問村長。',prompt:'問村長',target:()=>V3(4,1.2,2),para:'活用',speaker:'村長',dialogBtn:'我來幫忙',
+ text:'村民聽完農夫的故事，也想起自己遇過的事。來幫大家判斷看看吧！',
+ steps:[
+ {type:'choice',level:'詮釋',q:'從故事來看，現在我們用「守株待兔」形容什麼樣的情況？',options:['不肯努力，只想靠運氣','耐心等候，終於成功','勤勞工作，天天下田','動作敏捷，反應很快'],answer:0,hint:'農夫放下了什麼，又在期待什麼？'},
+ {type:'match',level:'詮釋',q:'村民遇到這些事，哪些可以用「守株待兔」形容？',cards:['上次猜題猜中了，這次就不讀書，等著再猜中一次','每天練習投籃，比賽時終於投進關鍵的一球','抽獎中過一次，之後天天只等抽獎，什麼事都不做'],zones:['適用','不適用'],answer:{'上次猜題猜中了，這次就不讀書，等著再猜中一次':'適用','每天練習投籃，比賽時終於投進關鍵的一球':'不適用','抽獎中過一次，之後天天只等抽獎，什麼事都不做':'適用'},hint:'判斷重點：這個人是靠努力，還是靠等待好運再次發生？'},
+ {type:'choice',level:'評鑑',q:'村裡的告示寫了四句話，哪一句的「守株待兔」用得正確？',options:['他不肯找工作，整天守株待兔，等別人送錢來。','這隻兔子守株待兔，跑得比誰都還要快。','同學們守株待兔，一起把教室打掃乾淨。','他守株待兔地種田，每天都早出晚歸。'],answer:0,hint:'這個成語不是在說兔子，也不是在說勤勞。哪一句的人物只想等好處上門？'},
+ ]},
+/* 刻舟求劍 */
+{id:17,idiom:'kezhou',first:true,kind:'story',world:'river',env:'dawn',scene:'drop',cam:'boatNear',name:'寶劍落水',para:'故事',speaker:'旁白',
+ text:'戰國時，有一個楚國人坐船渡江。船到江心，他一不小心，隨身的寶劍就從船邊掉進水裡。'},
+{id:18,kind:'story',world:'river',env:'dawn',scene:'mark',cam:'boatNear',name:'刻下記號',para:'故事',speaker:'楚國人',dialogBtn:'這樣找得到嗎？',
+ text:'他一點也不著急，拿起小刀在船邊刻了一個記號，說：「我的劍就是從這裡掉下去的。」'},
+{id:19,kind:'story',free:true,world:'river',env:'dawn',scene:'shore',spawn:[-3,0,7],name:'跟著船走',quest:'上船做實驗',obj:'走到碼頭上船，看看船、記號和寶劍的位置會怎麼變。',prompt:'上船',target:()=>V3(-3,1,3),para:'故事',speaker:'旁白',mid:'boat',dialogBtn:'原來如此',
+ text:'船靠岸後，他從刻著記號的地方跳進水裡找劍，卻怎麼也找不到。船已經往前走了，劍卻還留在原來的地方，這樣找劍怎麼找得到呢？'},
+{id:20,world:'river',env:'dawn',scene:'dockman',spawn:[-6,0,7],name:'溼答答的楚國人',quest:'和楚國人聊聊',obj:'楚國人全身溼透，走過去和他聊聊。',prompt:'聊一聊',target:()=>V3(-1,1.1,4.5),para:'寓意',speaker:'楚國人',dialogBtn:'接受挑戰',
+ text:'這就是「刻舟求劍」的由來，提醒我們情況改變了，做法也要跟著改變，不能死守舊方法。',
+ steps:[
+ {type:'order',level:'統整',q:'根據故事，楚國人依序做了哪些事？依序點選。',items:['寶劍從船邊掉進江裡','在船邊刻下一個記號','船靠岸後下水找劍'],labels:['最先','最後'],hint:'先發生意外，他才做記號，船停了才下水。'},
+ {type:'choice',level:'推論',q:'根據故事，楚國人為什麼找不到寶劍？',options:['船移動了，劍卻沒有動','記號刻得還不夠深','江水太深又太冰冷','寶劍被別人撿走了'],answer:0,hint:'回想實驗：划船之後，記號和寶劍各在哪裡？'},
+ ]},
+{id:21,idiom:'kezhou',last:true,world:'village',env:'hutong',spawn:[0,0,8],name:'活用：刻舟求劍',quest:'幫村長解決問題',obj:'村民又遇到一些事，去問問村長。',prompt:'問村長',target:()=>V3(4,1.2,2),para:'活用',speaker:'村長',dialogBtn:'我來幫忙',
+ text:'村裡也有人遇到情況改變卻不知道。來幫大家判斷看看吧！',
+ steps:[
+ {type:'choice',level:'詮釋',q:'從故事來看，現在我們用「刻舟求劍」形容什麼樣的情況？',options:['情況變了，做法卻不變','記性很好，不忘舊事','細心保管，東西不丟','船行很快，一路順風'],answer:0,hint:'記號一直在船上，但船的位置已經變了。這是在說怎樣的做法？'},
+ {type:'match',level:'詮釋',q:'村民遇到這些事，哪些可以用「刻舟求劍」形容？',cards:['道路早就改了，還堅持照舊地圖走，結果迷路','看到外面下大雨，改走有屋簷的路回家','課本換了新版本，還只背舊版的內容去考試'],zones:['適用','不適用'],answer:{'道路早就改了，還堅持照舊地圖走，結果迷路':'適用','看到外面下大雨，改走有屋簷的路回家':'不適用','課本換了新版本，還只背舊版的內容去考試':'適用'},hint:'判斷重點：情況改變之後，這個人的做法有沒有跟著改變？'},
+ {type:'choice',level:'評鑑',q:'村裡的告示寫了四句話，哪一句的「刻舟求劍」用得正確？',options:['規定早就改了，他還照舊辦，真是刻舟求劍。','他刻舟求劍，把這艘船雕得非常漂亮。','他划船的技術刻舟求劍，一下就到對岸。','他刻舟求劍，很快就把失物全部找回。'],answer:0,hint:'不要只看字面上的船和劍。哪一句是在說「不知變通」？'},
+ ]},
+/* 綜合挑戰 */
+{id:22,world:'village',env:'hutong',spawn:[0,0,8],name:'綜合挑戰',quest:'最後的委託',obj:'三張成語卡都到手了！回去找村長。',prompt:'接受委託',target:()=>V3(4,1.2,2),para:'綜合挑戰',speaker:'村長',dialogBtn:'交給我',
+ text:'太厲害了！最後請你用三張成語卡，幫村民挑出最合適的成語。',
+ steps:[
+ {type:'match',level:'統整',q:'這些事分別該用哪個成語形容？',cards:['聽到一點風聲，就嚇得整晚睡不著','撿過一次便宜，就天天等著再撿便宜','換了新老師，還用舊方法準備，不肯調整'],zones:['杯弓蛇影','守株待兔','刻舟求劍'],answer:{'聽到一點風聲，就嚇得整晚睡不著':'杯弓蛇影','撿過一次便宜，就天天等著再撿便宜':'守株待兔','換了新老師，還用舊方法準備，不肯調整':'刻舟求劍'},hint:'想一想：這個人是自己嚇自己、只想靠運氣，還是不知道要變通？'},
+ {type:'choice',level:'評鑑',q:'小明聽說「教室鬧鬼」，就不敢單獨進教室。朋友陪他去查看，才發現怪聲是窗戶沒關。下列哪個成語最適合形容小明原本的樣子？',options:['杯弓蛇影','守株待兔','刻舟求劍','畫蛇添足'],answer:0,hint:'小明害怕的東西真的存在嗎？'},
+ ]},
 ];
 let _no=0,_pi=0; const POS=[2,0,3,1];
-ST.forEach(s=>{s.act=s.id===0?1:s.id<=9?2:3; if(s.steps){s.steps.forEach(q=>{q.no=++_no; if(q.type==='choice')q.pos=POS[_pi++%4];});}});
-const MAX_SEALS=_no+1; // 題目 + 實驗判斷
+ST.forEach(s=>{s.act=s.id===0?1:s.id<=10?2:s.id<=16?3:s.id<=21?4:5; if(s.steps){s.steps.forEach(q=>{q.no=++_no; if(q.type==='choice')q.pos=POS[_pi++%4];});}});
+const MAX_SEALS=_no+ST.filter(s=>s.mid).length; // 題目 + 實驗判斷
+const IDIOM_COUNT=Object.keys(IDIOMS).length;
 const GRADES=[[.9,'明察秋毫小偵探'],[.7,'追根究柢小偵探'],[.45,'細心探查小偵探'],[0,'勇於求真小偵探']];
 const ENV={
+ noon:{hz:0xeef2dc,zn:0x7db8ea,sunC:0xfff6e0,sunI:3.2,sunD:[10,24,8],hemiS:0xdcecff,hemiG:0xa8a06a,hemiI:.75,fog:0xe6efd8,fogD:.008,exp:.8,lamp:.3},
+ fieldDusk:{hz:0xf3bd8a,zn:0x6d78a8,sunC:0xffc48a,sunI:1.7,sunD:[-14,10,8],hemiS:0xd5c4d8,hemiG:0x8f7a5c,hemiI:.65,fog:0xe0b990,fogD:.01,exp:.88,lamp:.3},
+ dawn:{hz:0xf8d3b8,zn:0x86b3df,sunC:0xffe0c0,sunI:2.4,sunD:[-10,18,12],hemiS:0xe4e6f6,hemiG:0x90a08a,hemiI:.72,fog:0xf0dcc8,fogD:.008,exp:.85,lamp:.25},
  hutong:{hz:0xf7e7c6,zn:0x7fb6e6,sunC:0xfff0d0,sunI:3,sunD:[14,22,10],hemiS:0xdcecff,hemiG:0xb49a6c,hemiI:.75,fog:0xf0e2c4,fogD:.009,exp:.82,lamp:.5},
  hall:{hz:0xf2d9a8,zn:0xf2d9a8,sunC:0xffe3b0,sunI:1.2,sunD:[3,9,5],hemiS:0xfff0d8,hemiG:0xa98a60,hemiI:1.05,fog:0xe9d3a8,fogD:.002,exp:.95,lamp:2},
  hallDim:{hz:0x8f7a68,zn:0x6a5f62,sunC:0xc7cfe8,sunI:.45,sunD:[3,9,5],hemiS:0xbfc4dc,hemiG:0x6f5a44,hemiI:.55,fog:0x6d5f58,fogD:.004,exp:.9,lamp:1.2},
@@ -240,11 +299,11 @@ const woodTex=(rx,ry)=>ctex(512,512,(x,w,h)=>{x.fillStyle='#d8b98a';x.fillRect(0
 const plasterTex=(rx,ry)=>ctex(256,256,(x,w,h)=>{x.fillStyle='#efe4ca';x.fillRect(0,0,w,h);for(let i=0;i<900;i++){x.fillStyle=`rgba(${120+rnd(0,60)},${100+rnd(0,40)},70,${rnd(.015,.05)})`;x.fillRect(rnd(0,w),rnd(0,h),rnd(1,5),rnd(1,5));}},rx,ry);
 const stoneTex=(rx,ry)=>ctex(512,512,(x,w,h)=>{x.fillStyle='#b7ad97';x.fillRect(0,0,w,h);for(let r=0;r<8;r++)for(let c=0;c<8;c++){const off=r%2?32:0;x.fillStyle=`hsl(40,${13+rnd(-3,4)}%,${73+rnd(-6,6)}%)`;x.fillRect(c*64+off+2,r*64+2,60,60);}},rx,ry);
 const grassTex=(rx,ry)=>ctex(256,256,(x,w,h)=>{x.fillStyle='#9fc36c';x.fillRect(0,0,w,h);for(let i=0;i<1100;i++){x.fillStyle=`hsl(${80+rnd(-13,17)},45%,${50+rnd(-10,10)}%)`;x.fillRect(rnd(0,w),rnd(0,h),2,rnd(2,6));}},rx,ry);
-function sign(text,w,h,{bg='#6f2c1c',fg='#f5d77e',vertical=false,font='"LXGW WenKai TC","Microsoft JhengHei",serif',size=.62}={}){
- const S=256,cw=Math.round(S*w),ch=Math.round(S*h);const t=ctex(cw,ch,(x,W,H)=>{x.fillStyle=bg;x.fillRect(0,0,W,H);x.strokeStyle=fg;x.lineWidth=7;x.strokeRect(10,10,W-20,H-20);x.fillStyle=fg;x.textAlign='center';x.textBaseline='middle';
+function sign(text,w,h,{bg='#6f2c1c',fg='#f5d77e',vertical=false,font='"LXGW WenKai TC","Microsoft JhengHei",serif',size=.62,frame=true}={}){
+ const S=256,cw=Math.round(S*w),ch=Math.round(S*h);const t=ctex(cw,ch,(x,W,H)=>{x.fillStyle=bg;x.fillRect(0,0,W,H);if(frame){x.strokeStyle=fg;x.lineWidth=7;x.strokeRect(10,10,W-20,H-20);}x.fillStyle=fg;x.textAlign='center';x.textBaseline='middle';
   const lines=[].concat(text);if(vertical){const fs=Math.min(W*.72,(H-40)/lines[0].length*.92);x.font=`700 ${fs}px ${font}`;[...lines[0]].forEach((c,i,a)=>x.fillText(c,W/2,H/2+(i-(a.length-1)/2)*fs*1.06));}
   else{const fs=Math.min(H*size/lines.length,(W-40)/Math.max(...lines.map(l=>l.length))*.95);x.font=`700 ${fs}px ${font}`;lines.forEach((l,i)=>x.fillText(l,W/2,H/2+(i-(lines.length-1)/2)*fs*1.22));}});
- const m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshStandardMaterial({map:t,roughness:.8}));return m;}
+ const m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshStandardMaterial({map:t,roughness:.8,emissive:0xffffff,emissiveMap:t,emissiveIntensity:.4}));return m;}
 
 function char({robe,trim,skin=0xf6d3ae,hair=0x2f2420,hat='bun',belt=0xd8a743,beard=false}){
  const g=new THREE.Group(),b=new THREE.Group();g.add(b);
@@ -269,12 +328,48 @@ function animChar(c,dt,speed,mode){const u=c.userData;u.t+=dt*(speed>0?speed*3.2
  else{u.legL.rotation.x*=.8;u.legR.rotation.x*=.8;u.armL.rotation.x=Math.sin(u.t*.6)*.04;u.armR.rotation.x=-Math.sin(u.t*.6)*.04;u.b.position.y=Math.sin(u.t*.7)*.008;u.b.rotation.z=0;}
  u.head.rotation.y=Math.sin(u.t*.25)*.06;
  if(mode==='seat'){u.b.position.y=-.14;u.legL.rotation.x=-1.3;u.legR.rotation.x=-1.3;}}
-const CHARS={visitor:char({robe:0x7fb3c8,trim:0xf6f0dd,hat:'scholar'}),friend:char({robe:0x5f7fa8,trim:0xe9e2cf,hat:'bun'}),leguang:char({robe:0x8a68ab,trim:0xf0e4c7,hair:0x8a8680,hat:'guan',beard:true}),elder:char({robe:0xb8835c,trim:0xf0e4c7,hair:0xd9d5cc,hat:'bun',beard:true})};
+/* 主角：依 images/hero.png 建模（橘帽、白帽簷、黑髮、關西校服、藍短褲、橘藍鞋） */
+const LOGO_DATA='data:image/jpeg;base64,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';
+function makeHero(){const g=new THREE.Group(),b=new THREE.Group();g.add(b);
+ const SK=M(0xf9d3b4,.7),SH=M(0x6db4ef,.8),SL=M(0x2750d8,.75),PA=M(0x4ca2ee,.8),WH=M(0xffffff,.85),OR=M(0xf08a24,.7);
+ // 身體與上衣
+ cyl(.19,.25,.4,SH,0,.63,0,b,18);cyl(.11,.13,.03,SL,0,.84,0,b,16);
+ const chest=sign('關西',.34,.19,{bg:'#6db4ef',fg:'#1f3fd0',size:.9,frame:false,font:'"Microsoft JhengHei","PingFang TC",sans-serif'});chest.position.set(0,.68,-.222);chest.rotation.set(-.14,Math.PI,0);b.add(chest);
+ // 短褲
+ cyl(.24,.27,.2,PA,0,.36,0,b,18);[-1,1].forEach(s=>box(.02,.2,.09,WH,s*.262,.36,0,b,false));
+ // 頭
+ const head=new THREE.Group();head.position.y=1.14;b.add(head);
+ const sk=sph(.36,SK,0,0,0,head);sk.scale.set(1.08,.98,1);
+ [-1,1].forEach(s=>sph(.075,SK,s*.385,-.03,0,head));
+ // 頭髮
+ const hairM=M(0x19161a,.45);const hr=mesh(new THREE.SphereGeometry(.37,20,14,0,Math.PI*2,0,Math.PI*.55),hairM,0,.03,.03,head);hr.scale.set(1.08,1,1.02);
+ for(let i=0;i<13;i++){const a=i/13*Math.PI*2,sp=mesh(new THREE.ConeGeometry(.075,.2,6),hairM,Math.sin(a)*.36,.0,Math.cos(a)*.34+.02,head);sp.rotation.set(Math.PI+Math.cos(a)*.55,0,-Math.sin(a)*.55);if(Math.cos(a)<-.75)sp.visible=false;}
+ [-.17,0,.17].forEach((x,i)=>{const f=mesh(new THREE.ConeGeometry(.08,.17,6),hairM,x,.12-Math.abs(x)*.12,-.325,head);f.rotation.set(Math.PI-.5,0,x*1.1);});
+ // 臉
+ [-1,1].forEach(s=>{const e=sph(.075,0xffffff,s*.15,-.03,-.315,head,false);e.scale.set(.95,1.15,.45);const p=sph(.058,0x3f2312,s*.15,-.03,-.345,head,false);p.scale.set(1,1.15,.4);sph(.018,0xffffff,s*.135,.0,-.372,head,false);
+  const br=box(.13,.022,.02,0x20181a,s*.155,.075,-.335,head,false);br.rotation.z=s*.14;const bl=sph(.058,0xf6a8a0,s*.235,-.125,-.262,head,false);bl.scale.set(1,.7,.3);});
+ const mo=sph(.062,0xcc4b4f,0,-.16,-.335,head,false);mo.scale.set(1.15,.85,.4);const to=sph(.038,0xf58a8a,0,-.178,-.356,head,false);to.scale.set(1.1,.6,.3);
+ sph(.016,0xf0b896,0,-.075,-.36,head,false);
+ // 帽子
+ const cap=new THREE.Group();cap.rotation.set(.05,.32,-.08);cap.position.y=.03;head.add(cap);
+ const dome=mesh(new THREE.SphereGeometry(.385,22,14,0,Math.PI*2,0,Math.PI*.5),OR,0,.1,.02,cap);dome.scale.set(1.06,.82,1.06);
+ sph(.05,OR,0,.42,.02,cap);
+ const brim=mesh(new THREE.CylinderGeometry(.31,.31,.028,24),WH,0,.14,-.34,cap);brim.scale.set(1.05,1,1.05);brim.rotation.x=-.18;
+ const lt=new THREE.TextureLoader().load(LOGO_DATA);lt.colorSpace=THREE.SRGBColorSpace;
+ const logo=new THREE.Mesh(new THREE.PlaneGeometry(.2,.19),new THREE.MeshStandardMaterial({map:lt,roughness:.8}));
+ const dir=V3(0,.31,-.35);const nrm=V3(0,.56,-.83).normalize();logo.position.copy(dir);logo.quaternion.setFromUnitVectors(V3(0,0,1),nrm);cap.add(logo);
+ // 手
+ const arm=s=>{const a=new THREE.Group();a.position.set(s*.22,.8,0);const sl=sph(.095,SL,0,-.05,0,a);sl.scale.y=1.15;cyl(.058,.066,.26,SK,0,-.22,0,a,10);sph(.07,SK,0,-.37,0,a);b.add(a);a.rotation.z=s*.15;return a;};
+ // 腳
+ const leg=s=>{const a=new THREE.Group();a.position.set(s*.115,.27,0);cyl(.07,.065,.14,SK,0,-.07,0,a,10);cyl(.066,.07,.09,WH,0,-.17,0,a,10);box(.14,.075,.25,OR,0,-.235,-.035,a);box(.1,.045,.13,SL,0,-.185,-.055,a);b.add(a);return a;};
+ g.userData={b,armL:arm(-1),armR:arm(1),legL:leg(-1),legR:leg(1),head,t:0};return g;}
+const CHARS={hero:null,friend:char({robe:0x5f7fa8,trim:0xe9e2cf,hat:'bun'}),leguang:char({robe:0x8a68ab,trim:0xf0e4c7,hair:0x8a8680,hat:'guan',beard:true}),elder:char({robe:0xb8835c,trim:0xf0e4c7,hair:0xd9d5cc,hat:'bun',beard:true}),farmer:char({robe:0x9c8455,trim:0xe7dcc0,hat:'bun',belt:0x6a4f31}),man:char({robe:0x4f7d6e,trim:0xe7e2cf,hat:'scholar'})};
+CHARS.hero=makeHero();
 Object.values(CHARS).forEach(c=>{scene.add(c);c.visible=false;});
 
 /* ---------- 成語村 ---------- */
-const W={village:new THREE.Group(),hall:new THREE.Group()};scene.add(W.village,W.hall);
-const blocks={village:[],hall:[]};
+const W={village:new THREE.Group(),hall:new THREE.Group(),field:new THREE.Group(),river:new THREE.Group()};scene.add(W.village,W.hall,W.field,W.river);
+const blocks={village:[],hall:[],field:[],river:[]};
 function roof(w,d,h,c,x,y,z,p){const g=new THREE.CylinderGeometry(.01,Math.SQRT1_2,h,4,1);g.rotateY(Math.PI/4);const m=mesh(g,M(c,.75),x,y,z,p);m.scale.set(w,1,d);return m;}
 function house({x,z,w=5,d=4,h=2.3,wall=0xefe0bf,roofC=0x5c6773,trim=0xa33d2a,sign:label,locked}){const g=new THREE.Group();g.position.set(x,0,z);W.village.add(g);
  box(w,h,d,M(wall),0,h/2,0,g);box(w+.3,.15,d+.3,trim,0,h+.03,0,g);roof(w+1.4,d+1.4,1.45,roofC,0,h+.8,0,g);
@@ -291,8 +386,8 @@ function buildVillage(){const v=W.village;
  const road=mesh(new THREE.PlaneGeometry(5,8),new THREE.MeshStandardMaterial({map:stoneTex(2,3),roughness:.95}),0,.014,-5,v,false);road.rotation.x=-Math.PI/2;
  const road2=mesh(new THREE.PlaneGeometry(4,8),new THREE.MeshStandardMaterial({map:stoneTex(2,3),roughness:.95}),0,.014,13,v,false);road2.rotation.x=-Math.PI/2;
  house({x:0,z:-10,w:7,d:4.5,h:2.8,sign:'杯弓蛇影'});
- house({x:-10.5,z:-2,w:5,d:4,sign:['守株待兔','即將開放'],locked:true,roofC:0x75654f}).rotation.y=Math.PI/2.4;
- house({x:10.5,z:-2,w:5,d:4,sign:['刻舟求劍','即將開放'],locked:true,roofC:0x5a7082}).rotation.y=-Math.PI/2.4;
+ house({x:-10.5,z:-2,w:5,d:4,sign:'守株待兔',roofC:0x75654f}).rotation.y=Math.PI/2.4;
+ house({x:10.5,z:-2,w:5,d:4,sign:'刻舟求劍',roofC:0x5a7082}).rotation.y=-Math.PI/2.4;
  house({x:-11,z:9,w:5,d:4,wall:0xe7d7b3,roofC:0x6b5e5e}).rotation.y=Math.PI/1.6;
  house({x:11,z:9,w:5,d:4,wall:0xe7d7b3,roofC:0x4f6573}).rotation.y=-Math.PI/1.6;
  [[-7,-7,1.1],[7,-7,1.15],[-14,4,1.25],[14,4,1.2],[-5,13,.95],[5,13,1],[-16,-8,1.5],[16,-8,1.5],[-17,14,1.4],[17,14,1.4]].forEach(a=>tree(...a));
@@ -357,42 +452,130 @@ function buildHall(){const h=W.hall;const X=5,Z0=-3.5,Z1=5.6,Y=3.4;
  H.itemHome={bow:bow.position.clone(),scroll:sc.position.clone(),lantern:lg.position.clone()};
 }
 
+/* ---------- 守株待兔：農田 ---------- */
+const FD={},RV={};
+const SWORD_BED=V3(.4,-1.32,1.05);
+function buildField(){const f=W.field;
+ const g=mesh(new THREE.PlaneGeometry(90,90),new THREE.MeshStandardMaterial({map:grassTex(20,20),roughness:1}),0,0,0,f,false);g.rotation.x=-Math.PI/2;
+ const soil=ctex(512,512,(x,w,h)=>{x.fillStyle='#8d6a44';x.fillRect(0,0,w,h);for(let i=0;i<8;i++){x.fillStyle=i%2?'#7c5b39':'#9c7850';x.fillRect(0,i*64,w,64);}for(let i=0;i<1400;i++){x.fillStyle=`rgba(50,30,15,${rnd(.04,.13)})`;x.fillRect(rnd(0,w),rnd(0,h),rnd(1,4),rnd(1,3));}},2,2);
+ const sp=mesh(new THREE.PlaneGeometry(17,10),new THREE.MeshStandardMaterial({map:soil,roughness:1}),0,.012,-4.2,f,false);sp.rotation.x=-Math.PI/2;
+ // 田埂
+ box(17.6,.14,.32,0x9a8c60,0,.07,.95,f,false);
+ // 樹樁
+ const st=new THREE.Group();st.position.set(0,0,-3);f.add(st);FD.stump=st;
+ cyl(.5,.62,.72,0x7a5636,0,.36,0,st,14);cyl(.5,.5,.02,0xd8b98a,0,.73,0,st,14,false);cyl(.28,.28,.022,0xb8945f,0,.735,0,st,14,false);
+ [0,1.9,3.6,5.1].forEach(a=>{const r=mesh(new THREE.ConeGeometry(.14,.55,6),M(0x6a4a2d),Math.sin(a)*.62,.14,Math.cos(a)*.62,st);r.rotation.set(Math.cos(a)*1.3,0,-Math.sin(a)*1.3);});
+ blocks.field.push({x0:-.75,x1:.75,z0:-3.75,z1:-2.25});
+ // 作物
+ FD.crops=new THREE.Group();f.add(FD.crops);const cm=M(0x5f9b3e,.9),cy=M(0xd2b24a,.8);
+ for(let r=0;r<4;r++)for(let i=-8;i<=8;i++){if(Math.abs(i)<3&&r<3)continue;const c=new THREE.Group();c.position.set(i*.95+rnd(-.1,.1),0,-7.8+r*1.45+rnd(-.1,.1));cyl(.04,.05,.55,cm,0,.27,0,c,6,false);const h=mesh(new THREE.ConeGeometry(.17,.42,6),cy,0,.68,0,c);FD.crops.add(c);}
+ // 雜草
+ FD.weeds=new THREE.Group();f.add(FD.weeds);const wm=M(0x4f8a2f,.95);
+ for(let i=0;i<78;i++){const a=mesh(new THREE.ConeGeometry(rnd(.09,.2),rnd(.45,1),5),wm,rnd(-8,8),.0,rnd(-8.6,.4),FD.weeds);if(Math.hypot(a.position.x,a.position.z+3)<1.3)a.position.x+=2;a.userData.h=a.geometry.parameters.height;}
+ // 農舍與樹
+ const hut=new THREE.Group();hut.position.set(9.5,0,3.5);hut.rotation.y=-.9;f.add(hut);box(3.4,1.9,2.8,M(0xe0caa0),0,.95,0,hut);roof(4.4,3.8,1.25,0x8b7650,0,2.55,0,hut);box(.9,1.4,.08,0x7d5a3a,0,.7,1.42,hut);blocks.field.push({x0:7.4,x1:11.6,z0:1.4,z1:5.6});
+ [[-9,3,1.2],[-11,-6,1.4],[12,-7,1.5],[-5,8,1],[6,9,1.1]].forEach(([x,z,s])=>{const t=new THREE.Group();t.position.set(x,0,z);t.scale.setScalar(s);f.add(t);cyl(.16,.24,1.4,0x7a5636,0,.7,0,t,8);sph(.95,M(0x6da052,.95),0,1.9,0,t);sph(.62,M(0x77aa58,.95),.45,1.5,.1,t);blocks.field.push({x0:x-.5,x1:x+.5,z0:z-.5,z1:z+.5});});
+ [[-40,-48,24],[-8,-58,30],[34,-50,26]].forEach(([x,z,h])=>{const m=mesh(new THREE.ConeGeometry(h*1.25,h,7),M(0x93b08f,1),x,h/2-.3,z,f,false);m.rotation.y=x;});
+ // 鋤頭
+ const hoe=new THREE.Group();f.add(hoe);FD.hoe=hoe;cyl(.025,.025,1.45,0x8a6840,0,.72,0,hoe,6);box(.3,.05,.2,0x7b7f83,0,1.42,-.09,hoe);
+ // 兔子
+ const r=new THREE.Group();f.add(r);FD.rabbit=r;const rw=M(0xf4efe5,.95),rp=M(0xf2b0b0,.9);
+ const rb=sph(.24,rw,0,.25,0,r);rb.scale.set(.85,.85,1.2);sph(.17,rw,0,.42,-.27,r);
+ [-1,1].forEach(s=>{const e=sph(.05,rw,s*.07,.67,-.25,r);e.scale.set(.75,2.6,.8);const i=sph(.026,rp,s*.07,.67,-.285,r,false);i.scale.set(.8,3.5,.3);sph(.024,0x241a18,s*.08,.45,-.42,r,false);});
+ sph(.08,rw,0,.3,.31,r);
+}
+function setFieldDays(d){FD.days=d;const t=d/5;FD.weeds.children.forEach(w=>{const s=Math.max(.001,t*1.25);w.scale.set(.5+.7*t,s,.5+.7*t);w.position.y=w.userData.h*s/2;});FD.crops.children.forEach(c=>{c.scale.y=Math.max(.42,1-t*.58);c.rotation.z=t*.45;c.children[1].material=t>.5?M(0x8d7a42,.9):M(0xd2b24a,.8);});}
+function resetField(){if(!FD.rabbit)return;FD.rabbit.visible=false;FD.run=null;setFieldDays(0);FD.hoe.visible=true;FD.hoe.position.set(-2.2,0,-1.5);FD.hoe.rotation.set(0,0,.14);}
+
+/* ---------- 刻舟求劍：大江 ---------- */
+function buildRiver(){const r=W.river;
+ const bank=(z,d)=>{const m=mesh(new THREE.BoxGeometry(110,1,d),new THREE.MeshStandardMaterial({map:grassTex(26,5),roughness:1}),0,-.32,z,r,false);m.receiveShadow=true;return m;};
+ bank(2.5+15,30);bank(-7-20,40);
+ const bed=mesh(new THREE.PlaneGeometry(110,10),M(0xc8b07c,1),0,-1.5,-2.5,r,false);bed.rotation.x=-Math.PI/2;
+ const wt=ctex(256,256,(x,w,h)=>{x.fillStyle='#fff';x.fillRect(0,0,w,h);x.strokeStyle='rgba(120,190,225,.55)';x.lineWidth=3;for(let i=0;i<20;i++){const a=rnd(0,w),b=rnd(0,h);x.beginPath();x.moveTo(a,b);x.quadraticCurveTo(a+18,b-6,a+36,b);x.stroke();}},20,3);
+ const w=mesh(new THREE.PlaneGeometry(110,10),new THREE.MeshBasicMaterial({color:0x58b6e4,map:wt,transparent:true,opacity:.72,depthWrite:false,fog:false}),0,0,-2.5,r,false);w.rotation.x=-Math.PI/2;RV.water=w;
+ // 船
+ const bt=new THREE.Group();r.add(bt);RV.boat=bt;const hull=M(0x9a6236,.7);
+ box(4.4,.5,1.5,hull,0,.12,0,bt);box(4.45,.09,1.56,0xc48b52,0,.39,0,bt);
+ [-1,1].forEach(s=>{const c=mesh(new THREE.ConeGeometry(.76,1.1,4),hull,s*2.6,.15,0,bt);c.rotation.z=-s*Math.PI/2;c.rotation.x=Math.PI/4;c.scale.set(1,1,.7);});
+ const cab=mesh(new THREE.CylinderGeometry(.68,.68,1.5,14,1,false,0,Math.PI),M(0x8c7a55,.85),-1.15,.45,0,bt);cab.rotation.set(0,Math.PI/2,Math.PI/2);
+ RV.mark=box(.1,.22,.03,0xd2301f,.4,.25,.77,bt,false);RV.mark2=box(.22,.1,.03,0xd2301f,.4,.25,.775,bt,false);
+ // 寶劍
+ const sw=new THREE.Group();r.add(sw);RV.sword=sw;sw.scale.setScalar(1.35);box(1,.06,.11,M(0xe5eef4,.22,{metal:.7,em:0x8fb7d8,emI:.5}),0,0,0,sw,false);box(.05,.13,.27,M(0xd9a93f,.35,{metal:.6}),-.53,0,0,sw,false);box(.3,.07,.07,0x5a2c1a,-.7,0,0,sw,false);
+ RV.glow=new THREE.Mesh(new THREE.RingGeometry(.65,.74,36),new THREE.MeshBasicMaterial({color:0xfff2a8,transparent:true,opacity:.75,fog:false,depthWrite:false}));RV.glow.rotation.x=-Math.PI/2;RV.glow.position.set(SWORD_BED.x,-1.3,SWORD_BED.z);r.add(RV.glow);
+ // 地標：柳樹（掉劍處對岸）與塔（下游）
+ const wl=new THREE.Group();wl.position.set(.4,.18,-8.2);r.add(wl);wl.scale.setScalar(1.6);cyl(.2,.3,2,0x6d4d30,0,1,0,wl,8);for(let i=0;i<9;i++){const a=i/9*Math.PI*2,m=mesh(new THREE.ConeGeometry(.42,2,6),M(0x8bb65a,.95),Math.sin(a)*.72,1.65,Math.cos(a)*.72,wl);m.rotation.x=Math.PI;}sph(.9,M(0x7fac53,.95),0,2.5,0,wl);
+ const wlS=sign('柳樹',1.2,.5);wlS.position.set(.4,1.1,-6.85);r.add(wlS);
+ const tw=new THREE.Group();tw.position.set(13,.18,-8.8);r.add(tw);for(let i=0;i<4;i++){const y=i*1.35,s=1-i*.17;box(1.9*s,1.15,1.9*s,M(0xeadfbd),0,y+.58,0,tw);roof(3.2*s,3.2*s,.6,0x4f6573,0,y+1.42,0,tw);}
+ const twS=sign('高塔',1.2,.5);twS.position.set(13,1.1,-7.2);r.add(twS);
+ // 碼頭
+ box(1.5,.12,4,0x9c7a50,-3,.16,1.5,r);[[-3.6,.2],[-2.4,.2],[-3.6,1.6],[-2.4,1.6]].forEach(([x,z])=>cyl(.08,.08,1.7,0x6e5236,x,-.6,z,r,8));
+ box(1.5,.12,3,0x9c7a50,13,.16,2,r);
+ [[-14,6,1.3],[-18,10,1.5],[24,6,1.3],[28,10,1.1],[-22,-11,1.8],[24,-12,1.8]].forEach(([x,z,s])=>{const t=new THREE.Group();t.position.set(x,.18,z);t.scale.setScalar(s);r.add(t);cyl(.16,.24,1.4,0x7a5636,0,.7,0,t,8);sph(.95,M(0x6da052,.95),0,1.9,0,t);if(z>0)blocks.river.push({x0:x-.5,x1:x+.5,z0:z-.5,z1:z+.5});});
+ [[-44,-50,24],[-8,-62,30],[36,-54,26]].forEach(([x,z,h])=>{const m=mesh(new THREE.ConeGeometry(h*1.25,h,7),M(0x93b08f,1),x,h/2-.3,z,r,false);m.rotation.y=x;});
+}
+function resetRiver(){if(!RV.boat)return;RV.boat.position.set(0,0,0);RV.boatX=0;RV.onBoat=false;RV.mark.visible=RV.mark2.visible=false;RV.sword.position.copy(SWORD_BED);RV.sword.rotation.set(0,.4,0);RV.fall=null;RV.glow.visible=false;RV.clear=false;}
+
 /* ---------- 遊戲狀態 ---------- */
 const G={mode:'title',station:0,hp:100,hpEntry:100,feathers:[],mistakes:0,totalMistakes:0,ko:0,cleared:new Set(),unlocked:false,cards:[],world:null};
 const P={pos:V3(0,0,8),yaw:0,pitch:.32,speed:0,area:null,model:null,seat:false,moved:0,facing:0};
 const K={};const JOY={x:0,y:0};const CINE={on:false,pos:V3(),look:V3(),curLook:V3()};
-const STAR=new THREE.Group();{const s=mesh(new THREE.OctahedronGeometry(.17),new THREE.MeshStandardMaterial({color:0xf8cf52,emissive:0xf0b020,emissiveIntensity:1.7,roughness:.35}),0,0,0,STAR,false);s.scale.y=1.35;scene.add(STAR);STAR.visible=false;}
-let FLOW=0,pendingInteract=null,pendingDialog=null,curTarget=null;
+const STARS=[0,1,2].map(()=>{const G0=new THREE.Group(),s=mesh(new THREE.OctahedronGeometry(.17),new THREE.MeshStandardMaterial({color:0xf8cf52,emissive:0xf0b020,emissiveIntensity:1.7,roughness:.35}),0,0,0,G0,false);s.scale.y=1.35;scene.add(G0);G0.visible=false;return G0;});
+let FLOW=0,pendingInteract=null,pendingDialog=null,curTargets=[],showStars=false;
 const sleep=ms=>{const t=FLOW;return new Promise(r=>setTimeout(()=>{if(t===FLOW)r()},ms))};
 function toast(t,ms=2100){const e=$('toast');e.textContent=t;e.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('show'),ms);}
 function banner(t){const e=$('banner');e.textContent=t;e.classList.add('show');clearTimeout(banner.t);banner.t=setTimeout(()=>e.classList.remove('show'),1600);}
 function save(silent){store.set(SAVE_KEY,JSON.stringify({station:G.station,hp:G.hp,feathers:G.feathers,totalMistakes:G.totalMistakes,cleared:[...G.cleared],unlocked:G.unlocked,cards:G.cards}));if(!silent)toast('已存檔');}
 const loadSave=()=>{try{return JSON.parse(store.get(SAVE_KEY))}catch(e){return null}};
 const loadCerts=()=>{try{return JSON.parse(store.get(CERT_KEY))||[]}catch(e){return[]}};
-function updateHUD(){const s=ST[Math.min(G.station,ST.length-1)],p=POV[s.pov];$('avatar').textContent=p.ch;$('hudAct').textContent=ACTS[s.act].name+'・化身'+p.n;$('hudName').textContent=s.name;$('hpFill').style.width=G.hp+'%';$('hpFill').style.background=G.hp<=20?'#c0492f':'var(--green)';$('hpNum').textContent=G.hp;$('hudItems').textContent=`線索章 ${G.feathers.length} / ${MAX_SEALS}　成語卡 ${G.cards.length} / 1`;$('qT').textContent=s.quest||s.name;$('qO').textContent=s.obj||'閱讀故事。';}
+function updateHUD(){const s=ST[Math.min(G.station,ST.length-1)];$('hudAct').textContent=ACTS[s.act].name;$('hudName').textContent=s.name;$('hpFill').style.width=G.hp+'%';$('hpFill').style.background=G.hp<=20?'#c0492f':'var(--green)';$('hpNum').textContent=G.hp;$('hudItems').textContent=`線索章 ${G.feathers.length} / ${MAX_SEALS}　成語卡 ${G.cards.length} / ${IDIOM_COUNT}`;$('qT').textContent=s.hub?'選一個成語去探險':(s.quest||s.name);$('qO').textContent=s.hub?(G.cards.length>=IDIOM_COUNT?'三張成語卡都到手了！回去找村長。':`跟著金色星星走進房子，還有 ${IDIOM_COUNT-G.cards.length} 個成語等你破解。`):(s.obj||'閱讀故事。');}
 function showGameUI(){['hud','quest','menu'].forEach(i=>$(i).classList.remove('hide'));$('pad').classList.add('on');$('title').classList.add('hide');}
 
 /* ---------- 世界配置 ---------- */
 function resetItems(){if(!H.bow)return;['bow','scroll','lantern'].forEach(k=>{H[k].position.copy(H.itemHome[k]);H[k].visible=true;H[k].scale.setScalar(1);});H.snake.visible=true;}
-function placeWorld(n){const s=ST[n];if(!s)return;G.world=s.world;W.village.visible=s.world==='village';W.hall.visible=s.world==='hall';sky.visible=s.world==='village';blockList=blocks[s.world];
- P.area=s.area||(s.world==='village'?{x0:-15,x1:15,z0:-9,z1:15}:{x0:-4.45,x1:4.45,z0:-3.1,z1:4.9});
- Object.values(CHARS).forEach(c=>c.visible=false);CHARS.elder.visible=false;
- P.model=CHARS[s.pov];P.model.visible=true;P.seat=false;P.yaw=0;P.pitch=.32;P.speed=0;
+const AREA={village:{x0:-15,x1:15,z0:-9,z1:15},hall:{x0:-4.45,x1:4.45,z0:-3.1,z1:4.9},field:{x0:-8,x1:8,z0:-7,z1:8},river:{x0:-12,x1:12,z0:2.7,z1:11}};
+const npc=(k,x,z,ry,seat=false,y=0)=>{const c=CHARS[k];c.visible=true;c.position.set(x,y,z);c.rotation.y=ry;c.userData.seat=seat;return c;};
+const standHero=(x,z,f)=>{P.pos.set(x,0,z);P.facing=f;};
+const SCENES={
+ banquet(){npc('friend',0,.05,0,true);npc('leguang',0,-2.45,Math.PI,true);standHero(-2.6,-.3,-Math.PI/2);},
+ empty(){P.model.visible=false;},
+ investigate(){npc('leguang',-2.7,.6,-Math.PI/2);},
+ reveal(){npc('friend',0,.05,0,true);npc('leguang',1.15,-.1,Math.PI*.3);standHero(-2.6,.2,-Math.PI/2);},
+ farm(){npc('farmer',-1.7,-1.5,-Math.PI/4);standHero(3.3,.6,Math.PI/4);},
+ rabbit(){npc('farmer',-2.6,-.8,-Math.PI/2.4);standHero(3.3,.6,Math.PI/4);FD.rabbit.visible=true;FD.rabbit.position.set(-9,0,-3);FD.rabbit.rotation.set(0,-Math.PI/2,0);FD.run={t:0};},
+ waiting(){npc('farmer',-1.25,-3,-Math.PI/2,true);FD.hoe.position.set(-3.2,.05,-1.2);FD.hoe.rotation.set(0,0,Math.PI/2);},
+ overgrown(){setFieldDays(5);npc('farmer',-1.5,-1,Math.PI*.15);FD.hoe.position.set(-3.2,.05,-1.2);FD.hoe.rotation.set(0,0,Math.PI/2);},
+ drop(){RV.onBoat=true;RV.sword.position.set(.4,.45,.95);RV.sword.rotation.set(0,0,0);RV.fall={t:-.8};npc('man',.9,0,Math.PI/2,false,.43);},
+ mark(){RV.onBoat=true;RV.mark.visible=RV.mark2.visible=true;RV.glow.visible=true;npc('man',.9,0,Math.PI/2,false,.43);},
+ shore(){RV.mark.visible=RV.mark2.visible=true;RV.boat.position.x=-.5;RV.boatX=-.5;npc('man',.4,0,Math.PI/2,false,.43);},
+ dockman(){RV.mark.visible=RV.mark2.visible=true;RV.boat.position.x=13;RV.boatX=13;npc('man',-1,4.5,Math.PI*.3);},
+};
+function placeWorld(n){const s=ST[n];if(!s)return;G.world=s.world;Object.entries(W).forEach(([k,g])=>g.visible=k===s.world);sky.visible=s.world!=='hall';blockList=blocks[s.world];
+ P.area=s.area||AREA[s.world];
+ Object.values(CHARS).forEach(c=>{c.visible=false;c.userData.seat=false;});
+ P.model=CHARS.hero;P.model.visible=true;P.seat=false;P.yaw=0;P.pitch=.32;P.speed=0;
  const sp=s.spawn||[0,0,2.8];P.pos.set(...sp);P.facing=0;
- resetItems();
- if(s.world==='village'){CHARS.elder.visible=true;CHARS.elder.position.set(4,0,2);CHARS.elder.rotation.y=Math.PI*.82;}
- if(s.scene==='banquet'||s.scene==='reveal'){P.pos.set(0,0,.05);P.seat=true;P.facing=0;const L=CHARS.leguang;L.visible=true;
-  if(s.scene==='banquet'){L.position.set(0,0,-2.45);L.rotation.y=Math.PI;L.userData.seat=true;}else{L.position.set(1.15,0,-.1);L.rotation.y=Math.PI*.3;L.userData.seat=false;}}
- if(s.scene==='empty'){P.model.visible=false;}
+ resetItems();resetField();resetRiver();
+ if(s.world==='village')npc('elder',4,2,Math.PI*.82);
+ if(s.scene)SCENES[s.scene]();
+ if(RV.onBoat)syncBoat();
  setEnv(s.env,G.mode==='title'?.01:.9);
- CINE.on=false;curTarget=s.target?s.target():null;STAR.visible=false;$('prompt').classList.add('hide');
+ CINE.on=false;curTargets=s.hub?hubTargets():s.target?[{pos:s.target(),prompt:s.prompt}]:[];showStars=false;STARS.forEach(x=>x.visible=false);$('prompt').classList.add('hide');
  applyPlayer();snapCamera();}
+function hubTargets(){if(G.cards.length>=IDIOM_COUNT)return[{pos:ST[22].target(),prompt:ST[22].prompt,go:22}];return Object.entries(IDIOMS).filter(([k])=>!G.cards.includes(k)).map(([k,d])=>({pos:d.door(),prompt:'探索'+d.name,go:d.first}));}
+function syncBoat(){const x=RV.boat.position.x;P.pos.set(x-.2,.43,0);P.facing=Math.PI/2;if(CHARS.man.visible&&Math.abs(CHARS.man.position.y-.43)<.01)CHARS.man.position.x=x+.9;}
 let blockList=[];
 function applyPlayer(){if(!P.model)return;P.model.position.copy(P.pos);P.model.rotation.y=P.facing;}
 const CAM={
  table:()=>({pos:V3(3.1,1.75,1.45),look:V3(.1,.75,-1.05)}),
  cup:()=>({pos:V3(0,1.42,-.58),look:CUP_POS.clone().add(V3(0,.15,.15))}),
  wall:()=>({pos:V3(0,1.3,camera.aspect<1?3.4:.9),look:V3(0,2.25,-3.4)}),
+ farm:()=>({pos:V3(camera.aspect<1?6:5.2,2.9,camera.aspect<1?8:5.6),look:V3(-.3,.6,-2.4)}),
+ stump:()=>({pos:V3(-1.6,1.8,camera.aspect<1?4.6:2.2),look:V3(-1,.45,-3)}),
+ boatNear:()=>({pos:V3(.9,2.5,camera.aspect<1?10:6),look:V3(.2,.1,.3)}),
+ boatWide:()=>({pos:V3(6.5,5.2,camera.aspect<1?34:15),look:V3(6.5,-.2,-1)}),
+ mark:()=>({pos:V3(RV.boat.position.x+.4,1.15,3.1),look:V3(RV.boat.position.x+.4,.3,.77)}),
+ bottom:()=>({pos:V3(SWORD_BED.x+.3,1.5,camera.aspect<1?4.6:3),look:SWORD_BED.clone().add(V3(0,-.7,1.1))}),
 };
 function cine(name,instant){const c=typeof name==='string'?CAM[name]():name;CINE.on=true;CINE.pos.copy(c.pos);CINE.look.copy(c.look);if(instant){camera.position.copy(c.pos);CINE.curLook.copy(c.look);camera.lookAt(c.look);}}
 function snapCamera(){const d=camDesired();camera.position.copy(d.pos);camera.lookAt(d.look);CINE.curLook.copy(d.look);}
@@ -422,7 +605,7 @@ function runStep(q){return new Promise(res=>{G.mode='quiz';let firstTry=true;con
  okBtn.onclick=()=>{if(getAns()){SFX.correct();if(firstTry){G.feathers.push(q.no);toast('答對了！獲得線索章');}else toast('答對了！');$('quiz').classList.add('hide');updateHUD();save(true);res();}
   else{firstTry=false;SFX.wrong();hint.textContent='提示：'+q.hint;hint.style.display='block';$('quiz').scrollTop=$('quiz').scrollHeight;hurt();}};
  });}
-function hurt(){G.mistakes++;G.totalMistakes++;G.hp=Math.max(0,G.hp-HURT);updateHUD();const f=$('hpFill');f.animate&&f.animate([{opacity:.3},{opacity:1}],{duration:300,iterations:2});if(G.hp<=0){G.ko++;toast('體力歸零，重新查一次這一關',2600);G.hp=100;G.feathers=G.feathers.filter(n=>!(ST[G.station].steps||[]).some(q=>q.no===n)&&!(n==='exp'&&ST[G.station].mid));$('quiz').classList.add('hide');$('exp').classList.add('hide');enterStation(G.station);}}
+function hurt(){G.mistakes++;G.totalMistakes++;G.hp=Math.max(0,G.hp-HURT);updateHUD();const f=$('hpFill');f.animate&&f.animate([{opacity:.3},{opacity:1}],{duration:300,iterations:2});if(G.hp<=0){G.ko++;toast('體力歸零，重新查一次這一關',2600);G.hp=100;G.feathers=G.feathers.filter(n=>!(ST[G.station].steps||[]).some(q=>q.no===n)&&n!=='exp'+G.station);$('quiz').classList.add('hide');$('exp').classList.add('hide');enterStation(G.station);}}
 
 /* ---------- 實驗：取下牆上物件，看杯中的蛇 ---------- */
 const EXP_ITEMS=[['bow','角弓'],['scroll','畫軸'],['lantern','宮燈']];
@@ -432,50 +615,77 @@ const MID={experiment(){return new Promise(res=>{G.mode='exp';let off=new Set(),
  $('expText').textContent='杯裡真的有蛇！牆上掛著三樣東西。一次取下或掛回一樣，看看杯中的「蛇」會不會改變。';$('expObs').textContent='';
  const items=$('expItems');items.innerHTML='';
  const draw=()=>EXP_ITEMS.forEach(([k,n],i)=>{const b=items.children[i];b.textContent=(off.has(k)?'掛回':'取下')+n;b.classList.toggle('off',off.has(k));});
- EXP_ITEMS.forEach(([k,n])=>{const b=document.createElement('button');b.onclick=async()=>{if(busy)return;busy=true;SFX.click();[...items.children].forEach(x=>x.disabled=true);
+ EXP_ITEMS.forEach(([k,n])=>{const b=document.createElement('button');b.onclick=async()=>{if(busy)return;busy=true;SFX.click();$('expHint').style.display='none';[...items.children].forEach(x=>x.disabled=true);
    cine('wall');await sleep(850);if(off.has(k)){off.delete(k);moveItem(k,true);}else{off.add(k);moveItem(k,false);}tested.add(k);draw();await sleep(800);
    cine('cup');await sleep(800);H.snake.visible=!off.has('bow');$('expObs').textContent=H.snake.visible?`${off.has(k)?'取下':'掛回'}${n}後，杯中的「蛇」還在晃動。`:`${off.has(k)?'取下':'掛回'}${n}後，杯中的「蛇」不見了！`;
    [...items.children].forEach(x=>x.disabled=false);busy=false;if(tested.size>=1)$('expPick').classList.remove('hide');$('exp').scrollTop=$('exp').scrollHeight;};items.appendChild(b);});
  draw();
- const ans=$('expAns');ans.innerHTML='';EXP_ITEMS.forEach(([k,n])=>{const b=document.createElement('button');b.textContent=n+'的影子';b.onclick=async()=>{if(busy)return;if(k==='bow'){SFX.correct();if(first){G.feathers.push('exp');toast('查出來了！獲得線索章');}$('exp').classList.add('hide');updateHUD();save(true);off.forEach(x=>moveItem(x,true));off.clear();H.snake.visible=true;cine('wall');await sleep(1500);res();}
+ const ans=$('expAns');ans.innerHTML='';EXP_ITEMS.forEach(([k,n])=>{const b=document.createElement('button');b.textContent=n+'的影子';b.onclick=async()=>{if(busy)return;if(k==='bow'){SFX.correct();if(first){G.feathers.push('exp'+G.station);toast('查出來了！獲得線索章');}$('exp').classList.add('hide');updateHUD();save(true);off.forEach(x=>moveItem(x,true));off.clear();H.snake.visible=true;cine('wall');await sleep(1500);res();}
    else{first=false;SFX.wrong();$('expHint').textContent=tested.has('bow')?'提示：再比較一次，取下哪一樣時，杯裡真的改變了？':'提示：你還沒有試過每一樣東西。先動手試，再下判斷。';$('expHint').style.display='block';hurt();}};ans.appendChild(b);});
-});}};
+});},
+wait(){setFieldDays(0);standHero(1.3,-1.7,Math.PI/2);applyPlayer();cine('stump');let day=0;
+ return expPanel({text:'農夫坐在樹樁旁等兔子。陪他過幾天，看看兔子有沒有再來，田裡又變成什麼樣子。',pick:'農夫等不到兔子，最主要的原因是：',
+  items:[{label:()=>day>=5?'已經過了 5 天':`再等一天（第 ${day+1} 天）`,off:()=>day>=5,run:async()=>{day++;setEnv('fieldDusk',.6);cine('farm');await sleep(800);setFieldDays(day);setEnv('noon',.7);await sleep(650);
+    if(day===3){FD.rabbit.visible=true;FD.rabbit.position.set(-7,0,-6.5);FD.rabbit.rotation.set(0,-Math.PI/2,0);FD.run={t:0,pass:true};}
+    cine('stump');await sleep(500);return`第 ${day} 天：撞上樹樁的兔子 0 隻。${day===3?'遠遠跑過一隻兔子，卻沒有靠近樹樁。':'田裡的雜草越長越高，作物也快枯了。'}`;}}],
+  ready:()=>day>=3,answers:['他等的時間還不夠久','兔子撞樹樁只是偶然的意外','樹樁的位置放得不夠好'],correct:1,
+  hint:()=>'提示：這幾天兔子並沒有因為農夫一直等就撞上來。那天的兔子為什麼會撞上樹樁？'});},
+boat(){RV.onBoat=true;syncBoat();applyPlayer();cine('boatWide');RV.glow.visible=true;let moved=false;
+ return expPanel({text:'你上了楚國人的船。先划船，再比較船上的記號和水底的寶劍，看看誰動了、誰沒動。',pick:'船靠岸了。應該到哪裡下水找劍？',
+  items:[{label:()=>moved?'船已靠到高塔旁':'划船前進',off:()=>moved,run:async()=>{RV.clear=false;cine('boatWide');RV.boatX=13;await sleep(2400);moved=true;return'船划到了高塔旁，已經離開柳樹前的那片江面。';}},
+   {label:()=>'看船上的記號',run:async()=>{RV.clear=false;cine('mark');await sleep(1500);return moved?'記號還刻在船邊，跟著船一起移動到了高塔旁。':'記號刻在船邊。先划船，再回來看看它會不會改變。';}},
+   {label:()=>'看水底的寶劍',run:async()=>{RV.clear=true;cine('bottom');await sleep(1500);return'寶劍還躺在柳樹前的江底，一點也沒有移動。';}}],
+  ready:()=>moved,answers:['船上記號的正下方','柳樹前，當初掉劍的江底','再往下游找找看'],correct:1,
+  hint:i=>i===0?'提示：你跳進記號下方的水裡，水底什麼也沒有。記號跟著船走了，寶劍呢？':'提示：寶劍不會自己往下游走。再去看看水底，它在哪裡？',
+  done:async()=>{RV.clear=true;cine('bottom');await sleep(1200);}});},
+};
+function expPanel({text,items,pick,answers,correct,hint,ready,done}){return new Promise(res=>{G.mode='exp';let busy=false,first=true;
+ $('exp').classList.remove('hide');$('expPick').classList.add('hide');$('expHint').style.display='none';$('expText').textContent=text;$('expObs').textContent='';$('qHint2').textContent=pick;
+ const box=$('expItems');box.innerHTML='';
+ const draw=()=>items.forEach((it,i)=>{const b=box.children[i];b.textContent=it.label();b.disabled=busy||!!(it.off&&it.off());});
+ items.forEach(it=>{const b=document.createElement('button');b.onclick=async()=>{if(busy)return;busy=true;draw();SFX.click();$('expHint').style.display='none';const o=await it.run();$('expObs').textContent=o;busy=false;draw();if(ready())$('expPick').classList.remove('hide');$('exp').scrollTop=$('exp').scrollHeight;};box.appendChild(b);});draw();
+ const ans=$('expAns');ans.innerHTML='';answers.forEach((t,i)=>{const b=document.createElement('button');b.textContent=t;b.onclick=async()=>{if(busy)return;
+   if(i===correct){busy=true;SFX.correct();if(first){G.feathers.push('exp'+G.station);toast('查出來了！獲得線索章');}$('exp').classList.add('hide');updateHUD();save(true);if(done)await done();res();}
+   else{first=false;SFX.wrong();$('expHint').textContent=hint(i);$('expHint').style.display='block';$('exp').scrollTop=$('exp').scrollHeight;hurt();}};ans.appendChild(b);});
+});}
 function moveItem(k,show){const o=H[k];if(show){o.visible=true;o.position.copy(H.itemHome[k]);}else{o.position.copy(H.itemHome[k]);o.visible=false;}}
 
 /* ---------- 流程 ---------- */
 function enterStation(n){FLOW++;pendingInteract=null;pendingDialog=null;['dlg','quiz','exp'].forEach(i=>$(i).classList.add('hide'));G.station=n;if(n>=ST.length){ending();return;}
- const s=ST[n];G.hpEntry=G.hp;G.mistakes=0;G.mode='cine';placeWorld(n);showGameUI();updateHUD();banner(s.name);save(true);flow(s);}
+ const s=ST[n];if(s.first||s.hub)G.hp=100;G.hpEntry=G.hp;G.mistakes=0;G.mode='cine';placeWorld(n);showGameUI();updateHUD();banner(s.name);save(true);flow(s);}
 async function flow(s){
  if(s.id===0&&!store.get(TUT_KEY)){await new Promise(r=>{$('tut').classList.remove('hide');$('tutGo').onclick=()=>{store.set(TUT_KEY,'1');$('tut').classList.add('hide');r();};});}
+ if(s.hub){
+  if(!G.greeted){G.greeted=true;await sleep(500);await dialog(s,{btn:'走走看'});}
+  G.mode='explore';showStars=true;const t=await new Promise(r=>{pendingInteract=r;});showStars=false;$('prompt').classList.add('hide');G.cleared.add(s.id);enterStation(t.go);return;}
  if(s.free||s.steps){
-  if(s.id===0){await sleep(500);await dialog(s,{btn:'走走看'});}
-  G.mode='explore';STAR.visible=true;await new Promise(r=>{pendingInteract=r;});STAR.visible=false;$('prompt').classList.add('hide');G.mode='cine';}
+  G.mode='explore';showStars=true;await new Promise(r=>{pendingInteract=r;});showStars=false;$('prompt').classList.add('hide');G.mode='cine';}
  else if(s.cam){cine(s.cam,true);await sleep(650);}
  if(s.mid)await MID[s.mid](s);
  else if(s.cam&&(s.free||s.steps)){P.seat=false;cine(s.cam);await sleep(900);}
- if(s.id!==0&&s.text){if(s.cam==='cup')cine('cup');await dialog(s);}
+ if(s.text){if(s.cam==='cup')cine('cup');await dialog(s);}
  if(s.steps){if(!CINE.on){const look=s.target();cine({pos:P.pos.clone().add(V3(1.5,1.7,2.1)),look});}for(const q of s.steps)await runStep(q);}
  G.cleared.add(s.id);
- if(s.id===ST.length-1){await sleep(200);await showCard();}
+ if(s.last){await sleep(200);await showCard(s.idiom);enterStation(0);return;}
  enterStation(s.id+1);}
-function showCard(){return new Promise(r=>{SFX.gong();if(!G.cards.includes('beigong'))G.cards.push('beigong');updateHUD();save(true);$('cardBox').classList.remove('hide');$('cardGo').onclick=()=>{$('cardBox').classList.add('hide');r();};});}
-function interact(){if(G.mode==='explore'&&pendingInteract&&curTarget&&nearTarget()){SFX.click();const r=pendingInteract;pendingInteract=null;r();return true;}return false;}
-const nearTarget=()=>{const dx=P.pos.x-curTarget.x,dz=P.pos.z-curTarget.z;return Math.hypot(dx,dz)<2.3;};
+function showCard(k){return new Promise(r=>{const d=IDIOMS[k];SFX.gong();if(!G.cards.includes(k))G.cards.push(k);updateHUD();save(true);$('cName').textContent=d.name;$('cMean').textContent=d.mean;$('cFrom').textContent=d.from;$('cEx').textContent=d.ex;$('cardBox').classList.remove('hide');$('cardGo').onclick=()=>{$('cardBox').classList.add('hide');r();};});}
+function interact(){if(G.mode==='explore'&&pendingInteract){const t=nearest();if(t){SFX.click();const r=pendingInteract;pendingInteract=null;r(t);return true;}}return false;}
+function nearest(){let best=null,bd=2.3;for(const t of curTargets){const d=Math.hypot(P.pos.x-t.pos.x,P.pos.z-t.pos.z);if(d<bd){bd=d;best=t;}}return best;}
 
 /* ---------- 結局與證書 ---------- */
 const gradeOf=r=>GRADES.find(g=>r>=g[0])[1];
-function ending(){$('toast').classList.remove('show');G.mode='end';G.station=ST.length;save(true);['title','hud','quest','menu'].forEach(i=>$(i).classList.add('hide'));$('pad').classList.remove('on');$('prompt').classList.add('hide');STAR.visible=false;
+function ending(){$('toast').classList.remove('show');G.mode='end';G.station=ST.length;save(true);['title','hud','quest','menu'].forEach(i=>$(i).classList.add('hide'));$('pad').classList.remove('on');$('prompt').classList.add('hide');showStars=false;STARS.forEach(x=>x.visible=false);
  const certs=loadCerts();if(certs.length&&G.fromContinue){showCert(certs[certs.length-1]);return;}
- const r=G.feathers.length/MAX_SEALS;$('endInfo').innerHTML=`你查明了杯中蛇影的真相！<br>線索章 ${G.feathers.length} / ${MAX_SEALS}，稱號：<b>${gradeOf(r)}</b>`;$('end').classList.remove('hide');}
+ const r=G.feathers.length/MAX_SEALS;$('endInfo').innerHTML=`你破解了成語村的三個成語！<br>線索章 ${G.feathers.length} / ${MAX_SEALS}，稱號：<b>${gradeOf(r)}</b>`;$('end').classList.remove('hide');}
 $('endGo').onclick=()=>{const name=$('endName').value.trim()||'小小讀者',got=G.feathers.length,rec={name,grade:gradeOf(got/MAX_SEALS),got,max:MAX_SEALS,hp:G.hp,mistakes:G.totalMistakes,acts:[],date:fmtDate(),ts:Date.now()};
  const cs=loadCerts();cs.push(rec);while(cs.length>30)cs.shift();store.set(CERT_KEY,JSON.stringify(cs));G.unlocked=true;save(true);$('end').classList.add('hide');showCert(rec);};
 const fmtDate=()=>{const d=new Date();return`${d.getFullYear()} 年 ${d.getMonth()+1} 月 ${d.getDate()} 日`;};
 function certImage(r){const c=document.createElement('canvas'),w=1200,h=840;c.width=w;c.height=h;const x=c.getContext('2d'),F='"LXGW WenKai TC","Microsoft JhengHei",serif';
  x.fillStyle='#f8efd8';x.fillRect(0,0,w,h);for(let i=0;i<2600;i++){x.fillStyle=`rgba(${130+Math.random()*50},${100+Math.random()*40},60,${Math.random()*.035})`;x.fillRect(Math.random()*w,Math.random()*h,Math.random()*5+1,Math.random()*3+1);}
  x.strokeStyle='#a77b32';x.lineWidth=10;x.strokeRect(34,34,w-68,h-68);x.lineWidth=3;x.strokeRect(52,52,w-104,h-104);x.fillStyle='#a77b32';[[52,52],[w-52,52],[52,h-52],[w-52,h-52]].forEach(([a,b])=>x.fillRect(a-12,b-12,24,24));
- x.textAlign='center';x.textBaseline='middle';x.fillStyle='#8a5f2a';x.font=`700 34px ${F}`;x.fillText('成語村・杯弓蛇影',w/2,130);x.fillStyle='#3a2716';x.font=`700 104px ${F}`;x.fillText('通關證書',w/2,245);
+ x.textAlign='center';x.textBaseline='middle';x.fillStyle='#8a5f2a';x.font=`700 34px ${F}`;x.fillText('成語村・成語闖關遊戲',w/2,130);x.fillStyle='#3a2716';x.font=`700 104px ${F}`;x.fillText('通關證書',w/2,245);
  x.font=`400 36px ${F}`;x.fillText('茲證明',w/2,350);x.fillStyle='#b8321f';x.font=`700 76px ${F}`;x.fillText(r.name,w/2,435);x.strokeStyle='#a77b32';x.lineWidth=2;x.beginPath();x.moveTo(w/2-210,487);x.lineTo(w/2+210,487);x.stroke();
- x.fillStyle='#3a2716';x.font=`400 33px ${F}`;x.fillText('親手查明杯中蛇影的真相，學會遇到疑慮要查明真相。',w/2,548);x.font=`700 44px ${F}`;x.fillStyle='#8a5f2a';x.fillText('獲得稱號：'+r.grade,w/2,620);
+ x.fillStyle='#3a2716';x.font=`400 33px ${F}`;x.fillText('破解杯弓蛇影、守株待兔、刻舟求劍，學會把成語用在生活中。',w/2,548);x.font=`700 44px ${F}`;x.fillStyle='#8a5f2a';x.fillText('獲得稱號：'+r.grade,w/2,620);
  x.fillStyle='#3a2716';x.font=`400 29px ${F}`;x.fillText(`線索章 ${r.got} / ${r.max}`,w/2,682);x.textAlign='left';x.fillText(r.date,120,744);
  x.fillStyle='#b8321f';x.fillRect(w-250,650,120,120);x.strokeStyle='#f8efd8';x.lineWidth=4;x.strokeRect(w-241,659,102,102);x.fillStyle='#f8efd8';x.font=`700 44px ${F}`;x.textAlign='center';x.fillText('成語',w-190,686);x.fillText('之村',w-190,736);
  return c.toDataURL('image/png');}
@@ -483,15 +693,15 @@ function showCert(r){const url=certImage(r);$('certImg').src=url;$('certDl').hre
 $('certAgain').onclick=()=>{$('cert').classList.add('hide');newGame();};$('certTitle').onclick=()=>{$('cert').classList.add('hide');toTitle();};
 
 /* ---------- 選單 ---------- */
-function newGame(){store.del(SAVE_KEY);G.feathers=[];G.cards=[];G.hp=100;G.totalMistakes=0;G.ko=0;G.cleared=new Set();G.fromContinue=false;G.unlocked=loadCerts().length>0;enterStation(0);}
+function newGame(){store.del(SAVE_KEY);G.greeted=false;G.feathers=[];G.cards=[];G.hp=100;G.totalMistakes=0;G.ko=0;G.cleared=new Set();G.fromContinue=false;G.unlocked=loadCerts().length>0;enterStation(0);}
 function toTitle(){FLOW++;G.mode='title';$('title').classList.remove('hide');['hud','quest','menu'].forEach(i=>$(i).classList.add('hide'));$('pad').classList.remove('on');G.station=0;placeWorld(0);$('tCont').classList.toggle('hide',!loadSave());}
 $('tStart').onclick=()=>{AU.start();SFX.click();newGame();};
-$('tCont').onclick=()=>{AU.start();const d=loadSave();if(!d)return newGame();G.hp=d.hp??100;G.feathers=d.feathers||[];G.cards=d.cards||[];G.totalMistakes=d.totalMistakes||0;G.cleared=new Set(d.cleared||[]);G.unlocked=!!d.unlocked||loadCerts().length>0;G.fromContinue=true;enterStation(Math.min(d.station??0,ST.length));};
+$('tCont').onclick=()=>{AU.start();const d=loadSave();if(!d)return newGame();G.hp=d.hp??100;G.feathers=d.feathers||[];G.cards=d.cards||[];G.totalMistakes=d.totalMistakes||0;G.cleared=new Set(d.cleared||[]);G.unlocked=!!d.unlocked||loadCerts().length>0;G.fromContinue=true;G.greeted=true;enterStation(Math.min(d.station??0,ST.length));};
 $('mHelp').onclick=()=>$('help').classList.remove('hide');$('hClose').onclick=()=>$('help').classList.add('hide');
 $('hRestart').onclick=()=>{$('help').classList.add('hide');newGame();};
 $('hQual').onclick=()=>{QUALITY=QUALITY==='high'?'low':'high';store.set('chengyu-village-quality',QUALITY);applyQuality();};
 $('mSave').onclick=()=>save();$('mSound').onclick=()=>{AU.toggle();$('mSound').textContent=AU.muted?'靜音':'音效';};
-function renderStages(){const l=$('stageList');l.innerHTML='';ST.forEach(s=>{const b=document.createElement('button');b.className='stage';const open=G.unlocked||G.cleared.has(s.id)||s.id<=G.station;b.textContent=`${G.cleared.has(s.id)?'✓ ':''}${s.name}${s.steps?'（闖關）':''}`;b.disabled=!open;b.onclick=()=>{$('stages').classList.add('hide');enterStation(s.id);};l.appendChild(b);});}
+function renderStages(){const l=$('stageList');l.innerHTML='';ST.forEach(s=>{const b=document.createElement('button');b.className='stage';const open=G.unlocked||G.cleared.has(s.id)||s.id===G.station||s.hub;b.textContent=`${G.cleared.has(s.id)?'✓ ':''}${s.id?ACTS[s.act].name+'・':''}${s.name}${s.steps?'（闖關）':''}`;b.disabled=!open;b.onclick=()=>{$('stages').classList.add('hide');enterStation(s.id);};l.appendChild(b);});}
 $('mStages').onclick=()=>{renderStages();$('stages').classList.remove('hide');};$('sClose').onclick=()=>$('stages').classList.add('hide');
 $('tPwGo').onclick=()=>{if($('tPw').value.trim().toLowerCase()===TEACHER_PW){G.unlocked=true;save(true);renderStages();toast('已解鎖全部關卡');}else toast('密碼不正確');$('tPw').value='';};
 $('prompt').onclick=()=>interact();
@@ -523,6 +733,14 @@ function tick(){const dt=Math.min(clock.getDelta(),.05),t=clock.elapsedTime;
  applyEnv(dt);
  if(H.snake&&W.hall.visible){const p=H.snake.geometry.attributes.position,b=H.snakeBase;for(let i=0;i<p.count;i++){const x=b[i*3];p.array[i*3+2]=b[i*3+2]+Math.sin(x*22+t*3.4)*.012;}p.needsUpdate=true;
   const r=(t*.45)%1;H.ring.scale.setScalar(.25+r*1.5);H.ring.material.opacity=.42*(1-r);H.snake.position.y=.306;}
+ if(W.field.visible&&FD.run&&FD.rabbit.visible){const R=FD.run,B=FD.rabbit;R.t+=dt;
+  if(R.pass){B.position.x=-7+R.t*5;B.position.y=Math.abs(Math.sin(R.t*9))*.2;if(B.position.x>9){B.visible=false;FD.run=null;}}
+  else if(R.t<1.3){B.position.x=-9+R.t/1.3*8.35;B.position.y=Math.abs(Math.sin(R.t*11))*.26;}
+  else{B.position.set(-.72,.12,-3);B.rotation.z=THREE.MathUtils.lerp(B.rotation.z,Math.PI/2,.14);}}
+ if(W.river.visible){RV.water.material.opacity+=((RV.clear?.14:.72)-RV.water.material.opacity)*Math.min(1,dt*3);RV.water.material.map.offset.x=t*.012;RV.water.material.map.offset.y=t*.006;const k=1-Math.exp(-dt*1.45);RV.boat.position.x+=(RV.boatX-RV.boat.position.x)*k;RV.boat.position.y=Math.sin(t*1.5)*.03;
+  if(RV.onBoat){syncBoat();applyPlayer();}
+  if(RV.fall){RV.fall.t+=dt;const f=THREE.MathUtils.clamp(RV.fall.t/1.2,0,1);RV.sword.position.y=THREE.MathUtils.lerp(.45,SWORD_BED.y,f*f);RV.sword.position.z=THREE.MathUtils.lerp(.95,SWORD_BED.z,f);RV.sword.rotation.y=f*.4;if(f>=1){RV.fall=null;RV.glow.visible=true;}}
+  if(RV.glow.visible)RV.glow.material.opacity=.5+Math.sin(t*2.5)*.25;}
  let moving=0;
  if(G.mode==='explore'){let f=(K.KeyW||K.ArrowUp?1:0)-(K.KeyS||K.ArrowDown?1:0)-JOY.y,r=(K.KeyD||K.ArrowRight?1:0)-(K.KeyA||K.ArrowLeft?1:0)+JOY.x;let m=Math.hypot(f,r);if(m>1){f/=m;r/=m;m=1;}
   if(m>.03){const sy=Math.sin(P.yaw),cy=Math.cos(P.yaw),dx=-sy*f+cy*r,dz=-cy*f-sy*r,sp=3*dt,nx=P.pos.x+dx*sp,nz=P.pos.z+dz*sp;const A=P.area;
@@ -531,11 +749,10 @@ function tick(){const dt=Math.min(clock.getDelta(),.05),t=clock.elapsedTime;
    P.facing=Math.atan2(-dx,-dz);moving=m;}
   applyPlayer();}
  if(P.model&&P.model.visible){if(P.model.rotation.y!==P.facing)P.model.rotation.y=P.facing;animChar(P.model,dt,moving,P.seat?'seat':null);}
- if(CHARS.leguang.visible&&P.model!==CHARS.leguang)animChar(CHARS.leguang,dt,0,CHARS.leguang.userData.seat?'seat':null);
- if(CHARS.elder.visible)animChar(CHARS.elder,dt,0);
+ Object.values(CHARS).forEach(c=>{if(c.visible&&c!==P.model)animChar(c,dt,0,c.userData.seat?'seat':null);});
  // 目標提示
- if(curTarget&&STAR.visible){STAR.position.set(curTarget.x,curTarget.y+Math.max(.6,1.05)+Math.sin(t*2.2)*.08,curTarget.z);STAR.rotation.y=t*1.7;
-  if(G.mode==='explore'&&nearTarget()){const v=curTarget.clone().add(V3(0,.75,0)).project(camera);const e=$('prompt');e.classList.remove('hide');e.style.left=Math.min(innerWidth-70,Math.max(70,(v.x*.5+.5)*innerWidth))+'px';e.style.top=Math.min(innerHeight-20,Math.max(70,(-v.y*.5+.5)*innerHeight))+'px';$('promptText').textContent=ST[G.station].prompt;$('promptKey').classList.toggle('hide',TOUCH);}else $('prompt').classList.add('hide');}
+ STARS.forEach((S,i)=>{const T=curTargets[i];S.visible=!!(showStars&&T);if(T)S.position.set(T.pos.x,T.pos.y+1.05+Math.sin(t*2.2+i)*.08,T.pos.z),S.rotation.y=t*1.7;});
+ if(showStars){const T=G.mode==='explore'?nearest():null;if(T){const v=T.pos.clone().add(V3(0,.75,0)).project(camera);const e=$('prompt');e.classList.remove('hide');e.style.left=Math.min(innerWidth-70,Math.max(70,(v.x*.5+.5)*innerWidth))+'px';e.style.top=Math.min(innerHeight-20,Math.max(70,(-v.y*.5+.5)*innerHeight))+'px';$('promptText').textContent=T.prompt;$('promptKey').classList.toggle('hide',TOUCH);}else $('prompt').classList.add('hide');}
  // 鏡頭
  if(G.mode==='title'){titleT+=dt;const r=19;camera.position.set(Math.sin(titleT*.06)*r,7.2,Math.cos(titleT*.06)*r+2);camera.lookAt(0,1.8,-2);}
  else if(CINE.on){const k=1-Math.exp(-dt*4.2);camera.position.lerp(CINE.pos,k);CINE.curLook.lerp(CINE.look,k);camera.lookAt(CINE.curLook);}
@@ -544,10 +761,10 @@ function tick(){const dt=Math.min(clock.getDelta(),.05),t=clock.elapsedTime;
  composer.render(dt);requestAnimationFrame(tick);}
 
 /* ---------- 啟動 ---------- */
-window.__bird={G,P,K,JOY,ST,W,ENV,AU,SFX,CHARS,H,enterStation,placeWorld,interact,showGameUI,updateHUD,setEnv,MAX_SEALS};
+window.__bird={G,P,K,JOY,ST,W,ENV,AU,SFX,CHARS,H,FD,RV,IDIOMS,enterStation,placeWorld,interact,showGameUI,updateHUD,setEnv,MAX_SEALS};
 (async()=>{setLoad(25,'準備字型……');
  try{await Promise.race([document.fonts.ready,new Promise(r=>setTimeout(r,2500))]);await Promise.race([document.fonts.load('700 40px "LXGW WenKai TC"','杯弓蛇影'),new Promise(r=>setTimeout(r,2500))]);}catch(e){}
- setLoad(55,'搭建成語村……');buildVillage();buildHall();setLoad(85,'佈置廳堂……');
+ setLoad(55,'搭建成語村……');buildVillage();buildHall();buildField();buildRiver();Object.values(CHARS).forEach(c=>c.traverse(o=>{if(o.isMesh)o.castShadow=true;}));setLoad(85,'佈置場景……');
  resize();applyQuality();const d=loadSave(),certs=loadCerts();G.unlocked=!!(d&&d.unlocked)||certs.length>0;$('tCont').classList.toggle('hide',!d);G.world='village';placeWorld(0);setEnv('hutong',.01);
  $('title').classList.remove('hide');G.mode='title';tick();setLoad(100,'完成');setTimeout(()=>$('loading').classList.add('done'),250);})();
 </script>
