@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>*{box-sizing:border-box}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>等高線的 V 字密碼</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+<style>
+/* 版面概念：一張攤開的地形圖。左邊立體地形、右邊地圖與切面同步，下方是解說與章節。 */
+:root{
+  --bg:#e7ece4; --paper:#f6f7f0; --ink:#1f2d27; --muted:#55645b; --rule:#b6c1b4;
+  --contour:#a4542a; --ridge:#c2381a; --valley:#1469ad; --water:#3b8fc4; --scan:#7a2a8c; --btn:#1f4d3f; --btnfg:#f6f7f0;
+  --good:#1c7a45; --bad:#b3261e;
+  --display:"LXGW WenKai TC","Noto Serif TC",serif; --body:"Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#141c19; --paper:#1d2824; --ink:#e7eee8; --muted:#a2b0a7; --rule:#3a4942;
+  --contour:#e29a68; --ridge:#ff7d5c; --valley:#6ab8f2; --water:#3b8fc4; --scan:#d59ae6; --btn:#9fd8bf; --btnfg:#12201b;
+  --good:#6fd39b; --bad:#ff9a90; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141c19; --paper:#1d2824; --ink:#e7eee8; --muted:#a2b0a7; --rule:#3a4942;
+  --contour:#e29a68; --ridge:#ff7d5c; --valley:#6ab8f2; --water:#3b8fc4; --scan:#d59ae6; --btn:#9fd8bf; --btnfg:#12201b;
+  --good:#6fd39b; --bad:#ff9a90; color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font:16px/1.7 var(--body)}
+.wrap{max-width:1180px;margin:auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:16px}
+header{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 24px}
+h1{font:700 clamp(28px,4vw,40px)/1.2 var(--display);margin:0}
+.rule{font:400 clamp(18px,2.2vw,22px)/1.4 var(--display);margin:0}
+.rule b:first-of-type{color:var(--ridge)} .rule b:last-of-type{color:var(--valley)}
+.stage{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:12px}
+.sheet{background:var(--paper);border:1px solid var(--rule);display:flex;flex-direction:column;min-width:0}
+.sheet h2{font:500 13px/1 var(--body);letter-spacing:.06em;color:var(--muted);margin:0;padding:10px 12px 0}
+.sheet canvas{display:block;width:100%;flex:1;min-height:0}
+.side{display:grid;gap:12px;grid-template-rows:auto auto;min-width:0}
+#c3{min-height:420px}
+#cm{aspect-ratio:6/5} #cp{aspect-ratio:5/2}
+.caption{background:var(--paper);border:1px solid var(--rule);padding:14px 18px;min-height:5.4em}
+.caption strong{display:block;font:500 13px/1.4 var(--body);color:var(--muted);letter-spacing:.04em}
+#captxt{font:400 clamp(19px,2.4vw,25px)/1.5 var(--display);margin:2px 0 0}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+button{font:500 15px/1.2 var(--body);color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid var(--scan);outline-offset:2px}
+#play{background:var(--btn);color:var(--btnfg);border:0;padding:10px 20px;min-width:92px}
+.steps{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:4px;flex:1;min-width:0}
+.steps button{position:relative;background:var(--paper);border:1px solid var(--rule);padding:8px 4px;font-size:13px;overflow:hidden}
+.steps button i{position:absolute;left:0;bottom:0;height:3px;width:var(--p,0%);background:var(--contour)}
+.steps button[aria-current="step"]{border-color:var(--ink);font-weight:700}
+.sliders{display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) auto;gap:10px 20px;align-items:end}
+.sliders label{display:grid;gap:2px;font-size:14px;color:var(--muted)}
+.sliders output{color:var(--ink);font-weight:500;font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--contour)}
+#view{background:none;border:1px solid var(--ink);padding:8px 14px}
+section{display:grid;gap:12px;margin-top:20px}
+section h2{font:700 clamp(22px,3vw,28px)/1.3 var(--display);margin:0}
+section p{margin:0;max-width:65ch}
+.how{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:0;padding:0;list-style:none;counter-reset:n}
+.how li{counter-increment:n;border-top:2px solid var(--contour);padding-top:6px}
+.how li::before{content:"第 " counter(n) " 步　";font-weight:700}
+.quiz{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.q{background:var(--paper);border:1px solid var(--rule);display:flex;flex-direction:column;min-width:0}
+.q canvas{display:block;width:100%;aspect-ratio:1}
+.q .a{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:8px}
+.q .a button{background:none;border:1px solid var(--ink);padding:8px}
+.q p{padding:0 10px 10px;font-size:14px;line-height:1.5;min-height:4.5em}
+.ok{color:var(--good)} .no{color:var(--bad)}
+.note{color:var(--muted);font-size:14px}
+@media (max-width:820px){
+  .stage{grid-template-columns:minmax(0,1fr)} #c3{min-height:0;aspect-ratio:4/3}
+  .steps{grid-template-columns:repeat(4,minmax(0,1fr));flex-basis:100%}
+  .sliders{grid-template-columns:minmax(0,1fr)} .how{grid-template-columns:minmax(0,1fr)} .quiz{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <h1>等高線的 V 字密碼</h1>
+    <p class="rule"><b>V 尖朝低，是山脊</b>；<b>V 尖朝高，是山谷</b>。</p>
+  </header>
+
+  <div class="stage">
+    <div class="sheet"><h2>立體地形</h2><canvas id="c3" role="img" aria-label="立體山坡地形動畫，等高線畫在坡面上"></canvas></div>
+    <div class="side">
+      <div class="sheet"><h2>等高線圖（等高距 100 公尺）</h2><canvas id="cm" role="img" aria-label="從正上方看的等高線圖"></canvas></div>
+      <div class="sheet"><h2>橫切面（左右切開山坡，虛線是 400 公尺）</h2><canvas id="cp" role="img" aria-label="地形的橫切面"></canvas></div>
+    </div>
+  </div>
+
+  <div class="caption" aria-live="polite"><strong id="capttl"></strong><p id="captxt"></p></div>
+
+  <div class="bar">
+    <button id="play" type="button">暫停</button>
+    <div class="steps" id="steps"></div>
+  </div>
+
+  <div class="sliders">
+    <label for="sS"><span>地形：<output id="oS"></output></span><input id="sS" type="range" min="-1" max="1" step="0.01" value="0"></label>
+    <label for="sW"><span>海水高度：<output id="oW"></output></span><input id="sW" type="range" min="50" max="700" step="5" value="50"></label>
+    <label for="sY"><span>紫色切線位置：<output id="oY"></output></span><input id="sY" type="range" min="-0.9" max="0.9" step="0.01" value="-0.2"></label>
+    <button id="view" type="button">從正上方看</button>
+  </div>
+
+  <section>
+    <h2>換你判斷：只看形狀還不夠</h2>
+    <p>前兩題的線條形狀完全相同，只有標高數字相反，答案也就相反。所以一定要看數字。</p>
+    <ol class="how">
+      <li>找出 V 字的尖端。</li>
+      <li>比較數字，看尖端朝向數字變大還是變小的那一邊。</li>
+      <li>朝小（低處）是山脊，朝大（高處）是山谷。</li>
+    </ol>
+    <div class="quiz" id="quiz"></div>
+    <p class="note" id="score" aria-live="polite"></p>
+    <p class="note">真實地圖上的 V 尖常常比較圓，像 U 字，判斷方法一樣。這裡的地形是為了教學簡化的模型。</p>
+  </section>
+</div>
+
+<script>
+(function(){
+const A=115,K=320,WD=.62,LV=[200,300,400,500,600];
+const sp=u=>Math.log(1+Math.exp(u*9))/9, SP1=sp(1);
+const bump=x=>sp(1-Math.sqrt(x*x+.0015)/WD)/SP1;
+const H=(x,y,s)=>400+K*y+s*A*bump(x);
+const clamp=(v,a=0,b=1)=>Math.min(b,Math.max(a,v));
+const seg=(t,a,b)=>{const p=clamp((t-a)/(b-a));return p*p*(3-2*p)};
+const lerp=(a,b,p)=>a+(b-a)*p;
+const T0=1.0,Y0=.45;
+const $=id=>document.getElementById(id);
+const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+let C={};
+function readTheme(){const cs=getComputedStyle(document.documentElement);
+  ['paper','ink','muted','rule','contour','ridge','valley','water','scan'].forEach(k=>C[k]=cs.getPropertyValue('--'+k).trim());dirty=true;drawQuiz()}
+
+/* 章節：每章回傳當下的畫面狀態 */
+const STEPS=[
+{n:'海水畫線',dur:15,cap:[[0,'想像海水慢慢漲高。每漲 100 公尺，就沿著岸邊畫一條線。'],[8,'同一條線上的每一點都一樣高，這就是等高線。']],
+ f(t){const i=Math.min(4,Math.floor(t/2.4)),w=lerp(i?LV[i-1]:120,LV[i],seg(t-i*2.4,0,1.6));
+  const water=t<12.5?w:lerp(600,50,seg(t,12.5,14.5));
+  return{water:water>60?water:null,levels:t>=12.5?LV:LV.filter(l=>l<=w+.01)}}},
+{n:'從上往下看',dur:9,cap:[[0,'線畫好了，飛到天空從正上方往下看，看到的就是等高線圖。'],[4,'平平的斜坡，等高線是一條條平行的直線，還沒有 V 字。']],
+ f(t){const p=seg(t,1,3)*(1-seg(t,7,9));return{levels:LV,tilt:lerp(T0,0,p),yaw:lerp(Y0,0,p)}}},
+{n:'隆起山脊',dur:10,cap:[[0,'讓山坡中間隆起一條山脊，看直線怎麼變。'],[5.5,'每條線都彎成 V 字，尖端全部朝向山下，也就是低處。']],
+ f(t){return{levels:LV,s:seg(t,1,5),line:t>5.5}}},
+{n:'山脊為何朝低',dur:20,cap:[[0,'海水漲到 400 公尺。山脊像半島伸進海裡，岸線被推向山下。'],[5,'看紫色這一排：兩旁剛好 400 公尺，中間的山脊卻超過 400 公尺。'],[10,'要在山脊上找到 400 公尺，只能往山下走。越往下，兩個紫點越靠近。'],[16,'兩點在山脊上會合，就是 V 尖。所以山脊的 V 尖朝低處。']],
+ f(t){return{s:1,levels:LV,hl:400,hlc:'ridge',line:t>16,water:t<18.5?lerp(150,400,seg(t,0,2.5)):lerp(400,50,seg(t,18.5,20)),scan:t>5?lerp(-.02,-.335,seg(t,10,16)):null}}},
+{n:'變成山谷',dur:10,cap:[[0,'再把山脊壓下去，挖成一條山谷。'],[3.5,'中間經過平坦的斜坡時，線又變回直線。'],[6.5,'V 字翻了過來，尖端全部朝向山上，也就是高處。']],
+ f(t){const s=lerp(1,-1,seg(t,1,6));return{s,levels:LV,line:t>6.5}}},
+{n:'山谷為何朝高',dur:20,cap:[[0,'海水再漲到 400 公尺。水順著低低的山谷灌進去，岸線伸向山上。'],[5,'看紫色這一排：兩旁剛好 400 公尺，中間的谷底卻不到 400 公尺。'],[10,'要在谷底找到 400 公尺，只能往山上走。越往上，兩個紫點越靠近。'],[16,'兩點在谷底會合，就是 V 尖。所以山谷的 V 尖朝高處。']],
+ f(t){return{s:-1,levels:LV,hl:400,hlc:'valley',line:t>16,water:t<18.5?lerp(150,400,seg(t,0,2.5)):lerp(400,50,seg(t,18.5,20)),scan:t>5?lerp(.02,.335,seg(t,10,16)):null}}},
+{n:'用雨水驗證',dur:18,cap:[[0,'下雨了。山谷裡的雨水往谷底集中，匯成河流往下流，所以山谷的 V 尖指向上游。'],[9,'換成山脊，雨水從脊線往兩邊分開。所以山脊又叫分水嶺。']],
+ f(t){return{s:lerp(-1,1,seg(t,9,11)),levels:LV,line:true,drops:true}}},
+{n:'自己試試',dur:Infinity,cap:[[0,'拖動上面的滑桿：把地形變成山脊或山谷，漲海水，移動紫色切線，觀察線條怎麼變。']],f(){return{}}}
+];
+const FREE=STEPS.length-1;
+
+let step=0,t=0,playing=!reduced,dirty=true,last=0;
+let free={s:1,water:null,scan:-.2,top:false};
+const stepsEl=$('steps');
+STEPS.forEach((s,i)=>{const b=document.createElement('button');b.type='button';b.innerHTML=s.n+'<i></i>';b.onclick=()=>go(i);stepsEl.appendChild(b)});
+
+function go(i,keepPlay){step=i;t=(reduced&&i<FREE&&!keepPlay)?STEPS[i].dur*.9:0;drops=[];
+  if(i===FREE){playing=false}else if(!keepPlay&&!reduced)playing=true;dirty=true;syncUI()}
+function syncUI(){[...stepsEl.children].forEach((b,i)=>{if(i===step)b.setAttribute('aria-current','step');else b.removeAttribute('aria-current')});
+  $('play').textContent=step===FREE?'從頭播放':playing?'暫停':'播放';$('capttl').textContent=(step+1)+'／'+STEPS.length+'　'+STEPS[step].n}
+$('play').onclick=()=>{if(step===FREE){playing=true;go(0,true)}else{playing=!playing;last=0}syncUI()};
+
+function state(){
+  const d={s:0,tilt:T0,yaw:Y0,water:null,levels:LV,hl:null,hlc:'ridge',line:false,scan:null,drops:false};
+  if(step===FREE){const p=free.top?0:1;return Object.assign(d,{s:free.s,water:free.water,scan:free.scan,tilt:T0*p,yaw:Y0*p,hl:400,hlc:free.s<0?'valley':'ridge',line:Math.abs(free.s)>.3})}
+  return Object.assign(d,STEPS[step].f(t));
+}
+/* 拖滑桿時，暫停動畫並切到自由模式 */
+function toFree(){if(step!==FREE){const st=state();free.s=st.s;free.water=st.water;if(free.scan==null)free.scan=-.2;step=FREE;playing=false;t=0;drops=[];syncUI()}dirty=true}
+$('sS').oninput=e=>{toFree();free.s=+e.target.value};
+$('sW').oninput=e=>{toFree();const v=+e.target.value;free.water=v<=60?null:v};
+$('sY').oninput=e=>{toFree();free.scan=+e.target.value};
+$('view').onclick=()=>{toFree();free.top=!free.top;$('view').textContent=free.top?'回到斜看':'從正上方看'};
+
+/* 雨滴 */
+let drops=[];
+function spawn(){return{x:(Math.random()*1.5-.75),y:.1+Math.random()*.88,tr:[]}}
+function stepDrops(dt,s){while(drops.length<46)drops.push(spawn());
+  for(const d of drops){const e=.01,gx=(H(d.x+e,d.y,s)-H(d.x-e,d.y,s))/(2*e),gy=K,n=Math.hypot(gx,gy);
+    d.tr.push([d.x,d.y]);if(d.tr.length>12)d.tr.shift();
+    d.x-=gx/n*.42*dt;d.y-=gy/n*.42*dt;
+    if(d.y<-.98||Math.abs(d.x)>.98)Object.assign(d,spawn())}}
+
+/* 立體地形：由遠到近逐格畫，等高線才會被正確遮擋 */
+const N=48,hs=new Float64Array((N+1)*(N+1));
+const gx=i=>-1+2*i/N;
+let order=[],orderYaw=null;
+const STOPS=[[50,[126,166,104]],[300,[178,192,122]],[500,[208,182,122]],[760,[166,126,92]]];
+function hyp(h,sh){let a=STOPS[0],b=STOPS[3];for(let i=0;i<3;i++)if(h>=STOPS[i][0]&&h<=STOPS[i+1][0]){a=STOPS[i];b=STOPS[i+1]}
+  const p=clamp((h-a[0])/(b[0]-a[0]));return`rgb(${a[1].map((v,i)=>Math.round(lerp(v,b[1][i],p)*sh)).join(',')})`}
+function fit(cv){const r=cv.getBoundingClientRect(),dpr=Math.min(2,devicePixelRatio||1),w=Math.round(r.width*dpr),h=Math.round(r.height*dpr);
+  if(cv.width!==w||cv.height!==h){cv.width=w;cv.height=h}const c=cv.getContext('2d');c.setTransform(dpr,0,0,dpr,0,0);c.clearRect(0,0,r.width,r.height);return{c,w:r.width,h:r.height}}
+function halo(c,txt,x,y,col,font){c.font=font||'500 13px "Noto Sans TC",sans-serif';c.lineWidth=3.5;c.strokeStyle=C.paper;c.lineJoin='round';c.strokeText(txt,x,y);c.fillStyle=col;c.fillText(txt,x,y)}
+function poly(c,p,fill){c.beginPath();c.moveTo(p[0][0],p[0][1]);for(let i=1;i<p.length;i++)c.lineTo(p[i][0],p[i][1]);c.closePath();c.fillStyle=fill;c.strokeStyle=fill;c.lineWidth=.7;c.fill();c.stroke()}
+
+function draw3D(st){
+  const {c,w,h}=fit($('c3'));
+  const co=Math.cos(st.yaw),si=Math.sin(st.yaw),ct=Math.cos(st.tilt),stl=Math.sin(st.tilt);
+  const S=Math.min(w/2.95,h/2.75),cx=w/2,cy=h/2+(st.tilt/T0)*S*.1;
+  const P=(x,y,z)=>{const X=x*co-y*si,Y=x*si+y*co,Z=(z-400)/600;return[cx+X*S,cy-(Y*ct+Z*stl)*S]};
+  for(let j=0;j<=N;j++)for(let i=0;i<=N;i++)hs[j*(N+1)+i]=H(gx(i),gx(j),st.s);
+  if(orderYaw!==st.yaw){order=[];for(let j=0;j<N;j++)for(let i=0;i<N;i++)order.push([i,j,(gx(i)+1/N)*si+(gx(j)+1/N)*co]);order.sort((a,b)=>b[2]-a[2]);orderYaw=st.yaw}
+  const W=st.water,d=2/N;
+  for(const [i,j] of order){
+    const x0=gx(i),x1=gx(i+1),y0=gx(j),y1=gx(j+1),k=j*(N+1)+i;
+    const a=hs[k],b=hs[k+1],e=hs[k+N+2],f=hs[k+N+1];
+    const mn=Math.min(a,b,e,f),mx=Math.max(a,b,e,f);
+    if(W!=null&&mx<=W){poly(c,[P(x0,y0,W),P(x1,y0,W),P(x1,y1,W),P(x0,y1,W)],C.water);continue}
+    const zx=((b+e)-(a+f))/2/d/600,zy=((e+f)-(a+b))/2/d/600,n=Math.hypot(zx,zy,1);
+    const sh=clamp(.72+.62*(.5*zx+.3*zy+.81)/n-.5,.62,1.12);
+    poly(c,[P(x0,y0,a),P(x1,y0,b),P(x1,y1,e),P(x0,y1,f)],hyp((a+b+e+f)/4,sh));
+    for(const L of st.levels){ if(L<=mn||L>=mx)continue; if(W!=null&&L<W)continue;
+      const pts=[],cross=(u,v,xu,yu,xv,yv)=>{if((u<L)!==(v<L)){const p=(L-u)/(v-u);pts.push(P(lerp(xu,xv,p),lerp(yu,yv,p),L))}};
+      cross(a,b,x0,y0,x1,y0);cross(b,e,x1,y0,x1,y1);cross(e,f,x1,y1,x0,y1);cross(f,a,x0,y1,x0,y0);
+      c.strokeStyle=L===st.hl?C[st.hlc]:'#4f2d14';c.lineWidth=L===st.hl?3:1.5;c.lineCap='round';
+      for(let q=0;q+1<pts.length;q+=2){c.beginPath();c.moveTo(pts[q][0],pts[q][1]);c.lineTo(pts[q+1][0],pts[q+1][1]);c.stroke()}
+    }
+    if(W!=null&&mn<W){
+      const src=[[x0,y0,a],[x1,y0,b],[x1,y1,e],[x0,y1,f]],out=[];
+      src.forEach((p,q)=>{const r=src[(q+1)%4],pi=p[2]<=W,ri=r[2]<=W;if(pi)out.push(p);if(pi!==ri){const u=(W-p[2])/(r[2]-p[2]);out.push([lerp(p[0],r[0],u),lerp(p[1],r[1],u),W])}});
+      if(out.length>2)poly(c,out.map(p=>P(p[0],p[1],W)),C.water);
+      const sl=out.filter(p=>Math.abs(p[2]-W)<1e-6&&!src.some(q=>q[0]===p[0]&&q[1]===p[1]));
+      if(sl.length===2){const A0=P(sl[0][0],sl[0][1],W),B0=P(sl[1][0],sl[1][1],W);c.strokeStyle='#fff';c.lineWidth=2;c.beginPath();c.moveTo(A0[0],A0[1]);c.lineTo(B0[0],B0[1]);c.stroke()}
+    }
+  }
+  /* 前方兩側的土層 */
+  const base=-40;
+  for(let i=0;i<N;i++){const x0=gx(i),x1=gx(i+1),a=hs[i],b=hs[i+1];
+    poly(c,[P(x0,-1,a),P(x1,-1,b),P(x1,-1,base),P(x0,-1,base)],'#7c6650');
+    if(W!=null&&(a<W||b<W))poly(c,[P(x0,-1,Math.min(a,W)),P(x1,-1,Math.min(b,W)),P(x1,-1,W),P(x0,-1,W)],C.water);
+    const p=hs[i*(N+1)],q=hs[(i+1)*(N+1)];
+    if(si>.01){poly(c,[P(-1,x0,p),P(-1,x1,q),P(-1,x1,base),P(-1,x0,base)],'#6a5642');
+      if(W!=null&&(p<W||q<W))poly(c,[P(-1,x0,Math.min(p,W)),P(-1,x1,Math.min(q,W)),P(-1,x1,W),P(-1,x0,W)],C.water)}
+  }
+  c.textBaseline='middle';c.textAlign='left';
+  for(const L of st.levels){const y=(L-400-st.s*A*bump(.86))/K;if(Math.abs(y)>1||(W!=null&&L<W))continue;const p=P(.86,y,L);halo(c,String(L),p[0]-10,p[1]-9,'#4f2d14')}
+  if(st.line&&Math.abs(st.s)>.1){const col=st.s>0?C.ridge:C.valley;c.setLineDash([7,6]);c.strokeStyle=col;c.lineWidth=2.5;c.beginPath();
+    for(let k=0;k<=40;k++){const y=-1+k/20,z=Math.max(H(0,y,st.s),W||-999),p=P(0,y,z);k?c.lineTo(p[0],p[1]):c.moveTo(p[0],p[1])}c.stroke();c.setLineDash([]);
+    const y=st.s>0?-.86:.8,p=P(0,y,H(0,y,st.s));halo(c,st.s>0?'山脊線':'山谷線',p[0]+10,p[1],col,'700 16px "Noto Sans TC",sans-serif')}
+  if(st.scan!=null){c.strokeStyle=C.scan;c.lineWidth=2.5;c.beginPath();
+    for(let k=0;k<=60;k++){const x=-1+k/30,z=Math.max(H(x,st.scan,st.s),W||-999),p=P(x,st.scan,z);k?c.lineTo(p[0],p[1]):c.moveTo(p[0],p[1])}c.stroke();
+    cuts(st).forEach(x=>{const p=P(x,st.scan,400);c.fillStyle=C.scan;c.strokeStyle='#fff';c.lineWidth=2;c.beginPath();c.arc(p[0],p[1],6,0,7);c.fill();c.stroke()})}
+  if(st.drops)for(const dp of drops){const pt=dp.tr.map(q=>P(q[0],q[1],H(q[0],q[1],st.s)));c.strokeStyle='#1467b0';c.lineWidth=2.4;c.beginPath();pt.forEach((p,i)=>i?c.lineTo(p[0],p[1]):c.moveTo(p[0],p[1]));c.stroke()}
+}
+/* 切線上高度剛好 400 公尺的點 */
+function cuts(st,lv=400){const out=[];let px=-1,ph=H(-1,st.scan,st.s)-lv;for(let k=1;k<=400;k++){const x=-1+k/200,v=H(x,st.scan,st.s)-lv;if((ph<0)!==(v<0))out.push(lerp(px,x,ph/(ph-v)));px=x;ph=v}return out}
+
+/* 等高線圖，也供測驗使用 */
+function drawContourMap(c,w,h,o){
+  const m=o.margin||30,S=(Math.min(w,h)-m*2)/2,cx=w/2,cy=h/2,co=Math.cos(o.rot||0),si=Math.sin(o.rot||0);
+  const M=(x,y)=>[cx+(x*co-y*si)*S,cy-(x*si+y*co)*S];
+  c.strokeStyle=C.ink;c.lineWidth=1;c.strokeRect(cx-S,cy-S,S*2,S*2);
+  for(let i=-2;i<=2;i++){const a=i/2*S;[[cx+a,cy-S,cx+a,cy-S-4],[cx+a,cy+S,cx+a,cy+S+4],[cx-S,cy+a,cx-S-4,cy+a],[cx+S,cy+a,cx+S+4,cy+a]].forEach(l=>{c.beginPath();c.moveTo(l[0],l[1]);c.lineTo(l[2],l[3]);c.stroke()})}
+  c.save();c.beginPath();c.rect(cx-S,cy-S,S*2,S*2);c.clip();
+  if(o.water!=null){c.fillStyle=C.water;c.globalAlpha=.4;c.beginPath();let f=1;
+    for(let k=0;k<=100;k++){const x=-1+k/50,y=clamp((o.water-400-o.s*A*bump(x))/K,-1,1),p=M(x,y);f?c.moveTo(p[0],p[1]):c.lineTo(p[0],p[1]);f=0}
+    let q=M(1,-1);c.lineTo(q[0],q[1]);q=M(-1,-1);c.lineTo(q[0],q[1]);c.closePath();c.fill();c.globalAlpha=1}
+  c.lineCap='round';
+  o.levels.forEach(L=>{c.strokeStyle=L===o.hl?C[o.hlc]:C.contour;c.lineWidth=L===o.hl?3:1.7;c.beginPath();
+    for(let k=0;k<=160;k++){const x=-1+k/80,p=M(x,(L-400-o.s*A*bump(x))/K);k?c.lineTo(p[0],p[1]):c.moveTo(p[0],p[1])}c.stroke()});
+  if(o.line&&Math.abs(o.s)>.1){const col=o.s>0?C.ridge:C.valley,dir=o.s>0?-1:1;c.setLineDash([6,5]);c.strokeStyle=col;c.lineWidth=2;c.beginPath();let p=M(0,-1);c.moveTo(p[0],p[1]);p=M(0,1);c.lineTo(p[0],p[1]);c.stroke();c.setLineDash([]);
+    o.levels.forEach(L=>{const y=(L-400-o.s*A*bump(0))/K;if(Math.abs(y)>.99)return;const t0=M(0,y+dir*.02),a=M(-.045,y-dir*.07),b=M(.045,y-dir*.07);c.fillStyle=col;c.beginPath();c.moveTo(t0[0],t0[1]);c.lineTo(a[0],a[1]);c.lineTo(b[0],b[1]);c.closePath();c.fill()})}
+  if(o.scan!=null){c.strokeStyle=C.scan;c.lineWidth=2;let p=M(-1,o.scan);c.beginPath();c.moveTo(p[0],p[1]);p=M(1,o.scan);c.lineTo(p[0],p[1]);c.stroke();
+    cuts(o).forEach(x=>{const q=M(x,o.scan);c.fillStyle=C.scan;c.beginPath();c.arc(q[0],q[1],5,0,7);c.fill()})}
+  if(o.dropsOn)for(const d of drops){const q=M(d.x,d.y);c.fillStyle='#1467b0';c.beginPath();c.arc(q[0],q[1],2.4,0,7);c.fill()}
+  c.textAlign='center';c.textBaseline='middle';
+  o.levels.forEach((L,i)=>{const x=o.labelX||.74,y=(L-400-o.s*A*bump(x))/K;if(Math.abs(y)>.97)return;const p=M(x,y);c.fillStyle=C.paper;c.fillRect(p[0]-15,p[1]-8,30,16);c.fillStyle=C.ink;c.font='500 12px "Noto Sans TC",sans-serif';c.fillText(o.labels?o.labels[i]:L,p[0],p[1])});
+  c.restore();
+  if(o.sides){c.fillStyle=C.muted;c.font='500 12px "Noto Sans TC",sans-serif';c.textBaseline='middle';c.fillText('▲ 高處',cx,cy-S-14);c.fillText('▼ 低處',cx,cy+S+14)}
+}
+function drawProfile(st){
+  const {c,w,h}=fit($('cp')),yv=st.scan==null?0:st.scan,L=40,R=12,T=10,B=22;
+  const X=x=>L+(x+1)/2*(w-L-R),Y=z=>T+(1-(z-100)/620)*(h-T-B);
+  c.strokeStyle=C.rule;c.lineWidth=1;c.fillStyle=C.muted;c.font='12px "Noto Sans TC",sans-serif';c.textAlign='right';c.textBaseline='middle';
+  [200,400,600].forEach(z=>{c.beginPath();c.moveTo(L,Y(z));c.lineTo(w-R,Y(z));c.stroke();c.fillText(z,L-5,Y(z))});
+  c.beginPath();c.moveTo(X(-1),Y(100));for(let k=0;k<=120;k++){const x=-1+k/60;c.lineTo(X(x),Y(clamp(H(x,yv,st.s),100,720)))}c.lineTo(X(1),Y(100));c.closePath();c.fillStyle='rgb(178,192,122)';c.fill();
+  c.strokeStyle=C.ink;c.lineWidth=1.8;c.beginPath();for(let k=0;k<=120;k++){const x=-1+k/60,p=[X(x),Y(clamp(H(x,yv,st.s),100,720))];k?c.lineTo(p[0],p[1]):c.moveTo(p[0],p[1])}c.stroke();
+  c.strokeStyle=C.scan;c.lineWidth=2;c.setLineDash([6,4]);c.beginPath();c.moveTo(L,Y(400));c.lineTo(w-R,Y(400));c.stroke();c.setLineDash([]);
+  cuts({scan:yv,s:st.s}).forEach(x=>{c.fillStyle=C.scan;c.beginPath();c.arc(X(x),Y(400),5.5,0,7);c.fill()});
+  const mid=Math.round(H(0,yv,st.s));c.textAlign='center';c.textBaseline='middle';
+  const lab=`中間 ${mid} 公尺`,cmp=Math.abs(mid-400)<6?'（剛好 400，V 尖在這裡）':mid>400?'（比 400 高）':'（比 400 低）';
+  halo(c,lab+cmp,(L+w-R)/2,h-10,C.ink,'500 13px "Noto Sans TC",sans-serif');
+}
+function drawMap(st){const {c,w,h}=fit($('cm'));
+  drawContourMap(c,w,h,{s:st.s,levels:st.levels,hl:st.hl,hlc:st.hlc,line:st.line,scan:st.scan==null?null:st.scan,water:st.water,dropsOn:st.drops,sides:true,margin:30})}
+
+/* 測驗 */
+const Q=[{rot:0,up:true},{rot:0,up:false},{rot:Math.PI/2,up:false},{rot:Math.PI*1.2,up:true}];
+const answered=[];
+const quizEl=$('quiz');
+Q.forEach((q,i)=>{const d=document.createElement('div');d.className='q';
+  d.innerHTML=`<canvas id="q${i}" role="img" aria-label="第 ${i+1} 題等高線圖"></canvas><div class="a"><button type="button" id="q${i}a">山脊</button><button type="button" id="q${i}b">山谷</button></div><p id="q${i}f">第 ${i+1} 題：這是哪一種地形？</p>`;
+  quizEl.appendChild(d);
+  const ans=q.up?'ridge':'valley';
+  [['a','ridge'],['b','valley']].forEach(([k,v])=>{d.querySelector('#q'+i+k).onclick=()=>{const f=$('q'+i+'f'),ok=v===ans;
+    f.className=ok?'ok':'no';
+    f.textContent=(ok?'答對了。':'再想想。')+(q.up?'V 尖朝數字變小的方向，也就是低處，所以是山脊。':'V 尖朝數字變大的方向，也就是高處，所以是山谷。');
+    answered[i]=ok;const n=answered.filter(Boolean).length;$('score').textContent=`目前答對 ${n}／${Q.length} 題。`}})});
+function drawQuiz(){Q.forEach((q,i)=>{const cv=$('q'+i);if(!cv)return;const {c,w,h}=fit(cv);
+  drawContourMap(c,w,h,{s:1,levels:LV,rot:q.rot,margin:12,labels:q.up?LV:[...LV].reverse()})})}
+
+/* 主迴圈 */
+let capKey='';
+function frame(ts){
+  const dt=last?Math.min(.25,(ts-last)/1000):0;last=ts;
+  if(playing&&step<FREE){t+=dt;dirty=true;if(t>=STEPS[step].dur){if(step+1===FREE)go(FREE);else go(step+1,true)}}
+  if(dirty){dirty=false;const st=state();
+    if(st.drops)stepDrops(dt,st.s);
+    draw3D(st);drawMap(st);drawProfile(st);
+    const cap=STEPS[step].cap;let txt=cap[0][1];for(const r of cap)if(t>=r[0])txt=r[1];
+    if(txt!==capKey){capKey=txt;$('captxt').textContent=txt}
+    [...stepsEl.children].forEach((b,i)=>b.style.setProperty('--p',i<step?'100%':i===step&&step<FREE?(t/STEPS[step].dur*100)+'%':'0%'));
+    $('sS').value=st.s;$('oS').textContent=Math.abs(st.s)<.05?'平坦斜坡':st.s>0?'山脊':'山谷';
+    $('sW').value=st.water==null?50:st.water;$('oW').textContent=st.water==null?'沒有海水':Math.round(st.water)+' 公尺';
+    const sy=st.scan==null?(step===FREE?free.scan:0):st.scan;$('sY').value=sy;$('oY').textContent=Math.round(H(1,sy,0))+' 公尺處';
+  }
+  requestAnimationFrame(frame);
+}
+new ResizeObserver(()=>{dirty=true;drawQuiz()}).observe(document.querySelector('.wrap'));
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',readTheme);
+new MutationObserver(readTheme).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{dirty=true;drawQuiz()});
+readTheme();
+if(reduced)t=STEPS[0].dur*.9;
+syncUI();
+requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
