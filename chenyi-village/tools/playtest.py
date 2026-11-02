@@ -1,6 +1,6 @@
 """整場試玩：python tools/playtest.py <專案> <截圖資料夾>
 依遊戲狀態自動操作：第一段用真實按鍵走路，其餘把角色放到目標旁再按 E。三個實驗各答錯一次。"""
-import sys, time, pathlib
+import re, sys, time, pathlib
 sys.stdout.reconfigure(encoding="utf-8")
 from playwright.sync_api import sync_playwright
 root = pathlib.Path(sys.argv[1]).resolve(); out = pathlib.Path(sys.argv[2]); out.mkdir(parents=True, exist_ok=True)
@@ -21,9 +21,8 @@ with sync_playwright() as p:
         if n not in seen:
             seen.add(n); pg.wait_for_timeout(950); pg.screenshot(path=out / f"{n}.png")
     def answer():
-        no = int(pg.inner_text("#qMeta").split()[1]) if False else None
-        s = st(); shown = pg.inner_text("#qText")
-        q = pg.evaluate("(t)=>{for(const s of __bird.ST)for(const q of s.steps||[])if(t.endsWith(q.q)||q.q===t)return q}", shown)
+        no = int(re.search(r"第\s*(\d+)\s*題", pg.inner_text("#qMeta")).group(1))
+        q = pg.evaluate("(n)=>{for(const s of __bird.ST)for(const q of s.steps||[])if(q.no===n)return q}", no)
         shot(f"q{q['no']}")
         ty = q["type"]
         if ty == "choice": pg.locator("#qBody button.opt", has_text=q["options"][q["answer"]]).click()
@@ -53,7 +52,14 @@ with sync_playwright() as p:
             press_item(1, 1800); print(" ", pg.inner_text("#expObs")); press_item(0, 2800); print(" ", pg.inner_text("#expObs"), "船X", pg.evaluate("__bird.RV.boat.position.x"))
             pg.screenshot(path=out / "19_exp_moved.png"); press_item(1, 1800); pg.screenshot(path=out / "19_exp_mark.png"); print(" ", pg.inner_text("#expObs")); press_item(2, 1800); pg.screenshot(path=out / "19_exp_bottom.png"); print(" ", pg.inner_text("#expObs"))
             pg.locator("#expAns button").nth(0).click(); pg.wait_for_timeout(200); print(" 錯答 HP", pg.evaluate("__bird.G.hp"), pg.inner_text("#expHint")); pg.locator("#expAns button").nth(1).click()
-    first_walk = True; end = time.time() + 280; order = []
+        elif s == 24:
+            press_item(0, 1900); print(" ", pg.inner_text("#expObs"), "羊", pg.evaluate("__bird.PN.count")); pg.screenshot(path=out / "24_exp_night.png")
+            press_item(1, 1000); print(" ", pg.inner_text("#expObs")); press_item(0, 1900); print(" ", pg.inner_text("#expObs"), "羊", pg.evaluate("__bird.PN.count")); pg.screenshot(path=out / "24_exp_fixed.png")
+            pg.locator("#expAns button").nth(0).click(); pg.wait_for_timeout(200); print(" 錯答 HP", pg.evaluate("__bird.G.hp"), pg.inner_text("#expHint")); pg.locator("#expAns button").nth(1).click()
+        elif s == 29:
+            press_item(0, 1600); print(" ", pg.inner_text("#expObs")); pg.screenshot(path=out / "29_exp_drawn.png"); press_item(1, 1700); print(" ", pg.inner_text("#expObs")); press_item(2, 1200); print(" ", pg.inner_text("#expObs")); pg.screenshot(path=out / "29_exp_legs.png")
+            pg.locator("#expAns button").nth(0).click(); pg.wait_for_timeout(200); print(" 錯答 HP", pg.evaluate("__bird.G.hp"), pg.inner_text("#expHint")); pg.locator("#expAns button").nth(1).click()
+    first_walk = True; end = time.time() + 480; order = []
     while time.time() < end:
         if pg.is_visible("#cert"): break
         if pg.is_visible("#end"):
@@ -67,7 +73,7 @@ with sync_playwright() as p:
         elif m == "explore":
             s = st(); shot("explore"); ts = pg.evaluate("__bird.ST[%d].hub" % s)
             if ts:  # 依序走訪：第一次中間，再左、右，最後村長
-                pos = pg.evaluate("""()=>{const P=__bird.P;const c=__bird.G.cards;const I=__bird.IDIOMS;if(c.length>=3)return [4,3.5];const k=Object.keys(I).find(x=>!c.includes(x));const d=I[k].door();return [d.x,d.z]}""")
+                pos = pg.evaluate("""()=>{const P=__bird.P;const c=__bird.G.cards;const I=__bird.IDIOMS;if(c.length>=Object.keys(I).length)return [4,3.5];const k=Object.keys(I).find(x=>!c.includes(x));const d=I[k].door();return [d.x,d.z]}""")
             else:
                 t = pg.evaluate("(()=>{const t=__bird.ST[%d].target();return [t.x,t.z]})()" % s); pos = [t[0], t[1] + 1.6]
             if first_walk:

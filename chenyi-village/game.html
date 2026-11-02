@@ -118,7 +118,7 @@ h2{margin:0 0 12px;text-align:center;letter-spacing:.2em;font-size:25px}
 <div class="mid"><button id="sClose" class="btn">關閉</button></div></div></div>
 
 <div id="tut" class="overlay hide"><div class="panel"><h2>操　作</h2>
-<div class="tRow"><b>移動</b><span>鍵盤 WASD 或方向鍵；觸控用左下搖桿</span></div><div class="tRow"><b>轉鏡頭</b><span>按住畫面左右、上下拖曳</span></div><div class="tRow"><b>互動</b><span>跟著金色星星走，靠近後按 E 或點白色泡泡</span></div><div class="tRow"><b>任務</b><span>你要走進三個成語故事，親手查出真相，再把成語用在新情境。</span></div>
+<div class="tRow"><b>移動</b><span>鍵盤 WASD 或方向鍵；觸控用左下搖桿</span></div><div class="tRow"><b>轉鏡頭</b><span>按住畫面左右、上下拖曳</span></div><div class="tRow"><b>互動</b><span>跟著金色星星走，靠近後按 E 或點白色泡泡</span></div><div class="tRow"><b>任務</b><span>你要走進五個成語故事，親手查出真相，再把成語用在新情境。</span></div>
 <div class="mid"><button id="tutGo" class="btn">我知道了</button></div></div></div>
 
 <div id="cardBox" class="overlay hide"><div class="panel"><h2>獲得成語卡</h2><div id="idiomCard"><h3 id="cName"></h3><p><b>意思：</b><span id="cMean"></span></p><p><b>出處：</b><span id="cFrom"></span></p><p><b>例句：</b><span id="cEx"></span></p></div><div class="mid"><button id="cardGo" class="btn">收進圖鑑</button></div></div></div>
@@ -128,7 +128,7 @@ h2{margin:0 0 12px;text-align:center;letter-spacing:.2em;font-size:25px}
 
 <div id="cert" class="overlay hide"><div class="panel"><h2>通關證書</h2><img id="certImg" alt="通關證書"><div class="mid"><a id="certDl" class="btn" href="#">下載證書</a><button id="certAgain" class="btn ghost">從頭再玩</button><button id="certTitle" class="btn ghost">回到標題</button></div></div></div>
 
-<div id="title" class="hide"><img id="tHero" src="images/hero.png" alt=""><div><div id="tSub">成語闖關遊戲・親手查明真相</div><div id="tName">成語村</div><div id="tSub2" class="pill" style="font-size:15px;background:#fbf4e2e6">杯弓蛇影・守株待兔・刻舟求劍</div></div>
+<div id="title" class="hide"><img id="tHero" src="images/hero.png" alt=""><div><div id="tSub">成語闖關遊戲・親手查明真相</div><div id="tName">成語村</div><div id="tSub2" class="pill" style="font-size:15px;background:#fbf4e2e6">杯弓蛇影・守株待兔・刻舟求劍・亡羊補牢・畫蛇添足</div></div>
 <div><div id="tBtns"><button id="tStart" class="btn">開始遊戲</button><button id="tCont" class="btn ghost">繼續遊戲</button></div><div id="tNote">電腦與平板皆可・建議開啟聲音</div></div></div>
 
 <div id="loading"><div id="ldName">成語村</div><div id="ldBar"><div id="ldFill"></div></div><div id="ldText">載入遊戲引擎……</div></div>
@@ -151,15 +151,17 @@ const TOUCH=matchMedia('(pointer:coarse)').matches;
 const setLoad=(p,t)=>{$('ldFill').style.width=p+'%';if(t)$('ldText').textContent=t};
 
 /* ---------- 關卡資料：新增成語時只改這裡與對應場景 ---------- */
-const ACTS={1:{name:'成語村'},2:{name:'杯弓蛇影'},3:{name:'守株待兔'},4:{name:'刻舟求劍'},5:{name:'綜合挑戰'}};
+const ACTS={1:{name:'成語村'},2:{name:'杯弓蛇影'},3:{name:'守株待兔'},4:{name:'刻舟求劍'},5:{name:'亡羊補牢'},6:{name:'畫蛇添足'},7:{name:'綜合挑戰'}};
 const IDIOMS={
  beigong:{name:'杯弓蛇影',first:1,door:()=>V3(0,1,-7.2),mean:'把弓的倒影誤認成蛇。比喻因疑神疑鬼而自相驚擾。',from:'《晉書・樂廣傳》',ex:'只是風吹得窗戶響，他卻杯弓蛇影，以為家裡遭了小偷。'},
  shouzhu:{name:'守株待兔',first:11,door:()=>V3(-7.4,1,-1.2),mean:'比喻不知變通，抱著僥倖的心理，不肯努力而等待意外的收穫。',from:'《韓非子・五蠹》',ex:'不用功又想考高分，只靠猜題碰運氣，簡直是守株待兔。'},
  kezhou:{name:'刻舟求劍',first:17,door:()=>V3(7.4,1,-1.2),mean:'比喻拘泥固執，情況已經改變，做法卻不知跟著改變。',from:'《呂氏春秋・察今》',ex:'考試範圍早就改了，他還只讀舊範圍，真是刻舟求劍。'},
+ wangyang:{name:'亡羊補牢',first:22,door:()=>V3(-8,1,7.8),mean:'羊跑了才修補羊圈。比喻出錯之後及時補救，還來得及。',from:'《戰國策・楚策四》',ex:'這次考試粗心失分，現在養成檢查的習慣，亡羊補牢還不算晚。'},
+ huashe:{name:'畫蛇添足',first:27,door:()=>V3(8,1,7.8),mean:'比喻多此一舉，做了不必要的事，反而把事情弄糟。',from:'《戰國策・齊策二》',ex:'這篇作文已經很完整，再加一段無關的話，就是畫蛇添足了。'},
 };
 const ST=[
 {id:0,kind:'story',hub:true,world:'village',env:'hutong',name:'成語村',para:'村莊導言',speaker:'村長',spawn:[0,0,8],
- text:'歡迎來到成語村！這裡的每一戶人家，都藏著一個成語的故事。跟著金色星星，挑一戶去探險吧！破解三個成語之後，再回來找我。'},
+ text:'歡迎來到成語村！這裡的每一戶人家，都藏著一個成語的故事。跟著金色星星，挑一戶去探險吧！破解五個成語之後，再回來找我。'},
 {id:1,idiom:'beigong',first:true,kind:'story',world:'hall',env:'hall',scene:'banquet',cam:'table',name:'樂廣宴客',para:'故事',speaker:'旁白',dialogBtn:'入席',
  text:'在遙遠的晉朝，有一位名叫樂廣的官員，他為人熱情好客，結交了許多好朋友。這一天，樂廣邀請了一位許久未見的摯友來到家中作客，兩人在廳堂裡擺上了一桌豐盛的酒菜，準備好好敘舊。'},
 {id:2,kind:'story',world:'hall',env:'hall',scene:'banquet',cam:'cup',name:'杯中異象',para:'故事',speaker:'朋友',dialogBtn:'這是什麼？！',
@@ -231,16 +233,56 @@ const ST=[
  {type:'match',level:'詮釋',q:'村民遇到這些事，哪些可以用「刻舟求劍」形容？',cards:['道路早就改了，還堅持照舊地圖走，結果迷路','看到外面下大雨，改走有屋簷的路回家','課本換了新版本，還只背舊版的內容去考試'],zones:['適用','不適用'],answer:{'道路早就改了，還堅持照舊地圖走，結果迷路':'適用','看到外面下大雨，改走有屋簷的路回家':'不適用','課本換了新版本，還只背舊版的內容去考試':'適用'},hint:'判斷重點：情況改變之後，這個人的做法有沒有跟著改變？'},
  {type:'choice',level:'評鑑',q:'村裡的告示寫了四句話，哪一句的「刻舟求劍」用得正確？',options:['規定早就改了，他還照舊辦，真是刻舟求劍。','他刻舟求劍，把這艘船雕得非常漂亮。','他划船的技術刻舟求劍，一下就到對岸。','他刻舟求劍，很快就把失物全部找回。'],answer:0,hint:'不要只看字面上的船和劍。哪一句是在說「不知變通」？'},
  ]},
-/* 綜合挑戰 */
-{id:22,world:'village',env:'hutong',spawn:[0,0,8],name:'綜合挑戰',quest:'最後的委託',obj:'三張成語卡都到手了！回去找村長。',prompt:'接受委託',target:()=>V3(4,1.2,2),para:'綜合挑戰',speaker:'村長',dialogBtn:'交給我',
- text:'太厲害了！最後請你用三張成語卡，幫村民挑出最合適的成語。',
+/* 亡羊補牢 */
+{id:22,idiom:'wangyang',first:true,kind:'story',world:'pasture',env:'noon',scene:'penOpen',cam:'pen',name:'羊圈破了',para:'故事',speaker:'旁白',
+ text:'從前有一個牧羊人，養了一群羊。有一天早上，他發現羊圈破了一個洞，羊也少了一隻。'},
+{id:23,kind:'story',world:'pasture',env:'noon',scene:'penOpen',cam:'pen',name:'鄰居的勸告',para:'故事',speaker:'牧羊人',dialogBtn:'真的不用修嗎？',
+ text:'鄰居勸他：「趕快把羊圈修好吧！」牧羊人卻說：「羊都已經丟了，還修羊圈做什麼？」'},
+{id:24,kind:'story',free:true,world:'pasture',env:'noon',scene:'penOpen',spawn:[0,0,5],name:'幫忙顧羊圈',quest:'試試看修不修',obj:'走到羊圈的破洞旁，看看不修和修好，會有什麼不同。',prompt:'查看破洞',target:()=>V3(1.5,.9,-.4),para:'故事',speaker:'旁白',mid:'pen',dialogBtn:'我懂了',
+ text:'第二天，羊又少了一隻。牧羊人這才後悔沒有聽勸，趕緊把破洞補好。從此以後，他的羊再也沒有丟過。'},
+{id:25,world:'pasture',env:'noon',scene:'penFixed',spawn:[-1,0,5],name:'修好的羊圈',quest:'和牧羊人聊聊',obj:'羊圈修好了，走過去和牧羊人聊聊。',prompt:'聊一聊',target:()=>V3(-3,1.1,.6),para:'寓意',speaker:'牧羊人',dialogBtn:'接受挑戰',
+ text:'這就是「亡羊補牢」的由來，提醒我們犯了錯不要放棄，及時補救，就能避免更大的損失。',
  steps:[
- {type:'match',level:'統整',q:'這些事分別該用哪個成語形容？',cards:['聽到一點風聲，就嚇得整晚睡不著','撿過一次便宜，就天天等著再撿便宜','換了新老師，還用舊方法準備，不肯調整'],zones:['杯弓蛇影','守株待兔','刻舟求劍'],answer:{'聽到一點風聲，就嚇得整晚睡不著':'杯弓蛇影','撿過一次便宜，就天天等著再撿便宜':'守株待兔','換了新老師，還用舊方法準備，不肯調整':'刻舟求劍'},hint:'想一想：這個人是自己嚇自己、只想靠運氣，還是不知道要變通？'},
+ {type:'tf',level:'擷取訊息',q:'牧羊人一開始就聽了鄰居的話，馬上修好羊圈。',answer:false,hint:'鄰居勸他的時候，他是怎麼回答的？'},
+ {type:'fill',level:'推論',q:'根據故事，選出最適合填入空格的詞語。',sentence:'牧羊人補好破洞之後，他的羊＿。',tiles:['再也沒有丟','全部跑回來','變得更多了','還是一直丟'],answer:'再也沒有丟',hint:'回想你做的實驗：修好之後再過一夜，羊的數量有沒有改變？'},
+ ]},
+{id:26,idiom:'wangyang',last:true,world:'village',env:'hutong',spawn:[0,0,8],name:'活用：亡羊補牢',quest:'幫村長解決問題',obj:'村民又遇到一些事，去問問村長。',prompt:'問村長',target:()=>V3(4,1.2,2),para:'活用',speaker:'村長',dialogBtn:'我來幫忙',
+ text:'有些村民犯了錯，不知道還來不來得及。來幫大家判斷看看吧！',
+ steps:[
+ {type:'choice',level:'詮釋',q:'從故事來看，現在我們用「亡羊補牢」形容什麼樣的情況？',options:['出錯之後及時補救','事前就做好準備','羊群多，家境好','做事不肯負責任'],answer:0,hint:'牧羊人是在羊丟了之前修，還是丟了之後才修？'},
+ {type:'match',level:'詮釋',q:'村民遇到這些事，哪些可以用「亡羊補牢」形容？',cards:['考試粗心錯了，馬上訂正並養成檢查的習慣','腳踏車被偷過一次，趕快買好鎖鎖住新車','聽說明天會下雨，今天就先把衣服收好'],zones:['適用','不適用'],answer:{'考試粗心錯了，馬上訂正並養成檢查的習慣':'適用','腳踏車被偷過一次，趕快買好鎖鎖住新車':'適用','聽說明天會下雨，今天就先把衣服收好':'不適用'},hint:'判斷重點：是已經出了問題才補救，還是問題發生之前先準備？'},
+ {type:'choice',level:'評鑑',q:'村裡的告示寫了四句話，哪一句的「亡羊補牢」用得正確？',options:['比賽輸了就加強練習，亡羊補牢還來得及。','颱風還沒來，他就亡羊補牢先釘好窗戶。','牧場的羊亡羊補牢，吃草吃得好開心。','他亡羊補牢，把沒做錯的事再做一次。'],answer:0,hint:'這個成語要先有損失或錯誤，再有補救。哪一句符合？'},
+ ]},
+/* 畫蛇添足 */
+{id:27,idiom:'huashe',first:true,kind:'story',world:'yard',env:'hutong',scene:'contestStart',cam:'yard',name:'一壺賞酒',para:'故事',speaker:'旁白',
+ text:'古時候，楚國有戶人家祭祀完畢，把一壺酒賞給幫忙的人。酒只夠一個人喝，大家便約定：在地上畫蛇，誰先畫好，這壺酒就歸誰。'},
+{id:28,kind:'story',world:'yard',env:'hutong',scene:'contestFirst',cam:'yard',name:'第一個畫好',para:'故事',speaker:'第一個畫好的人',dialogBtn:'要加腳嗎？',
+ text:'有一個人很快就畫好了。他左手拿起酒壺，右手繼續畫，得意地說：「我還能幫蛇畫上腳呢！」'},
+{id:29,kind:'story',free:true,world:'yard',env:'hutong',scene:'contestExp',spawn:[0,0,4],name:'一起來畫蛇',quest:'加入畫蛇比賽',obj:'走到沙地旁，幫忙畫畫看，看看多畫幾筆會發生什麼事。',prompt:'開始畫',target:()=>V3(0,.9,.3),para:'故事',speaker:'旁白',mid:'snake',dialogBtn:'原來如此',
+ text:'腳還沒畫完，另一個人的蛇已經畫好了。他搶過酒壺說：「蛇本來就沒有腳，你怎麼能幫牠畫腳呢？」說完就把酒喝了。'},
+{id:30,world:'yard',env:'hutong',scene:'contestEnd',spawn:[0,0,4],name:'沒喝到的酒',quest:'和畫腳的人聊聊',obj:'他看著自己畫的蛇腳，走過去和他聊聊。',prompt:'聊一聊',target:()=>V3(-4.7,1.1,-1.7),para:'寓意',speaker:'第一個畫好的人',dialogBtn:'接受挑戰',
+ text:'這就是「畫蛇添足」的由來，提醒我們事情做好了就夠了，多做不必要的事，反而會把事情弄糟。',
+ steps:[
+ {type:'order',level:'統整',q:'根據故事，事情是依什麼順序發生的？依序點選。',items:['大家約定比賽畫蛇','第一個人幫蛇畫上腳','另一個人搶走酒喝了'],labels:['最先','最後'],hint:'先有約定，接著有人多畫了腳，最後酒才被拿走。'},
+ {type:'choice',level:'推論',q:'根據故事，第一個畫好的人為什麼沒有喝到酒？',options:['多畫了腳，被人搶先','他畫得比別人都慢','酒壺不小心打破了','主人不想給他喝酒'],answer:0,hint:'回想實驗：他原本已經第一名了，後來多做了什麼？'},
+ ]},
+{id:31,idiom:'huashe',last:true,world:'village',env:'hutong',spawn:[0,0,8],name:'活用：畫蛇添足',quest:'幫村長解決問題',obj:'村民又遇到一些事，去問問村長。',prompt:'問村長',target:()=>V3(4,1.2,2),para:'活用',speaker:'村長',dialogBtn:'我來幫忙',
+ text:'有些村民總想再多做一點，結果卻不太對勁。來幫大家判斷看看吧！',
+ steps:[
+ {type:'choice',level:'詮釋',q:'從故事來看，現在我們用「畫蛇添足」形容什麼樣的情況？',options:['多此一舉，反而壞事','畫技高超，栩栩如生','勇於嘗試，敢於創新','動作迅速，搶得先機'],answer:0,hint:'蛇本來沒有腳，加上去之後變得更好了嗎？'},
+ {type:'match',level:'詮釋',q:'村民遇到這些事，哪些可以用「畫蛇添足」形容？',cards:['作文已經寫得很好，硬加一堆無關的句子，反而變差','報告漏了重要的資料，趕快把它補上去','蛋糕已經夠甜了，又多加糖，結果甜得吃不下'],zones:['適用','不適用'],answer:{'作文已經寫得很好，硬加一堆無關的句子，反而變差':'適用','報告漏了重要的資料，趕快把它補上去':'不適用','蛋糕已經夠甜了，又多加糖，結果甜得吃不下':'適用'},hint:'判斷重點：多做的這件事是必要的，還是根本不需要？'},
+ {type:'choice',level:'評鑑',q:'村裡的告示寫了四句話，哪一句的「畫蛇添足」用得正確？',options:['話已經很清楚，再解釋一次就是畫蛇添足。','他畫蛇添足，很快就把這幅畫完成了。','她天天畫蛇添足地練字，字越寫越好看。','他畫蛇添足地照顧小蛇，顯得十分細心。'],answer:0,hint:'不要只看字面上的蛇。哪一句在說「做了不必要的事」？'},
+ ]},
+/* 綜合挑戰 */
+{id:32,world:'village',env:'hutong',spawn:[0,0,8],name:'綜合挑戰',quest:'最後的委託',obj:'五張成語卡都到手了！回去找村長。',prompt:'接受委託',target:()=>V3(4,1.2,2),para:'綜合挑戰',speaker:'村長',dialogBtn:'交給我',
+ text:'太厲害了！最後請你用五張成語卡，幫村民挑出最合適的成語。',
+ steps:[
+ {type:'match',level:'統整',q:'這些事分別該用哪個成語形容？',cards:['聽到一點風聲，就嚇得整晚睡不著','撿過一次便宜，就天天等著再撿便宜','換了新老師，還用舊方法準備，不肯調整','忘記帶作業被提醒後，從此睡前先整理書包','卡片已經很漂亮，又貼滿貼紙，反而看不清字'],zones:['杯弓蛇影','守株待兔','刻舟求劍','亡羊補牢','畫蛇添足'],answer:{'聽到一點風聲，就嚇得整晚睡不著':'杯弓蛇影','撿過一次便宜，就天天等著再撿便宜':'守株待兔','換了新老師，還用舊方法準備，不肯調整':'刻舟求劍','忘記帶作業被提醒後，從此睡前先整理書包':'亡羊補牢','卡片已經很漂亮，又貼滿貼紙，反而看不清字':'畫蛇添足'},hint:'想一想：這個人是自己嚇自己、只靠運氣、不知變通、及時補救，還是多此一舉？'},
  {type:'choice',level:'評鑑',q:'小明聽說「教室鬧鬼」，就不敢單獨進教室。朋友陪他去查看，才發現怪聲是窗戶沒關。下列哪個成語最適合形容小明原本的樣子？',options:['杯弓蛇影','守株待兔','刻舟求劍','畫蛇添足'],answer:0,hint:'小明害怕的東西真的存在嗎？'},
  ]},
 ];
 let _no=0,_pi=0; const POS=[2,0,3,1];
-ST.forEach(s=>{s.act=s.id===0?1:s.id<=10?2:s.id<=16?3:s.id<=21?4:5; if(s.steps){s.steps.forEach(q=>{q.no=++_no; if(q.type==='choice')q.pos=POS[_pi++%4];});}});
+ST.forEach(s=>{s.act=s.id===0?1:s.id<=10?2:s.id<=16?3:s.id<=21?4:s.id<=26?5:s.id<=31?6:7; if(s.steps){s.steps.forEach(q=>{q.no=++_no; if(q.type==='choice')q.pos=POS[_pi++%4];});}});
 const MAX_SEALS=_no+ST.filter(s=>s.mid).length; // 題目 + 實驗判斷
 const IDIOM_COUNT=Object.keys(IDIOMS).length;
 const GRADES=[[.9,'明察秋毫小偵探'],[.7,'追根究柢小偵探'],[.45,'細心探查小偵探'],[0,'勇於求真小偵探']];
@@ -368,8 +410,8 @@ CHARS.hero=makeHero();
 Object.values(CHARS).forEach(c=>{scene.add(c);c.visible=false;});
 
 /* ---------- 成語村 ---------- */
-const W={village:new THREE.Group(),hall:new THREE.Group(),field:new THREE.Group(),river:new THREE.Group()};scene.add(W.village,W.hall,W.field,W.river);
-const blocks={village:[],hall:[],field:[],river:[]};
+const W={village:new THREE.Group(),hall:new THREE.Group(),field:new THREE.Group(),river:new THREE.Group(),pasture:new THREE.Group(),yard:new THREE.Group()};scene.add(W.village,W.hall,W.field,W.river,W.pasture,W.yard);
+const blocks={village:[],hall:[],field:[],river:[],pasture:[],yard:[]};
 function roof(w,d,h,c,x,y,z,p){const g=new THREE.CylinderGeometry(.01,Math.SQRT1_2,h,4,1);g.rotateY(Math.PI/4);const m=mesh(g,M(c,.75),x,y,z,p);m.scale.set(w,1,d);return m;}
 function house({x,z,w=5,d=4,h=2.3,wall=0xefe0bf,roofC=0x5c6773,trim=0xa33d2a,sign:label,locked}){const g=new THREE.Group();g.position.set(x,0,z);W.village.add(g);
  box(w,h,d,M(wall),0,h/2,0,g);box(w+.3,.15,d+.3,trim,0,h+.03,0,g);roof(w+1.4,d+1.4,1.45,roofC,0,h+.8,0,g);
@@ -388,8 +430,8 @@ function buildVillage(){const v=W.village;
  house({x:0,z:-10,w:7,d:4.5,h:2.8,sign:'杯弓蛇影'});
  house({x:-10.5,z:-2,w:5,d:4,sign:'守株待兔',roofC:0x75654f}).rotation.y=Math.PI/2.4;
  house({x:10.5,z:-2,w:5,d:4,sign:'刻舟求劍',roofC:0x5a7082}).rotation.y=-Math.PI/2.4;
- house({x:-11,z:9,w:5,d:4,wall:0xe7d7b3,roofC:0x6b5e5e}).rotation.y=Math.PI/1.6;
- house({x:11,z:9,w:5,d:4,wall:0xe7d7b3,roofC:0x4f6573}).rotation.y=-Math.PI/1.6;
+ house({x:-11,z:9,w:5,d:4,wall:0xe7d7b3,roofC:0x6b5e5e,sign:'亡羊補牢'}).rotation.y=Math.PI/1.6;
+ house({x:11,z:9,w:5,d:4,wall:0xe7d7b3,roofC:0x4f6573,sign:'畫蛇添足'}).rotation.y=-Math.PI/1.6;
  [[-7,-7,1.1],[7,-7,1.15],[-14,4,1.25],[14,4,1.2],[-5,13,.95],[5,13,1],[-16,-8,1.5],[16,-8,1.5],[-17,14,1.4],[17,14,1.4]].forEach(a=>tree(...a));
  lantern(-3.2,-6);lantern(3.2,-6);lantern(-7,2);lantern(7,2);
  // 廣場中央水井與石桌
@@ -516,11 +558,66 @@ function buildRiver(){const r=W.river;
 }
 function resetRiver(){if(!RV.boat)return;RV.boat.position.set(0,0,0);RV.boatX=0;RV.onBoat=false;RV.mark.visible=RV.mark2.visible=false;RV.sword.position.copy(SWORD_BED);RV.sword.rotation.set(0,.4,0);RV.fall=null;RV.glow.visible=false;RV.clear=false;}
 
+/* ---------- 亡羊補牢：牧場 ---------- */
+const PN={sheep:[]},YD={};
+const landTree=(g,bl,x,z,s)=>{const t=new THREE.Group();t.position.set(x,0,z);t.scale.setScalar(s);g.add(t);cyl(.16,.24,1.4,0x7a5636,0,.7,0,t,8);sph(.95,M(0x6da052,.95),0,1.9,0,t);sph(.62,M(0x77aa58,.95),.45,1.5,.1,t);bl.push({x0:x-.5,x1:x+.5,z0:z-.5,z1:z+.5});};
+const farHills=(g,list)=>list.forEach(([x,z,h])=>{const m=mesh(new THREE.ConeGeometry(h*1.25,h,7),M(0x93b08f,1),x,h/2-.3,z,g,false);m.rotation.y=x;});
+function buildPasture(){const p=W.pasture;
+ const g=mesh(new THREE.PlaneGeometry(90,90),new THREE.MeshStandardMaterial({map:grassTex(20,20),roughness:1}),0,0,0,p,false);g.rotation.x=-Math.PI/2;
+ const X0=-4,X1=4,Z0=-6,Z1=-1,wood=0x9a7448;
+ const post=(x,z)=>cyl(.08,.1,1.15,wood,x,.57,z,p,8);
+ const rail=(x,z,len,rot)=>{[.4,.85].forEach(y=>{const r=box(len,.09,.07,wood,x,y,z,p);r.rotation.y=rot;});};
+ for(let x=X0;x<=X1;x+=2){post(x,Z0);if(x<=0||x===X1)post(x,Z1);}
+ for(let z=Z0;z<=Z1;z+=1.25){post(X0,z);post(X1,z);}
+ rail(0,Z0,8,0);rail(X0,(Z0+Z1)/2,5,Math.PI/2);rail(X1,(Z0+Z1)/2,5,Math.PI/2);rail(-2,Z1,4,0);rail(3,Z1,2,0);
+ // 破洞：斷掉的欄杆
+ post(2,Z1);PN.broken=new THREE.Group();p.add(PN.broken);const b1=box(1.1,.09,.07,wood,.8,.12,-.55,PN.broken);b1.rotation.set(0,.5,.12);const b2=box(.9,.09,.07,wood,1.5,.1,-.2,PN.broken);b2.rotation.y=-.7;
+ // 補好的新木板
+ PN.patch=new THREE.Group();p.add(PN.patch);const nw=M(0xd9b070,.8);[.4,.85].forEach(y=>box(2,.1,.09,nw,1,y,Z1,PN.patch));post(1,Z1).visible=true;[.25,1.75].forEach(x=>{const s=box(.1,.95,.05,nw,x,.5,Z1+.06,PN.patch);s.rotation.z=.04;});
+ blocks.pasture.push({x0:X0-.3,x1:X1+.3,z0:Z0-.3,z1:Z1+.3});
+ // 羊
+ const wool=M(0xf5f1e6,1),dark=M(0x3a3230,.9);
+ [[-2.7,-4.8],[-1,-5.2],[.8,-4.7],[2.6,-5],[-2.3,-3],[-.4,-3.3],[1.4,-3],[2.9,-2.6]].forEach(([x,z],i)=>{const s=new THREE.Group();s.position.set(x,0,z);s.rotation.y=i*1.3;p.add(s);
+  const b=sph(.36,wool,0,.5,0,s);b.scale.set(.95,.82,1.2);sph(.2,wool,.0,.68,.28,s);sph(.15,dark,0,.56,-.46,s);[[-.17,.25],[.17,.25],[-.17,-.25],[.17,-.25]].forEach(([a,c])=>cyl(.04,.04,.3,dark,a,.15,c,s,6));[-1,1].forEach(q=>{const e=sph(.05,dark,q*.15,.62,-.42,s);e.scale.x=1.7;});PN.sheep.push(s);});
+ // 遠處的小屋、樹與山
+ const h=new THREE.Group();h.position.set(-9.5,0,2.5);h.rotation.y=.9;p.add(h);box(3.4,1.9,2.8,M(0xe0caa0),0,.95,0,h);roof(4.4,3.8,1.25,0x8b7650,0,2.55,0,h);box(.9,1.4,.08,0x7d5a3a,0,.7,1.42,h);blocks.pasture.push({x0:-11.7,x1:-7.3,z0:.3,z1:4.7});
+ [[9,4,1.2],[11,-5,1.4],[-11,-7,1.4],[6,9,1.1],[-5,10,1]].forEach(([x,z,s])=>landTree(p,blocks.pasture,x,z,s));
+ farHills(p,[[-40,-48,24],[-8,-58,30],[34,-50,26]]);
+}
+function setSheep(n){PN.count=n;PN.sheep.forEach((s,i)=>s.visible=i<n);}
+function setPen(fixed){PN.broken.visible=!fixed;PN.patch.visible=fixed;}
+function resetPasture(){if(!PN.broken)return;setSheep(7);setPen(false);}
+
+/* ---------- 畫蛇添足：院子 ---------- */
+function snakeOnGround(color,w,pts){const c=new THREE.CatmullRomCurve3(pts);const g=new THREE.TubeGeometry(c,90,w,7,false);const m=mesh(g,new THREE.MeshStandardMaterial({color,roughness:.8}),0,.03,0,W.yard,false);m.userData.total=g.index.count;g.setDrawRange(0,0);m.userData.t=0;m.userData.goal=0;return m;}
+function snakePts(x,z,s=1){return [V3(x-1.25*s,0,z+.28*s),V3(x-.75*s,0,z-.28*s),V3(x-.2*s,0,z+.28*s),V3(x+.35*s,0,z-.28*s),V3(x+.85*s,0,z+.22*s),V3(x+1.25*s,0,z)];}
+function buildYard(){const y=W.yard;
+ const g=mesh(new THREE.PlaneGeometry(90,90),new THREE.MeshStandardMaterial({map:grassTex(20,20),roughness:1}),0,0,0,y,false);g.rotation.x=-Math.PI/2;
+ const sand=ctex(256,256,(x,w,h)=>{x.fillStyle='#e0c896';x.fillRect(0,0,w,h);for(let i=0;i<1500;i++){x.fillStyle=`rgba(120,90,50,${rnd(.03,.1)})`;x.fillRect(rnd(0,w),rnd(0,h),rnd(1,3),rnd(1,3));}},4,3);
+ const s=mesh(new THREE.PlaneGeometry(12,8),new THREE.MeshStandardMaterial({map:sand,roughness:1}),0,.012,-1.2,y,false);s.rotation.x=-Math.PI/2;
+ // 祠堂
+ const hall=new THREE.Group();hall.position.set(0,0,-9);y.add(hall);box(11,3,4,M(0xe7d7b3),0,1.5,0,hall);roof(13,6,1.8,0x5c6773,0,3.9,0,hall);box(2,2.2,.1,0x8c3a25,0,1.1,2.02,hall);[-5.4,5.4].forEach(a=>cyl(.14,.17,3,0xa33d2a,a,1.5,2.05,hall,12));
+ blocks.yard.push({x0:-6,x1:6,z0:-11.3,z1:-6.7});
+ // 擺酒的桌子與酒壺
+ box(1.7,.1,.9,M(0xb06a3e,.55),0,.75,-4.6,y);[[-.7,-.3],[.7,-.3],[-.7,.3],[.7,.3]].forEach(([a,c])=>box(.1,.72,.1,0x7d4a2a,a,.36,-4.6+c,y));blocks.yard.push({x0:-1.1,x1:1.1,z0:-5.3,z1:-3.9});
+ const jug=new THREE.Group();y.add(jug);YD.jug=jug;sph(.2,M(0x7a8f88,.35),0,.2,0,jug);cyl(.06,.1,.17,M(0x7a8f88,.35),0,.42,0,jug,12);cyl(.07,.07,.04,0xb8321f,0,.52,0,jug,12);
+ // 地上的蛇
+ YD.a=snakeOnGround(0x4a3a2c,.05,snakePts(-2.7,-2.2));YD.b=snakeOnGround(0x4a3a2c,.05,snakePts(2.7,-2.2));
+ YD.legs=new THREE.Group();y.add(YD.legs);[[-3.45,-2.05,.5],[-2.95,-1.97,-.45],[-2.4,-2,.5],[-1.9,-2.05,-.45]].forEach(([x,z,r])=>{[-1,1].forEach(q=>{const l=box(.05,.03,.55,0xb8321f,x,.045,z+q*.3,YD.legs,false);l.rotation.y=r*q;});});
+ // 真正的蛇
+ YD.real=new THREE.Group();y.add(YD.real);const c=new THREE.CatmullRomCurve3(snakePts(0,.9,1.05).map(v=>v.clone().setY(.1)));YD.real.add(mesh(new THREE.TubeGeometry(c,80,.075,8,false),M(0x5e9a48,.65),0,0,0,null));const he=sph(.13,M(0x5e9a48,.65),1.34,.12,.9,YD.real);he.scale.set(1.3,.7,.9);[-1,1].forEach(q=>sph(.025,0x161210,1.42,.18,.9+q*.07,YD.real,false));
+ const lb=sign('真正的蛇',1.4,.45);lb.position.set(0,.55,1.75);lb.rotation.x=-.6;YD.real.add(lb);
+ [[-9,-3,1.3],[9,-3,1.3],[-8,5,1.1],[8,6,1.2],[-12,-8,1.5],[12,-8,1.5]].forEach(([x,z,q])=>landTree(y,blocks.yard,x,z,q));
+ farHills(y,[[-44,-50,24],[-8,-62,30],[36,-54,26]]);
+}
+function setSnake(m,f,instant){m.userData.goal=f;if(instant){m.userData.t=f;m.geometry.setDrawRange(0,Math.floor(m.userData.total*f));}}
+function resetYard(){if(!YD.a)return;setSnake(YD.a,0,true);setSnake(YD.b,0,true);YD.legs.visible=false;YD.real.visible=false;YD.jug.position.set(0,.8,-4.6);}
+
 /* ---------- 遊戲狀態 ---------- */
 const G={mode:'title',station:0,hp:100,hpEntry:100,feathers:[],mistakes:0,totalMistakes:0,ko:0,cleared:new Set(),unlocked:false,cards:[],world:null};
 const P={pos:V3(0,0,8),yaw:0,pitch:.32,speed:0,area:null,model:null,seat:false,moved:0,facing:0};
 const K={};const JOY={x:0,y:0};const CINE={on:false,pos:V3(),look:V3(),curLook:V3()};
-const STARS=[0,1,2].map(()=>{const G0=new THREE.Group(),s=mesh(new THREE.OctahedronGeometry(.17),new THREE.MeshStandardMaterial({color:0xf8cf52,emissive:0xf0b020,emissiveIntensity:1.7,roughness:.35}),0,0,0,G0,false);s.scale.y=1.35;scene.add(G0);G0.visible=false;return G0;});
+const STARS=[0,1,2,3,4].map(()=>{const G0=new THREE.Group(),s=mesh(new THREE.OctahedronGeometry(.17),new THREE.MeshStandardMaterial({color:0xf8cf52,emissive:0xf0b020,emissiveIntensity:1.7,roughness:.35}),0,0,0,G0,false);s.scale.y=1.35;scene.add(G0);G0.visible=false;return G0;});
 let FLOW=0,pendingInteract=null,pendingDialog=null,curTargets=[],showStars=false;
 const sleep=ms=>{const t=FLOW;return new Promise(r=>setTimeout(()=>{if(t===FLOW)r()},ms))};
 function toast(t,ms=2100){const e=$('toast');e.textContent=t;e.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('show'),ms);}
@@ -528,12 +625,12 @@ function banner(t){const e=$('banner');e.textContent=t;e.classList.add('show');c
 function save(silent){store.set(SAVE_KEY,JSON.stringify({station:G.station,hp:G.hp,feathers:G.feathers,totalMistakes:G.totalMistakes,cleared:[...G.cleared],unlocked:G.unlocked,cards:G.cards}));if(!silent)toast('已存檔');}
 const loadSave=()=>{try{return JSON.parse(store.get(SAVE_KEY))}catch(e){return null}};
 const loadCerts=()=>{try{return JSON.parse(store.get(CERT_KEY))||[]}catch(e){return[]}};
-function updateHUD(){const s=ST[Math.min(G.station,ST.length-1)];$('hudAct').textContent=ACTS[s.act].name;$('hudName').textContent=s.name;$('hpFill').style.width=G.hp+'%';$('hpFill').style.background=G.hp<=20?'#c0492f':'var(--green)';$('hpNum').textContent=G.hp;$('hudItems').textContent=`線索章 ${G.feathers.length} / ${MAX_SEALS}　成語卡 ${G.cards.length} / ${IDIOM_COUNT}`;$('qT').textContent=s.hub?'選一個成語去探險':(s.quest||s.name);$('qO').textContent=s.hub?(G.cards.length>=IDIOM_COUNT?'三張成語卡都到手了！回去找村長。':`跟著金色星星走進房子，還有 ${IDIOM_COUNT-G.cards.length} 個成語等你破解。`):(s.obj||'閱讀故事。');}
+function updateHUD(){const s=ST[Math.min(G.station,ST.length-1)];$('hudAct').textContent=ACTS[s.act].name;$('hudName').textContent=s.name;$('hpFill').style.width=G.hp+'%';$('hpFill').style.background=G.hp<=20?'#c0492f':'var(--green)';$('hpNum').textContent=G.hp;$('hudItems').textContent=`線索章 ${G.feathers.length} / ${MAX_SEALS}　成語卡 ${G.cards.length} / ${IDIOM_COUNT}`;$('qT').textContent=s.hub?'選一個成語去探險':(s.quest||s.name);$('qO').textContent=s.hub?(G.cards.length>=IDIOM_COUNT?'五張成語卡都到手了！回去找村長。':`跟著金色星星走進房子，還有 ${IDIOM_COUNT-G.cards.length} 個成語等你破解。`):(s.obj||'閱讀故事。');}
 function showGameUI(){['hud','quest','menu'].forEach(i=>$(i).classList.remove('hide'));$('pad').classList.add('on');$('title').classList.add('hide');}
 
 /* ---------- 世界配置 ---------- */
 function resetItems(){if(!H.bow)return;['bow','scroll','lantern'].forEach(k=>{H[k].position.copy(H.itemHome[k]);H[k].visible=true;H[k].scale.setScalar(1);});H.snake.visible=true;}
-const AREA={village:{x0:-15,x1:15,z0:-9,z1:15},hall:{x0:-4.45,x1:4.45,z0:-3.1,z1:4.9},field:{x0:-8,x1:8,z0:-7,z1:8},river:{x0:-12,x1:12,z0:2.7,z1:11}};
+const AREA={village:{x0:-15,x1:15,z0:-9,z1:15},hall:{x0:-4.45,x1:4.45,z0:-3.1,z1:4.9},field:{x0:-8,x1:8,z0:-7,z1:8},river:{x0:-12,x1:12,z0:2.7,z1:11},pasture:{x0:-7,x1:7,z0:-7,z1:8},yard:{x0:-7,x1:7,z0:-6,z1:7}};
 const npc=(k,x,z,ry,seat=false,y=0)=>{const c=CHARS[k];c.visible=true;c.position.set(x,y,z);c.rotation.y=ry;c.userData.seat=seat;return c;};
 const standHero=(x,z,f)=>{P.pos.set(x,0,z);P.facing=f;};
 const SCENES={
@@ -549,20 +646,26 @@ const SCENES={
  mark(){RV.onBoat=true;RV.mark.visible=RV.mark2.visible=true;RV.glow.visible=true;npc('man',.9,0,Math.PI/2,false,.43);},
  shore(){RV.mark.visible=RV.mark2.visible=true;RV.boat.position.x=-.5;RV.boatX=-.5;npc('man',.4,0,Math.PI/2,false,.43);},
  dockman(){RV.mark.visible=RV.mark2.visible=true;RV.boat.position.x=13;RV.boatX=13;npc('man',-1,4.5,Math.PI*.3);},
+ penOpen(){npc('farmer',-3,.6,Math.PI*.1);npc('elder',-4.6,1.5,-Math.PI*.4);standHero(4.7,.9,Math.PI/4);},
+ penFixed(){setPen(true);setSheep(6);npc('farmer',-3,.6,Math.PI*.1);},
+ contestStart(){npc('friend',-4.7,-1.7,-Math.PI/2);npc('man',4.7,-1.7,Math.PI/2);standHero(0,1.4,0);setSnake(YD.a,.25);setSnake(YD.b,.2);},
+ contestFirst(){npc('friend',-4.7,-1.7,-Math.PI/2);npc('man',4.7,-1.7,Math.PI/2);standHero(0,1.4,0);setSnake(YD.a,1,true);setSnake(YD.b,.55,true);YD.jug.position.set(-4.2,.5,-1.25);},
+ contestExp(){npc('friend',-4.7,-1.7,-Math.PI/2);npc('man',4.7,-1.7,Math.PI/2);setSnake(YD.a,0,true);setSnake(YD.b,.45,true);},
+ contestEnd(){npc('friend',-4.7,-1.7,-Math.PI/2);npc('man',4.7,-1.7,Math.PI/2);setSnake(YD.a,1,true);setSnake(YD.b,1,true);YD.legs.visible=true;YD.jug.position.set(4.2,.5,-1.25);},
 };
 function placeWorld(n){const s=ST[n];if(!s)return;G.world=s.world;Object.entries(W).forEach(([k,g])=>g.visible=k===s.world);sky.visible=s.world!=='hall';blockList=blocks[s.world];
  P.area=s.area||AREA[s.world];
  Object.values(CHARS).forEach(c=>{c.visible=false;c.userData.seat=false;});
  P.model=CHARS.hero;P.model.visible=true;P.seat=false;P.yaw=0;P.pitch=.32;P.speed=0;
  const sp=s.spawn||[0,0,2.8];P.pos.set(...sp);P.facing=0;
- resetItems();resetField();resetRiver();
+ resetItems();resetField();resetRiver();resetPasture();resetYard();
  if(s.world==='village')npc('elder',4,2,Math.PI*.82);
  if(s.scene)SCENES[s.scene]();
  if(RV.onBoat)syncBoat();
  setEnv(s.env,G.mode==='title'?.01:.9);
  CINE.on=false;curTargets=s.hub?hubTargets():s.target?[{pos:s.target(),prompt:s.prompt}]:[];showStars=false;STARS.forEach(x=>x.visible=false);$('prompt').classList.add('hide');
  applyPlayer();snapCamera();}
-function hubTargets(){if(G.cards.length>=IDIOM_COUNT)return[{pos:ST[22].target(),prompt:ST[22].prompt,go:22}];return Object.entries(IDIOMS).filter(([k])=>!G.cards.includes(k)).map(([k,d])=>({pos:d.door(),prompt:'探索'+d.name,go:d.first}));}
+function hubTargets(){const R=ST[ST.length-1];if(G.cards.length>=IDIOM_COUNT)return[{pos:R.target(),prompt:R.prompt,go:R.id}];return Object.entries(IDIOMS).filter(([k])=>!G.cards.includes(k)).map(([k,d])=>({pos:d.door(),prompt:'探索'+d.name,go:d.first}));}
 function syncBoat(){const x=RV.boat.position.x;P.pos.set(x-.2,.43,0);P.facing=Math.PI/2;if(CHARS.man.visible&&Math.abs(CHARS.man.position.y-.43)<.01)CHARS.man.position.x=x+.9;}
 let blockList=[];
 function applyPlayer(){if(!P.model)return;P.model.position.copy(P.pos);P.model.rotation.y=P.facing;}
@@ -576,6 +679,9 @@ const CAM={
  boatWide:()=>({pos:V3(6.5,5.2,camera.aspect<1?34:15),look:V3(6.5,-.2,-1)}),
  mark:()=>({pos:V3(RV.boat.position.x+.4,1.15,3.1),look:V3(RV.boat.position.x+.4,.3,.77)}),
  bottom:()=>({pos:V3(SWORD_BED.x+.3,1.5,camera.aspect<1?4.6:3),look:SWORD_BED.clone().add(V3(0,-.7,1.1))}),
+ pen:()=>({pos:V3(camera.aspect<1?4:3.5,3.9,camera.aspect<1?11:6.2),look:V3(.3,.15,-1.7)}),
+ yard:()=>({pos:V3(0,camera.aspect<1?8:4.8,camera.aspect<1?10:5.3),look:V3(0,-.15,-1.1)}),
+ sand:()=>({pos:V3(0,camera.aspect<1?11:6,camera.aspect<1?8:4.3),look:V3(0,-.5,-.9)}),
 };
 function cine(name,instant){const c=typeof name==='string'?CAM[name]():name;CINE.on=true;CINE.pos.copy(c.pos);CINE.look.copy(c.look);if(instant){camera.position.copy(c.pos);CINE.curLook.copy(c.look);camera.lookAt(c.look);}}
 function snapCamera(){const d=camDesired();camera.position.copy(d.pos);camera.lookAt(d.look);CINE.curLook.copy(d.look);}
@@ -638,6 +744,19 @@ boat(){RV.onBoat=true;syncBoat();applyPlayer();cine('boatWide');RV.glow.visible=
   ready:()=>moved,answers:['船上記號的正下方','柳樹前，當初掉劍的江底','再往下游找找看'],correct:1,
   hint:i=>i===0?'提示：你跳進記號下方的水裡，水底什麼也沒有。記號跟著船走了，寶劍呢？':'提示：寶劍不會自己往下游走。再去看看水底，它在哪裡？',
   done:async()=>{RV.clear=true;cine('bottom');await sleep(1200);}});},
+pen(){standHero(4.7,.9,Math.PI/4);applyPlayer();cine('pen');let night=0,after=0,fixed=false;
+ return expPanel({text:'羊圈破了一個洞，現在有 7 隻羊。先過一夜看看，再把破洞補好，比較羊的數量有什麼變化。',pick:'羊已經少了，現在才補破洞，有用嗎？',
+  items:[{label:()=>`過一夜（第 ${night+1} 晚）`,off:()=>night>=5,run:async()=>{night++;if(fixed)after++;setEnv('fieldDusk',.6);await sleep(800);if(!fixed)setSheep(Math.max(1,PN.count-1));setEnv('noon',.7);await sleep(800);return fixed?`修好之後過了一夜：羊還有 ${PN.count} 隻，一隻也沒少。`:`第 ${night} 晚之後：羊又少了一隻，只剩 ${PN.count} 隻。`;}},
+   {label:()=>fixed?'破洞已補好':'把破洞補好',off:()=>fixed,run:async()=>{fixed=true;setPen(true);SFX.click();await sleep(700);return`破洞補好了！目前有 ${PN.count} 隻羊。再過一夜看看吧。`;}}],
+  ready:()=>fixed&&after>=1,answers:['已經太遲了，修了也沒有用','還來得及，能保住剩下的羊','修好後，丟掉的羊都會回來'],correct:1,
+  hint:i=>i===0?'提示：看看實驗結果，修好之後，羊的數量還有再減少嗎？':'提示：丟掉的羊有回來嗎？修好羊圈真正改變的是什麼？'});},
+snake(){standHero(0,1.4,0);applyPlayer();cine('sand');let drawn=false,legs=false;
+ return expPanel({text:'比賽開始了！你幫第一個人一起畫。對手也在畫，看看先畫好之後再多畫幾筆，會發生什麼事。',pick:'第一個畫好的人，為什麼最後喝不到酒？',
+  items:[{label:()=>drawn?'蛇身畫好了':'畫蛇身',off:()=>drawn,run:async()=>{setSnake(YD.a,1);setSnake(YD.b,.7);await sleep(1300);drawn=true;YD.jug.position.set(-4.2,.5,-1.25);return'你們先畫好了蛇！對手的蛇還差一段，酒壺已經拿在手上。';}},
+   {label:()=>legs?'已經加了腳':'幫蛇加上腳',off:()=>!drawn||legs,run:async()=>{YD.legs.visible=true;setSnake(YD.b,1);await sleep(1400);legs=true;YD.jug.position.set(4.2,.5,-1.25);return'你們忙著畫腳時，對手的蛇畫好了，酒壺也被他拿走了！';}},
+   {label:()=>'看看真正的蛇',run:async()=>{YD.real.visible=true;await sleep(900);return'真正的蛇沒有腳。加了腳之後，地上畫的反而不像蛇了。';}}],
+  ready:()=>legs,answers:['他畫蛇的速度實在太慢','多畫了不必要的腳，被人搶先','酒壺太重，他根本拿不動'],correct:1,
+  hint:i=>i===0?'提示：回想實驗，蛇身是誰先畫好的？':'提示：酒壺原本就拿在他手上。後來發生了什麼事？'});},
 };
 function expPanel({text,items,pick,answers,correct,hint,ready,done}){return new Promise(res=>{G.mode='exp';let busy=false,first=true;
  $('exp').classList.remove('hide');$('expPick').classList.add('hide');$('expHint').style.display='none';$('expText').textContent=text;$('expObs').textContent='';$('qHint2').textContent=pick;
@@ -676,7 +795,7 @@ function nearest(){let best=null,bd=2.3;for(const t of curTargets){const d=Math.
 const gradeOf=r=>GRADES.find(g=>r>=g[0])[1];
 function ending(){$('toast').classList.remove('show');G.mode='end';G.station=ST.length;save(true);['title','hud','quest','menu'].forEach(i=>$(i).classList.add('hide'));$('pad').classList.remove('on');$('prompt').classList.add('hide');showStars=false;STARS.forEach(x=>x.visible=false);
  const certs=loadCerts();if(certs.length&&G.fromContinue){showCert(certs[certs.length-1]);return;}
- const r=G.feathers.length/MAX_SEALS;$('endInfo').innerHTML=`你破解了成語村的三個成語！<br>線索章 ${G.feathers.length} / ${MAX_SEALS}，稱號：<b>${gradeOf(r)}</b>`;$('end').classList.remove('hide');}
+ const r=G.feathers.length/MAX_SEALS;$('endInfo').innerHTML=`你破解了成語村的五個成語！<br>線索章 ${G.feathers.length} / ${MAX_SEALS}，稱號：<b>${gradeOf(r)}</b>`;$('end').classList.remove('hide');}
 $('endGo').onclick=()=>{const name=$('endName').value.trim()||'小小讀者',got=G.feathers.length,rec={name,grade:gradeOf(got/MAX_SEALS),got,max:MAX_SEALS,hp:G.hp,mistakes:G.totalMistakes,acts:[],date:fmtDate(),ts:Date.now()};
  const cs=loadCerts();cs.push(rec);while(cs.length>30)cs.shift();store.set(CERT_KEY,JSON.stringify(cs));G.unlocked=true;save(true);$('end').classList.add('hide');showCert(rec);};
 const fmtDate=()=>{const d=new Date();return`${d.getFullYear()} 年 ${d.getMonth()+1} 月 ${d.getDate()} 日`;};
@@ -685,7 +804,7 @@ function certImage(r){const c=document.createElement('canvas'),w=1200,h=840;c.wi
  x.strokeStyle='#a77b32';x.lineWidth=10;x.strokeRect(34,34,w-68,h-68);x.lineWidth=3;x.strokeRect(52,52,w-104,h-104);x.fillStyle='#a77b32';[[52,52],[w-52,52],[52,h-52],[w-52,h-52]].forEach(([a,b])=>x.fillRect(a-12,b-12,24,24));
  x.textAlign='center';x.textBaseline='middle';x.fillStyle='#8a5f2a';x.font=`700 34px ${F}`;x.fillText('成語村・成語闖關遊戲',w/2,130);x.fillStyle='#3a2716';x.font=`700 104px ${F}`;x.fillText('通關證書',w/2,245);
  x.font=`400 36px ${F}`;x.fillText('茲證明',w/2,350);x.fillStyle='#b8321f';x.font=`700 76px ${F}`;x.fillText(r.name,w/2,435);x.strokeStyle='#a77b32';x.lineWidth=2;x.beginPath();x.moveTo(w/2-210,487);x.lineTo(w/2+210,487);x.stroke();
- x.fillStyle='#3a2716';x.font=`400 33px ${F}`;x.fillText('破解杯弓蛇影、守株待兔、刻舟求劍，學會把成語用在生活中。',w/2,548);x.font=`700 44px ${F}`;x.fillStyle='#8a5f2a';x.fillText('獲得稱號：'+r.grade,w/2,620);
+ x.fillStyle='#3a2716';x.font=`400 33px ${F}`;x.fillText('破解杯弓蛇影、守株待兔、刻舟求劍、亡羊補牢、畫蛇添足五個成語。',w/2,548);x.font=`700 44px ${F}`;x.fillStyle='#8a5f2a';x.fillText('獲得稱號：'+r.grade,w/2,620);
  x.fillStyle='#3a2716';x.font=`400 29px ${F}`;x.fillText(`線索章 ${r.got} / ${r.max}`,w/2,682);x.textAlign='left';x.fillText(r.date,120,744);
  x.fillStyle='#b8321f';x.fillRect(w-250,650,120,120);x.strokeStyle='#f8efd8';x.lineWidth=4;x.strokeRect(w-241,659,102,102);x.fillStyle='#f8efd8';x.font=`700 44px ${F}`;x.textAlign='center';x.fillText('成語',w-190,686);x.fillText('之村',w-190,736);
  return c.toDataURL('image/png');}
@@ -733,6 +852,8 @@ function tick(){const dt=Math.min(clock.getDelta(),.05),t=clock.elapsedTime;
  applyEnv(dt);
  if(H.snake&&W.hall.visible){const p=H.snake.geometry.attributes.position,b=H.snakeBase;for(let i=0;i<p.count;i++){const x=b[i*3];p.array[i*3+2]=b[i*3+2]+Math.sin(x*22+t*3.4)*.012;}p.needsUpdate=true;
   const r=(t*.45)%1;H.ring.scale.setScalar(.25+r*1.5);H.ring.material.opacity=.42*(1-r);H.snake.position.y=.306;}
+ if(W.yard.visible)[YD.a,YD.b].forEach(m=>{const u=m.userData;if(u.t<u.goal){u.t=Math.min(u.goal,u.t+dt*.9);m.geometry.setDrawRange(0,Math.floor(u.total*u.t));}});
+ if(W.pasture.visible)PN.sheep.forEach((s,i)=>{s.position.y=Math.abs(Math.sin(t*.9+i))*.015;});
  if(W.field.visible&&FD.run&&FD.rabbit.visible){const R=FD.run,B=FD.rabbit;R.t+=dt;
   if(R.pass){B.position.x=-7+R.t*5;B.position.y=Math.abs(Math.sin(R.t*9))*.2;if(B.position.x>9){B.visible=false;FD.run=null;}}
   else if(R.t<1.3){B.position.x=-9+R.t/1.3*8.35;B.position.y=Math.abs(Math.sin(R.t*11))*.26;}
@@ -761,10 +882,10 @@ function tick(){const dt=Math.min(clock.getDelta(),.05),t=clock.elapsedTime;
  composer.render(dt);requestAnimationFrame(tick);}
 
 /* ---------- 啟動 ---------- */
-window.__bird={G,P,K,JOY,ST,W,ENV,AU,SFX,CHARS,H,FD,RV,IDIOMS,enterStation,placeWorld,interact,showGameUI,updateHUD,setEnv,MAX_SEALS};
+window.__bird={G,P,K,JOY,ST,W,ENV,AU,SFX,CHARS,H,FD,RV,PN,YD,IDIOMS,enterStation,placeWorld,interact,showGameUI,updateHUD,setEnv,MAX_SEALS};
 (async()=>{setLoad(25,'準備字型……');
  try{await Promise.race([document.fonts.ready,new Promise(r=>setTimeout(r,2500))]);await Promise.race([document.fonts.load('700 40px "LXGW WenKai TC"','杯弓蛇影'),new Promise(r=>setTimeout(r,2500))]);}catch(e){}
- setLoad(55,'搭建成語村……');buildVillage();buildHall();buildField();buildRiver();Object.values(CHARS).forEach(c=>c.traverse(o=>{if(o.isMesh)o.castShadow=true;}));setLoad(85,'佈置場景……');
+ setLoad(55,'搭建成語村……');buildVillage();buildHall();buildField();buildRiver();buildPasture();buildYard();Object.values(CHARS).forEach(c=>c.traverse(o=>{if(o.isMesh)o.castShadow=true;}));setLoad(85,'佈置場景……');
  resize();applyQuality();const d=loadSave(),certs=loadCerts();G.unlocked=!!(d&&d.unlocked)||certs.length>0;$('tCont').classList.toggle('hide',!d);G.world='village';placeWorld(0);setEnv('hutong',.01);
  $('title').classList.remove('hide');G.mode='title';tick();setLoad(100,'完成');setTimeout(()=>$('loading').classList.add('done'),250);})();
 </script>
