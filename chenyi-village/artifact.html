@@ -98,7 +98,7 @@ h2{margin:0 0 12px;text-align:center;letter-spacing:.2em;font-size:25px}
 <button id="prompt" class="hide"><kbd id="promptKey">E</kbd><span id="promptText"></span></button>
 <div id="pad"><div id="padKnob"></div></div>
 
-<div id="dlg" class="panel hide"><div id="dlgTop"><span id="dlgName"></span><span id="dlgPara"></span></div><img id="dlgImg" class="hide" alt=""><div id="dlgText"></div><div id="dlgFoot"><button id="dlgBtn" class="btn"></button></div></div>
+<div id="dlg" class="panel hide"><div id="dlgTop"><span id="dlgName"></span><span><span id="dlgPara"></span><button id="dlgVoice" class="hide" aria-label="重聽這段" style="background:#efe2c2;border-radius:999px;padding:3px 11px;margin-left:8px;font-size:13px;min-height:30px">重聽</button></span></div><img id="dlgImg" class="hide" alt=""><div id="dlgText"></div><div id="dlgFoot"><button id="dlgBtn" class="btn"></button></div></div>
 
 <div id="quiz" class="panel hide"><div id="qMeta"></div><div id="qText"></div><div id="qBody"></div><div id="qHint" role="alert"></div><div id="qFoot"><button id="qOk" class="btn">確定</button></div></div>
 
@@ -281,6 +281,39 @@ const ST=[
 let _no=0,_pi=0; const POS=[2,0,3,1];
 ST.forEach(s=>{s.act=s.id===0?1:s.id<=10?2:s.id<=16?3:s.id<=21?4:s.id<=26?5:s.id<=31?6:7; if(s.steps){s.steps.forEach(q=>{q.no=++_no; if(q.type==='choice')q.pos=POS[_pi++%4];});}});
 [2,12,17,22].forEach(i=>ST[i].emote='Surprise'); // 故事中的驚嚇時刻，主角跟著嚇一跳
+/* 主角（關西小偵探）的台詞：heroBefore 在實驗前、heroAfter 在故事文字之後 */
+const HERO_NAME='小偵探';
+const HERO_SAY={
+ 0:{after:'五個成語，我一個一個來破解！'},
+ 2:{after:'咦？杯子裡怎麼會有蛇？我得好好查清楚！'},
+ 5:{after:'一杯酒就讓人嚇出病來？我要幫樂廣找出真相！'},
+ 6:{before:'我先坐到朋友的位置，看看杯子裡到底有什麼。',after:'原來是牆上的弓！影子被我們找到了。'},
+ 9:{after:'根本沒有蛇，只是自己嚇自己而已！'},
+ 10:{after:'我也遇過！晚上聽到怪聲，以為有小偷，結果只是風吹窗戶。'},
+ 13:{after:'只等兔子，不去種田？這樣真的行嗎？'},
+ 14:{before:'我陪農夫等幾天，看看會怎麼樣。',after:'兔子沒再來，田卻荒了。好運不會天天有！'},
+ 16:{after:'上次我猜題猜中一題，可不能從此就不讀書了！'},
+ 18:{after:'記號刻在船上……可是船會一直往前走耶！'},
+ 19:{before:'我也上船，看看記號和寶劍各在哪裡。',after:'船動了，劍沒動。只看記號是找不到的！'},
+ 21:{after:'換了新課本，我也要跟著用新的方法讀書。'},
+ 22:{after:'羊都丟了就不修？會不會丟得更多？'},
+ 24:{before:'我來試試看，不修和修好有什麼不同。',after:'雖然少了羊，但現在補救還來得及！'},
+ 26:{after:'我上次考試粗心，後來每次都檢查一遍，就沒再犯同樣的錯了。'},
+ 27:{after:'比賽畫蛇？我也要參加！'},
+ 29:{before:'我們先畫好了！要不要再多加點什麼呢？',after:'蛇本來就沒有腳，多畫反而輸了。'},
+ 31:{after:'我寫作文也常想多加幾句，下次要先想想需不需要。'},
+ 32:{after:'五張成語卡都到手了！最後一關，交給我吧！'},
+};
+Object.entries(HERO_SAY).forEach(([i,v])=>{if(v.before)ST[i].heroBefore=v.before;if(v.after)ST[i].heroAfter=v.after;});
+function heroSay(text){heroEmote('Wave');return dialog({text,speaker:HERO_NAME,para:'小偵探的想法'},{btn:'繼　續'});}
+/* 語音：tools/make_voice.py 依文字產生 audio/v_<雜湊>.mp3；沒有檔案就不出聲 */
+function voiceKey(text){const s=String(text).replace(/<[^>]+>/g,'');let h=0x811c9dc5;for(const ch of s){h^=ch.codePointAt(0);h=Math.imul(h,0x01000193)>>>0;}return h.toString(16).padStart(8,'0');}
+function voiceLines(){const L=[];const add=(t,r)=>{if(t)L.push({text:String(t).replace(/<[^>]+>/g,''),role:r,key:voiceKey(t)});};
+ ST.forEach(s=>{add(s.text,'narrator');add(s.heroBefore,'hero');add(s.heroAfter,'hero');});return L;}
+const VO={el:null,last:null,play(text,role){this.stop();this.last=[text,role];$('dlgVoice').classList.toggle('hide',!text);if(!text||AU.muted)return;
+  const a=new Audio('audio/v_'+voiceKey(text)+'.mp3');this.el=a;a.volume=1;if(AU.bus)AU.bus.gain.value=.35;
+  a.onended=a.onerror=()=>{if(this.el===a){this.el=null;if(AU.bus&&!AU.muted)AU.bus.gain.value=1;}};a.play().catch(()=>{});},
+ stop(){if(this.el){this.el.pause();this.el=null;}if(AU.bus&&!AU.muted)AU.bus.gain.value=1;}};
 const MAX_SEALS=_no+ST.filter(s=>s.mid).length; // 題目 + 實驗判斷
 const IDIOM_COUNT=Object.keys(IDIOMS).length;
 const GRADES=[[.9,'明察秋毫小偵探'],[.7,'追根究柢小偵探'],[.45,'細心探查小偵探'],[0,'勇於求真小偵探']];
@@ -428,7 +461,7 @@ function house({x,z,w=5,d=4,h=2.3,wall=0xefe0bf,roofC=0x5c6773,trim=0xa33d2a,sig
  [-w/2,w/2].forEach(s=>cyl(.1,.12,h,trim,s,h/2,d/2+.02,g,10));
  box(1.25,1.65,.1,locked?0x7d6650:0x8c3a25,0,.83,d/2+.03,g);box(.05,1.65,.12,0x4a2c1b,0,.83,d/2+.05,g);
  [-1.9,1.9].forEach(s=>{if(w>4){box(.8,.8,.08,0xc3a374,s,1.25,d/2+.03,g);box(.05,.8,.1,0x7a5636,s,1.25,d/2+.05,g);box(.8,.05,.1,0x7a5636,s,1.25,d/2+.05,g);}});
- if(label){const lb=sign(label,2.2,.7,locked?{bg:'#6e6459',fg:'#efe4ca'}:{});lb.position.set(0,h-.1,d/2+.08);g.add(lb);}
+ if(label){const lb=sign(label,2.1,.62,locked?{bg:'#6e6459',fg:'#efe4ca'}:{});lb.position.set(0,h-.5,d/2+.08);g.add(lb);}
  blocks.village.push({x0:x-w/2-.3,x1:x+w/2+.3,z0:z-d/2-.3,z1:z+d/2+.3});return g;}
 function tree(x,z,s=1){const g=new THREE.Group();g.position.set(x,0,z);g.scale.setScalar(s);W.village.add(g);cyl(.16,.24,1.4,0x7a5636,0,.7,0,g,8);[[0,1.9,0,.95],[.48,1.55,.1,.62],[-.42,1.6,-.15,.66],[.05,2.42,.1,.6]].forEach(([a,b,c,r])=>sph(r,M(0x6da052+Math.floor(Math.random()*3)*0x020401,.95),a,b,c,g));blocks.village.push({x0:x-.45,x1:x+.45,z0:z-.45,z1:z+.45});}
 function lantern(x,z){const g=new THREE.Group();g.position.set(x,0,z);W.village.add(g);cyl(.05,.06,2.2,0x5e4630,0,1.1,0,g,8);box(.55,.04,.04,0x5e4630,.26,2.2,0,g);sph(.22,M(0xd8412c,.6,{em:0xff5a30,emI:1.4}),.5,1.95,0,g,false);}
@@ -443,7 +476,7 @@ function buildVillage(){const v=W.village;
  house({x:-11,z:9,w:5,d:4,wall:0xe7d7b3,roofC:0x6b5e5e,sign:'亡羊補牢'}).rotation.y=Math.PI/1.6;
  house({x:11,z:9,w:5,d:4,wall:0xe7d7b3,roofC:0x4f6573,sign:'畫蛇添足'}).rotation.y=-Math.PI/1.6;
  [[-7,-7,1.1],[7,-7,1.15],[-14,4,1.25],[14,4,1.2],[-5,13,.95],[5,13,1],[-16,-8,1.5],[16,-8,1.5],[-17,14,1.4],[17,14,1.4]].forEach(a=>tree(...a));
- lantern(-3.2,-6);lantern(3.2,-6);lantern(-7,2);lantern(7,2);
+ lantern(-3.2,-6);lantern(3.2,-6);lantern(-5.4,4.4);lantern(5.4,4.4);
  // 廣場中央水井與石桌
  cyl(.85,.95,.55,0xa39a84,-3,.28,5,v,18);cyl(.7,.7,.04,0x4c7ea1,-3,.56,5,v,18,false);box(.1,1.7,.1,0x7a5636,-3.85,.85,5,v);box(.1,1.7,.1,0x7a5636,-2.15,.85,5,v);box(2,.1,.2,0x7a5636,-3,1.7,5,v);
  blocks.village.push({x0:-4.1,x1:-1.9,z0:3.9,z1:6.1});
@@ -675,7 +708,7 @@ function placeWorld(n){const s=ST[n];if(!s)return;G.world=s.world;Object.entries
  setEnv(s.env,G.mode==='title'?.01:.9);
  CINE.on=false;curTargets=s.hub?hubTargets():s.target?[{pos:s.target(),prompt:s.prompt}]:[];showStars=false;STARS.forEach(x=>x.visible=false);$('prompt').classList.add('hide');
  applyPlayer();snapCamera();}
-function hubTargets(){const R=ST[ST.length-1];if(G.cards.length>=IDIOM_COUNT)return[{pos:R.target(),prompt:R.prompt,go:R.id}];return Object.entries(IDIOMS).filter(([k])=>!G.cards.includes(k)).map(([k,d])=>({pos:d.door(),prompt:'探索'+d.name,go:d.first}));}
+function hubTargets(){const R=ST[ST.length-1];if(G.cards.length>=IDIOM_COUNT)return[{pos:R.target(),prompt:R.prompt,go:R.id}];return Object.entries(IDIOMS).filter(([k])=>!G.cards.includes(k)).map(([k,d])=>({pos:d.door().setY(.15),prompt:'探索'+d.name,go:d.first}));}
 function syncBoat(){const x=RV.boat.position.x;P.pos.set(x-.2,.43,0);P.facing=Math.PI/2;if(CHARS.man.visible&&Math.abs(CHARS.man.position.y-.43)<.01)CHARS.man.position.x=x+.9;}
 let blockList=[];
 function applyPlayer(){if(!P.model)return;P.model.position.copy(P.pos);P.model.rotation.y=P.facing;}
@@ -701,7 +734,9 @@ function camDesired(){const dist=G.world==='hall'?3.1:4.8,cp=Math.cos(P.pitch),s
 /* ---------- 對話 ---------- */
 function dialog(s,opt={}){return new Promise(res=>{const img=$('dlgImg');if(s.img&&!opt.noImg){img.src=s.img;img.alt=s.imgAlt||'';img.classList.remove('hide');}else img.classList.add('hide');
  $('dlgName').textContent=opt.speaker||s.speaker||'旁白';$('dlgPara').textContent=s.para||'';$('dlgText').innerHTML=opt.text||s.text;$('dlgBtn').textContent=opt.btn||s.dialogBtn||'繼　續';$('dlg').classList.remove('hide');$('dlg').scrollTop=0;G.mode='dialog';
- pendingDialog=()=>{pendingDialog=null;$('dlg').classList.add('hide');res();};});}
+ VO.play(opt.text||s.text,(opt.speaker||s.speaker)===HERO_NAME?'hero':'narrator');
+ pendingDialog=()=>{pendingDialog=null;VO.stop();$('dlg').classList.add('hide');res();};});}
+$('dlgVoice').addEventListener('click',e=>{e.stopPropagation();if(VO.last)VO.play(...VO.last);});
 $('dlg').addEventListener('click',()=>{if(getSelection&&String(getSelection()).length)return;pendingDialog&&(SFX.click(),pendingDialog());});
 
 /* ---------- 題目 ---------- */
@@ -785,14 +820,16 @@ function enterStation(n){FLOW++;pendingInteract=null;pendingDialog=null;['dlg','
 async function flow(s){
  if(s.id===0&&!store.get(TUT_KEY)){await new Promise(r=>{$('tut').classList.remove('hide');$('tutGo').onclick=()=>{store.set(TUT_KEY,'1');$('tut').classList.add('hide');r();};});}
  if(s.hub){
-  if(!G.greeted){G.greeted=true;await sleep(500);heroEmote('Wave',2);await dialog(s,{btn:'走走看'});}
+  if(!G.greeted){G.greeted=true;await sleep(500);heroEmote('Wave',2);await dialog(s,{btn:'走走看'});if(s.heroAfter)await heroSay(s.heroAfter);}
   G.mode='explore';showStars=true;const t=await new Promise(r=>{pendingInteract=r;});showStars=false;$('prompt').classList.add('hide');G.cleared.add(s.id);enterStation(t.go);return;}
  if(s.free||s.steps){
   G.mode='explore';showStars=true;await new Promise(r=>{pendingInteract=r;});showStars=false;$('prompt').classList.add('hide');G.mode='cine';}
  else if(s.cam){cine(s.cam,true);await sleep(650);if(s.emote)heroEmote(s.emote);}
+ if(s.heroBefore)await heroSay(s.heroBefore);
  if(s.mid)await MID[s.mid](s);
  else if(s.cam&&(s.free||s.steps)){P.seat=false;cine(s.cam);await sleep(900);}
  if(s.text){if(s.cam==='cup')cine('cup');await dialog(s);}
+ if(s.heroAfter&&!s.hub)await heroSay(s.heroAfter);
  if(s.steps){if(!CINE.on){const look=s.target();cine({pos:P.pos.clone().add(V3(1.5,1.7,2.1)),look});}for(const q of s.steps)await runStep(q);}
  G.cleared.add(s.id);
  if(s.last){await sleep(200);await showCard(s.idiom);enterStation(0);return;}
@@ -850,7 +887,7 @@ const padEnd=e=>{if(e.pointerId!==padId)return;padId=null;JOY.x=JOY.y=0;knob.sty
 
 /* ---------- 音效：全部以 WebAudio 合成，無外部音檔 ---------- */
 const AU={ctx:null,bus:null,muted:false,timer:0,start(){if(this.ctx){this.ctx.resume();return;}try{this.ctx=new (window.AudioContext||window.webkitAudioContext)();this.bus=this.ctx.createGain();this.bus.gain.value=1;this.bus.connect(this.ctx.destination);this.schedule();}catch(e){}},
- toggle(){this.muted=!this.muted;if(this.bus)this.bus.gain.value=this.muted?0:1;},
+ toggle(){this.muted=!this.muted;if(this.bus)this.bus.gain.value=this.muted?0:1;if(this.muted)VO.stop();},
  tone(f,dur=.5,vol=.1,type='triangle',when=0){if(!this.ctx)return;const t=this.ctx.currentTime+when,o=this.ctx.createOscillator(),g=this.ctx.createGain();o.type=type;o.frequency.value=f;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+.012);g.gain.exponentialRampToValueAtTime(.0005,t+dur);o.connect(g);g.connect(this.bus);o.start(t);o.stop(t+dur+.03);},
  schedule(){const scale=[293.66,329.63,369.99,440,493.88,587.33];setInterval(()=>{if(this.muted||G.mode==='title'||document.hidden)return;if(Math.random()<.68){const f=scale[Math.floor(Math.random()*scale.length)];this.tone(f,1.3,.028,'sine');if(Math.random()<.3)this.tone(f*1.5,1.1,.014,'sine',.2);}},1150);}};
 const SFX={click(){AU.tone(660,.1,.05)},correct(){[587,740,880].forEach((f,i)=>AU.tone(f,.35,.09,'triangle',i*.09));heroEmote('Cheer')},wrong(){AU.tone(190,.28,.1,'sawtooth');AU.tone(160,.3,.07,'sawtooth',.1);heroEmote('Surprise')},gong(){heroEmote('Cheer');[293,440,587,880].forEach((f,i)=>AU.tone(f,1.1,.08,'triangle',i*.1))}};
@@ -892,7 +929,7 @@ function tick(){const dt=Math.min(clock.getDelta(),.05),t=clock.elapsedTime;
  composer.render(dt);requestAnimationFrame(tick);}
 
 /* ---------- 啟動 ---------- */
-window.__bird={G,P,K,JOY,ST,W,ENV,AU,SFX,CHARS,H,FD,RV,PN,YD,IDIOMS,enterStation,placeWorld,interact,showGameUI,updateHUD,setEnv,MAX_SEALS};
+window.__bird={voiceLines,voiceKey,VO,HERO_SAY,G,P,K,JOY,ST,W,ENV,AU,SFX,CHARS,H,FD,RV,PN,YD,IDIOMS,enterStation,placeWorld,interact,showGameUI,updateHUD,setEnv,MAX_SEALS};
 (async()=>{setLoad(25,'準備字型……');
  try{await Promise.race([document.fonts.ready,new Promise(r=>setTimeout(r,2500))]);await Promise.race([document.fonts.load('700 40px "LXGW WenKai TC"','杯弓蛇影'),new Promise(r=>setTimeout(r,2500))]);}catch(e){}
  setLoad(55,'搭建成語村……');buildVillage();buildHall();buildField();buildRiver();buildPasture();buildYard();setLoad(75,'載入主角……');await loadHero();Object.values(CHARS).forEach(c=>c.traverse(o=>{if(o.isMesh)o.castShadow=true;}));setLoad(85,'佈置場景……');

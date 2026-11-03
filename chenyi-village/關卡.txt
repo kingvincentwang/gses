@@ -57,6 +57,8 @@
 - 插圖：使用者繪本 images/p04.jpg、p05.jpg
 - 主角圖：images/hero_source.webp（原圖）、images/hero.png（去背）
 - 主角 3D 模型：Blender 5.2 以 tools/build_hero.py 指令碼產生（models/hero.glb，動作 Idle、Walk、Run、Wave、Cheer、Surprise、Sit），貼圖由 tools/make_hero_textures.py 產生；載入失敗時遊戲改用程式化主角
+- 主角台詞：game.html 的 HERO_SAY，共 24 句，待老師審閱
+- 語音：tools/make_voice.py 以 edge_tts 產生 audio/v_*.mp3（旁白 zh-TW-HsiaoChenNeural、主角 zh-TW-YunJheNeural 調高音調）；改了文字要重跑，沒變的會沿用
 - 其他 3D 模型：全部由程式產生；音效與配樂：WebAudio 即時合成
 - 函式庫：three@0.160.0（jsDelivr）；字型：Huninn、LXGW WenKai TC（Google Fonts）
 
