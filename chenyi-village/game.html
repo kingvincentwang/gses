@@ -134,6 +134,7 @@ h2{margin:0 0 12px;text-align:center;letter-spacing:.2em;font-size:25px}
 <div id="loading"><div id="ldName">成語村</div><div id="ldBar"><div id="ldFill"></div></div><div id="ldText">載入遊戲引擎……</div></div>
 </div>
 
+<script src="models/models.js"></script>
 <script type="importmap">
 {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
 </script>
@@ -143,6 +144,7 @@ import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js';
 import {RenderPass} from 'three/addons/postprocessing/RenderPass.js';
 import {UnrealBloomPass} from 'three/addons/postprocessing/UnrealBloomPass.js';
 import {OutputPass} from 'three/addons/postprocessing/OutputPass.js';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 
 const $=id=>document.getElementById(id), V3=(x,y,z)=>new THREE.Vector3(x,y,z);
 const SAVE_KEY='chengyu-village-v1', CERT_KEY='chengyu-village-certs', TUT_KEY='chengyu-village-tut', TEACHER_PW='chengyu', HURT=20;
@@ -283,6 +285,7 @@ const ST=[
 ];
 let _no=0,_pi=0; const POS=[2,0,3,1];
 ST.forEach(s=>{s.act=s.id===0?1:s.id<=10?2:s.id<=16?3:s.id<=21?4:s.id<=26?5:s.id<=31?6:7; if(s.steps){s.steps.forEach(q=>{q.no=++_no; if(q.type==='choice')q.pos=POS[_pi++%4];});}});
+[2,12,17,22].forEach(i=>ST[i].emote='Surprise'); // 故事中的驚嚇時刻，主角跟著嚇一跳
 const MAX_SEALS=_no+ST.filter(s=>s.mid).length; // 題目 + 實驗判斷
 const IDIOM_COUNT=Object.keys(IDIOMS).length;
 const GRADES=[[.9,'明察秋毫小偵探'],[.7,'追根究柢小偵探'],[.45,'細心探查小偵探'],[0,'勇於求真小偵探']];
@@ -365,7 +368,8 @@ function char({robe,trim,skin=0xf6d3ae,hair=0x2f2420,hat='bun',belt=0xd8a743,bea
  const arm=(s)=>{const a=new THREE.Group();a.position.set(s*.25,.72,0);cyl(.07,.09,.4,R,0,-.18,0,a,10);sph(.07,skin,0,-.41,0,a);b.add(a);return a;};
  const leg=(s)=>{const a=new THREE.Group();a.position.set(s*.12,.2,0);cyl(.07,.07,.16,0x2a2320,0,-.08,0,a,8);box(.13,.06,.2,0x2a2320,0,-.17,-.03,a);b.add(a);return a;};
  g.userData={b,armL:arm(-1),armR:arm(1),legL:leg(-1),legR:leg(1),head,t:0};return g;}
-function animChar(c,dt,speed,mode){const u=c.userData;u.t+=dt*(speed>0?speed*3.2:1.6);const s=Math.sin(u.t);
+function animChar(c,dt,speed,mode){const u=c.userData;
+ if(u.mixer){const want=mode==="seat"?"Sit":speed>0?"Walk":"Idle";if(u.shot&&(speed>0||mode==="seat"))u.shot=null;if(!u.shot)glbFade(u,want);if(u.actions.Walk)u.actions.Walk.timeScale=.7+speed*.8;u.mixer.update(dt);return;}u.t+=dt*(speed>0?speed*3.2:1.6);const s=Math.sin(u.t);
  if(speed>0){u.legL.rotation.x=s*.72;u.legR.rotation.x=-s*.72;u.armL.rotation.x=-s*.6;u.armR.rotation.x=s*.6;u.b.position.y=Math.abs(Math.cos(u.t))*.035;u.b.rotation.z=s*.035;}
  else{u.legL.rotation.x*=.8;u.legR.rotation.x*=.8;u.armL.rotation.x=Math.sin(u.t*.6)*.04;u.armR.rotation.x=-Math.sin(u.t*.6)*.04;u.b.position.y=Math.sin(u.t*.7)*.008;u.b.rotation.z=0;}
  u.head.rotation.y=Math.sin(u.t*.25)*.06;
@@ -407,6 +411,17 @@ function makeHero(){const g=new THREE.Group(),b=new THREE.Group();g.add(b);
  g.userData={b,armL:arm(-1),armR:arm(1),legL:leg(-1),legR:leg(1),head,t:0};return g;}
 const CHARS={hero:null,friend:char({robe:0x5f7fa8,trim:0xe9e2cf,hat:'bun'}),leguang:char({robe:0x8a68ab,trim:0xf0e4c7,hair:0x8a8680,hat:'guan',beard:true}),elder:char({robe:0xb8835c,trim:0xf0e4c7,hair:0xd9d5cc,hat:'bun',beard:true}),farmer:char({robe:0x9c8455,trim:0xe7dcc0,hat:'bun',belt:0x6a4f31}),man:char({robe:0x4f7d6e,trim:0xe7e2cf,hat:'scholar'})};
 CHARS.hero=makeHero();
+/* Blender 主角（models/hero.glb，打包在 models/models.js）；載入失敗就保留上面的程式化主角 */
+async function loadHero(){const src=window.BIRD_MODELS&&window.BIRD_MODELS.hero;if(!src)return;
+ try{const buf=Uint8Array.from(atob(src.split(",")[1]),c=>c.charCodeAt(0)).buffer;const gl=await new GLTFLoader().parseAsync(buf,"");
+  const g=new THREE.Group();g.add(gl.scene);gl.scene.traverse(o=>{if(o.isMesh){o.castShadow=true;o.frustumCulled=false;}});
+  const mixer=new THREE.AnimationMixer(gl.scene),actions={};gl.animations.forEach(a=>actions[a.name]=mixer.clipAction(a));
+  if(!actions.Idle||!actions.Walk)return;
+  const old=CHARS.hero;scene.remove(old);g.visible=old.visible;scene.add(g);CHARS.hero=g;if(P.model===old)P.model=g;
+  g.userData={mixer,actions,cur:null,shot:null,t:0};mixer.addEventListener("finished",()=>{g.userData.shot=null;});
+ }catch(e){console.warn("主角模型載入失敗，改用程式化主角",e);}}
+function glbFade(u,name,dur=.25){const a=u.actions[name];if(!a||u.cur===name)return;Object.values(u.actions).forEach(x=>{if(x!==a&&x.enabled&&x.getEffectiveWeight()>0)x.fadeOut(dur);});a.enabled=true;a.reset().setEffectiveWeight(1).fadeIn(dur).play();u.cur=name;}
+function heroEmote(name,times=1){const c=CHARS.hero,u=c.userData;if(!u.mixer||!c.visible||P.seat||!u.actions[name])return;const a=u.actions[name];a.setLoop(times>1?THREE.LoopRepeat:THREE.LoopOnce,times);a.clampWhenFinished=true;u.shot=name;u.cur=null;glbFade(u,name,.15);}
 Object.values(CHARS).forEach(c=>{scene.add(c);c.visible=false;});
 
 /* ---------- 成語村 ---------- */
@@ -775,11 +790,11 @@ function enterStation(n){FLOW++;pendingInteract=null;pendingDialog=null;['dlg','
 async function flow(s){
  if(s.id===0&&!store.get(TUT_KEY)){await new Promise(r=>{$('tut').classList.remove('hide');$('tutGo').onclick=()=>{store.set(TUT_KEY,'1');$('tut').classList.add('hide');r();};});}
  if(s.hub){
-  if(!G.greeted){G.greeted=true;await sleep(500);await dialog(s,{btn:'走走看'});}
+  if(!G.greeted){G.greeted=true;await sleep(500);heroEmote('Wave',2);await dialog(s,{btn:'走走看'});}
   G.mode='explore';showStars=true;const t=await new Promise(r=>{pendingInteract=r;});showStars=false;$('prompt').classList.add('hide');G.cleared.add(s.id);enterStation(t.go);return;}
  if(s.free||s.steps){
   G.mode='explore';showStars=true;await new Promise(r=>{pendingInteract=r;});showStars=false;$('prompt').classList.add('hide');G.mode='cine';}
- else if(s.cam){cine(s.cam,true);await sleep(650);}
+ else if(s.cam){cine(s.cam,true);await sleep(650);if(s.emote)heroEmote(s.emote);}
  if(s.mid)await MID[s.mid](s);
  else if(s.cam&&(s.free||s.steps)){P.seat=false;cine(s.cam);await sleep(900);}
  if(s.text){if(s.cam==='cup')cine('cup');await dialog(s);}
@@ -843,7 +858,7 @@ const AU={ctx:null,bus:null,muted:false,timer:0,start(){if(this.ctx){this.ctx.re
  toggle(){this.muted=!this.muted;if(this.bus)this.bus.gain.value=this.muted?0:1;},
  tone(f,dur=.5,vol=.1,type='triangle',when=0){if(!this.ctx)return;const t=this.ctx.currentTime+when,o=this.ctx.createOscillator(),g=this.ctx.createGain();o.type=type;o.frequency.value=f;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+.012);g.gain.exponentialRampToValueAtTime(.0005,t+dur);o.connect(g);g.connect(this.bus);o.start(t);o.stop(t+dur+.03);},
  schedule(){const scale=[293.66,329.63,369.99,440,493.88,587.33];setInterval(()=>{if(this.muted||G.mode==='title'||document.hidden)return;if(Math.random()<.68){const f=scale[Math.floor(Math.random()*scale.length)];this.tone(f,1.3,.028,'sine');if(Math.random()<.3)this.tone(f*1.5,1.1,.014,'sine',.2);}},1150);}};
-const SFX={click(){AU.tone(660,.1,.05)},correct(){[587,740,880].forEach((f,i)=>AU.tone(f,.35,.09,'triangle',i*.09))},wrong(){AU.tone(190,.28,.1,'sawtooth');AU.tone(160,.3,.07,'sawtooth',.1)},gong(){[293,440,587,880].forEach((f,i)=>AU.tone(f,1.1,.08,'triangle',i*.1))}};
+const SFX={click(){AU.tone(660,.1,.05)},correct(){[587,740,880].forEach((f,i)=>AU.tone(f,.35,.09,'triangle',i*.09));heroEmote('Cheer')},wrong(){AU.tone(190,.28,.1,'sawtooth');AU.tone(160,.3,.07,'sawtooth',.1);heroEmote('Surprise')},gong(){heroEmote('Cheer');[293,440,587,880].forEach((f,i)=>AU.tone(f,1.1,.08,'triangle',i*.1))}};
 
 /* ---------- 主迴圈 ---------- */
 const clock=new THREE.Clock();let toastThrottle=0,titleT=0;
@@ -885,7 +900,7 @@ function tick(){const dt=Math.min(clock.getDelta(),.05),t=clock.elapsedTime;
 window.__bird={G,P,K,JOY,ST,W,ENV,AU,SFX,CHARS,H,FD,RV,PN,YD,IDIOMS,enterStation,placeWorld,interact,showGameUI,updateHUD,setEnv,MAX_SEALS};
 (async()=>{setLoad(25,'準備字型……');
  try{await Promise.race([document.fonts.ready,new Promise(r=>setTimeout(r,2500))]);await Promise.race([document.fonts.load('700 40px "LXGW WenKai TC"','杯弓蛇影'),new Promise(r=>setTimeout(r,2500))]);}catch(e){}
- setLoad(55,'搭建成語村……');buildVillage();buildHall();buildField();buildRiver();buildPasture();buildYard();Object.values(CHARS).forEach(c=>c.traverse(o=>{if(o.isMesh)o.castShadow=true;}));setLoad(85,'佈置場景……');
+ setLoad(55,'搭建成語村……');buildVillage();buildHall();buildField();buildRiver();buildPasture();buildYard();setLoad(75,'載入主角……');await loadHero();Object.values(CHARS).forEach(c=>c.traverse(o=>{if(o.isMesh)o.castShadow=true;}));setLoad(85,'佈置場景……');
  resize();applyQuality();const d=loadSave(),certs=loadCerts();G.unlocked=!!(d&&d.unlocked)||certs.length>0;$('tCont').classList.toggle('hide',!d);G.world='village';placeWorld(0);setEnv('hutong',.01);
  $('title').classList.remove('hide');G.mode='title';tick();setLoad(100,'完成');setTimeout(()=>$('loading').classList.add('done'),250);})();
 </script>

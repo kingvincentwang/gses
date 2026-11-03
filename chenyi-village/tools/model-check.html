@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><title>模型檢視</title>
+<style>html,body{margin:0;height:100%;background:#dfe8e2;font:14px sans-serif}#c{width:100%;height:100%;display:block}#info{position:fixed;left:8px;top:6px}</style></head>
+<body><canvas id="c"></canvas><div id="info"></div>
+<script src="../models/models.js"></script>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+<script type="module">
+// 用法：model-check.html?anim=Walk&t=.25&view=front|side|back  （t 為動作進度 0～1）
+import * as THREE from 'three';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+const q=new URLSearchParams(location.search),anim=q.get('anim')||'Idle',t=+(q.get('t')||0),view=q.get('view')||'front';
+const r=new THREE.WebGLRenderer({canvas:c,antialias:true});r.setSize(innerWidth,innerHeight);r.toneMapping=THREE.ACESFilmicToneMapping;r.toneMappingExposure=.95;
+const s=new THREE.Scene();s.background=new THREE.Color(0xdfe8e2);s.add(new THREE.HemisphereLight(0xffffff,0x8a7a60,1.1));const d=new THREE.DirectionalLight(0xffffff,2.2);d.position.set(2,4,-3);s.add(d);
+const cam=new THREE.PerspectiveCamera(30,innerWidth/innerHeight,.05,50);const P={front:[0,.85,-4],side:[4,.85,0],back:[0,.85,4],three:[2.6,1.3,-3],top:[0,4.5,-.6],left:[-2.8,1.6,-2.8]}[view];cam.position.set(...P);cam.lookAt(0,.72,0);
+const g=new THREE.Mesh(new THREE.CircleGeometry(1.2,32),new THREE.MeshStandardMaterial({color:0xc9b88f}));g.rotation.x=-Math.PI/2;s.add(g);
+const buf=Uint8Array.from(atob(window.BIRD_MODELS.hero.split(',')[1]),ch=>ch.charCodeAt(0)).buffer;
+new GLTFLoader().parse(buf,'',gl=>{s.add(gl.scene);const m=new THREE.AnimationMixer(gl.scene);const clip=gl.animations.find(a=>a.name===anim);
+ let tris=0;gl.scene.traverse(o=>{if(o.isMesh)tris+=o.geometry.index?o.geometry.index.count/3:0;});
+ if(clip){const a=m.clipAction(clip);a.play();m.setTime(clip.duration*t);}
+ info.textContent=`${anim} t=${t} ${view}｜動作：${gl.animations.map(a=>a.name).join('、')}｜三角面 ${tris}`;r.render(s,cam);window.done=true;},e=>{info.textContent='載入失敗 '+e;window.done=true;});
+</script></body></html>
