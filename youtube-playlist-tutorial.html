@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>YouTube 播放清單管理器教學</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Huninn&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: 單欄教室投影版面 — 上方 16:9 動畫舞台，下方字幕與章節，最後附完整程式碼 */
+:root{
+  --bg:#f3f1ec; --panel:#ffffff; --ink:#1f2328; --muted:#5d6470; --line:#dcd8cf;
+  --accent:#d93025; --accent-ink:#ffffff; --chip:#ebe7de; --note:#fff4d6;
+  --display:"Huninn","Noto Sans TC",system-ui,sans-serif;
+  --body:"Noto Sans TC",system-ui,-apple-system,"PingFang TC","Microsoft JhengHei",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#17181b; --panel:#212328; --ink:#eceae4; --muted:#a3a8b2; --line:#33363d;
+  --accent:#ff6b5e; --accent-ink:#1b0d0b; --chip:#2b2e35; --note:#3a3220; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#17181b; --panel:#212328; --ink:#eceae4; --muted:#a3a8b2; --line:#33363d;
+  --accent:#ff6b5e; --accent-ink:#1b0d0b; --chip:#2b2e35; --note:#3a3220; color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.6}
+.wrap{max-width:1040px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:18px}
+header h1{font-family:var(--display);font-weight:400;font-size:clamp(22px,4vw,34px);line-height:1.25;margin:0;text-wrap:balance}
+header p{margin:6px 0 0;color:var(--muted)}
+.eyebrow{font-size:12px;letter-spacing:.12em;color:var(--accent);font-weight:700}
+
+/* 舞台 */
+.stage-box{position:relative;width:100%;aspect-ratio:16/9;max-width:100%;border-radius:14px;overflow:hidden;background:#202124;box-shadow:0 10px 30px rgba(0,0,0,.18)}
+#stage{position:absolute;left:0;top:0;width:960px;height:540px;transform-origin:0 0}
+.caption{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 18px;min-height:64px;display:flex;gap:14px;align-items:flex-start}
+.caption .step{flex:none;font-family:var(--display);background:var(--accent);color:var(--accent-ink);border-radius:8px;padding:2px 10px;font-size:15px;white-space:nowrap}
+#cap{font-size:17px;font-weight:500;min-width:0}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.controls button,.controls select{font:inherit;font-size:14px;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:8px;padding:7px 14px;cursor:pointer}
+.controls button.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:700;min-width:96px}
+.controls button[aria-pressed="true"]{background:var(--chip);font-weight:700}
+.controls .spacer{flex:1}
+button:focus-visible,select:focus-visible,a:focus-visible,summary:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.prog{height:6px;background:var(--chip);border-radius:3px;overflow:hidden}
+.prog i{display:block;height:100%;width:0;background:var(--accent);transition:width .4s}
+.chapters{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;list-style:none;margin:0;padding:0}
+.chapters button{width:100%;text-align:left;font:inherit;font-size:14px;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:9px 12px;cursor:pointer;display:flex;gap:10px;align-items:baseline}
+.chapters button b{flex:none;font-size:12px;color:var(--muted);font-weight:600;font-variant-numeric:tabular-nums}
+.chapters button.on{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.chapters button.on b{color:var(--accent)}
+h2{font-family:var(--display);font-weight:400;font-size:22px;margin:18px 0 0}
+.tips{background:var(--note);border-radius:12px;padding:14px 18px}
+.tips ul{margin:6px 0 0;padding-left:1.2em}
+details{background:var(--panel);border:1px solid var(--line);border-radius:12px}
+summary{cursor:pointer;padding:12px 16px;font-weight:700;display:flex;justify-content:space-between;gap:10px;align-items:center}
+.copy{font:inherit;font-size:13px;border:1px solid var(--line);background:var(--chip);color:var(--ink);border-radius:6px;padding:4px 10px;cursor:pointer}
+pre.code{margin:0;border-top:1px solid var(--line);max-height:440px;overflow:auto;padding:14px 16px;font:12.5px/1.55 var(--mono);white-space:pre;color:var(--ink)}
+a{color:var(--accent)}
+@media (prefers-reduced-motion: reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+/* ===== 舞台內的模擬畫面（固定為 Google 應用程式的淺色介面） ===== */
+.scr{position:absolute;inset:0;background:#e8eaed;color:#202124;font:14px/1.5 "Noto Sans TC",system-ui,sans-serif;overflow:hidden}
+.bw{position:absolute;inset:16px;background:#fff;border-radius:10px;box-shadow:0 4px 18px rgba(0,0,0,.18);overflow:hidden;display:flex;flex-direction:column}
+.bw .bar{height:36px;flex:none;background:#f1f3f4;display:flex;align-items:center;gap:7px;padding:0 12px;border-bottom:1px solid #e0e0e0}
+.bw .dot{width:11px;height:11px;border-radius:50%;background:#ff5f57}.bw .dot+.dot{background:#febc2e}.bw .dot+.dot+.dot{background:#28c840}
+.bw .url{flex:1;margin-left:8px;background:#fff;border-radius:16px;padding:3px 14px;font-size:12.5px;color:#5f6368;white-space:nowrap;overflow:hidden;font-family:"JetBrains Mono",monospace}
+.bw .body{flex:1;position:relative;overflow:hidden;background:#fff}
+.top{height:50px;display:flex;align-items:center;gap:14px;padding:0 16px;border-bottom:1px solid #e0e0e0;background:#fff}
+.hamb{font-size:20px;width:34px;height:34px;display:grid;place-items:center;border-radius:50%;color:#5f6368}
+.logo{font-weight:700;font-size:17px;color:#5f6368}.logo span{color:#4285f4}
+.pp{border:1px solid #dadce0;border-radius:6px;padding:5px 12px;font-size:13px;color:#3c4043}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 16px;border-radius:4px;background:#1a73e8;color:#fff;font-weight:600;font-size:13.5px;transition:filter .15s,transform .15s}
+.btn.ghost{background:#fff;color:#1a73e8;border:1px solid #dadce0}
+.btn.green{background:#1e8e3e}
+.pressed{filter:brightness(.82);transform:scale(.96)}
+.modal{position:absolute;inset:0;background:rgba(32,33,36,.45);display:flex;align-items:center;justify-content:center;z-index:5}
+.dlg{background:#fff;border-radius:10px;padding:22px 24px;width:460px;box-shadow:0 12px 40px rgba(0,0,0,.3);display:grid;gap:12px}
+.dlg h3{margin:0;font-size:18px;font-weight:500}
+.lbl{font-size:12px;color:#5f6368}
+.inp{border:1px solid #80868b;border-radius:4px;padding:8px 12px;min-height:38px;font-size:14px;background:#fff}
+.inp.focus{border:2px solid #1a73e8;padding:7px 11px}
+.inp.focus::after{content:"";display:inline-block;width:1px;height:16px;background:#202124;vertical-align:-3px;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.mono{font-family:"JetBrains Mono",monospace}
+.hl{outline:3px solid #f9ab00;outline-offset:3px;border-radius:4px;animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{50%{outline-color:rgba(249,171,0,.35)}}
+.toast{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);background:#323232;color:#fff;padding:10px 18px;border-radius:6px;font-size:13.5px;z-index:9}
+.fade{animation:fade .45s ease both}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.callout{position:absolute;background:#fff8e1;border:2px solid #f9ab00;border-radius:10px;padding:10px 14px;font-weight:700;font-size:14.5px;color:#5c3c00;box-shadow:0 4px 14px rgba(0,0,0,.12);z-index:8;max-width:300px}
+.menu{position:absolute;background:#fff;border-radius:6px;box-shadow:0 4px 18px rgba(0,0,0,.22);padding:6px 0;z-index:6;min-width:200px}
+.menu div{padding:8px 18px;font-size:13.5px}
+.menu div.hov{background:#e8f0fe;color:#1967d2}
+.side{position:absolute;left:0;top:50px;bottom:0;width:230px;border-right:1px solid #e0e0e0;background:#fff;padding:8px 0;z-index:4}
+.side div{padding:9px 20px;font-size:13.5px;color:#3c4043}
+.side div.on{background:#e8f0fe;color:#1967d2;font-weight:600;border-radius:0 18px 18px 0;margin-right:10px}
+.card{border:1px solid #dadce0;border-radius:8px;padding:14px 16px;background:#fff}
+.cursor{position:absolute;left:480px;top:300px;width:26px;height:26px;z-index:50;pointer-events:none;transition:left .7s cubic-bezier(.4,.1,.2,1),top .7s cubic-bezier(.4,.1,.2,1);filter:drop-shadow(0 2px 3px rgba(0,0,0,.4))}
+.cursor svg{width:26px;height:26px;transition:transform .12s}
+.cursor.down svg{transform:scale(.82)}
+.ripple{position:absolute;width:44px;height:44px;margin:-22px 0 0 -22px;border-radius:50%;border:3px solid #f9ab00;z-index:49;pointer-events:none;animation:rip .6s ease-out forwards}
+@keyframes rip{from{transform:scale(.2);opacity:1}to{transform:scale(1.4);opacity:0}}
+/* 試算表 */
+.grid{position:absolute;left:0;right:0;top:86px;bottom:34px;overflow:hidden}
+.grid table{border-collapse:collapse;font-size:13px}
+.grid td,.grid th{border:1px solid #e2e2e2;height:28px;padding:0 8px;white-space:nowrap}
+.grid th{background:#f8f9fa;color:#5f6368;font-weight:500;text-align:center}
+.grid td.sel{outline:2px solid #1a73e8;outline-offset:-2px}
+.tabs{position:absolute;left:0;right:0;bottom:0;height:34px;background:#f8f9fa;border-top:1px solid #e0e0e0;display:flex;align-items:center;padding-left:50px;gap:4px}
+.tabs span{padding:4px 14px;font-size:13px;background:#e1e9f7;color:#1967d2;border-radius:6px 6px 0 0;font-weight:600;min-width:60px}
+.mbar{display:flex;gap:16px;padding:6px 16px;font-size:13.5px;color:#3c4043;border-bottom:1px solid #e0e0e0}
+/* 程式編輯器 */
+.ed{position:absolute;inset:50px 0 0 0;display:flex}
+.ed .files{width:190px;background:#f8f9fa;border-right:1px solid #e0e0e0;padding:10px 0;font-size:13px}
+.ed .files div{padding:6px 16px}.ed .files div.on{background:#e8f0fe;color:#1967d2;font-weight:600}
+.ed .code{flex:1;padding:12px 16px;font:12.5px/1.6 "JetBrains Mono",monospace;white-space:pre;color:#24292f;overflow:hidden;position:relative}
+.ed .code .k{color:#cf222e}.ed .code .s{color:#0a3069}.ed .code .c{color:#6e7781}
+.log{position:absolute;left:190px;right:0;bottom:0;height:120px;background:#fff;border-top:1px solid #dadce0;padding:8px 16px;font:12.5px/1.6 "JetBrains Mono",monospace;z-index:3}
+/* 成果播放器 */
+.pl{position:absolute;inset:0;display:flex}
+.pl .sb{width:300px;background:#2c3e50;color:#ecf0f1;padding:16px;display:flex;flex-direction:column;gap:10px}
+.pl .sb h4{margin:0;font-size:18px}
+.pl .sel2{background:#34495e;border-radius:6px;padding:8px 10px;font-size:13px}
+.pl .lb{background:#3498db;color:#fff;border-radius:6px;padding:8px;text-align:center;font-weight:600;font-size:13px;transition:filter .15s}
+.pl .st{font-size:12px;color:#95a5a6;background:rgba(0,0,0,.2);border-radius:6px;padding:6px 8px}
+.pl .vi{display:flex;gap:10px;align-items:center;background:rgba(255,255,255,.08);border-radius:8px;padding:5px 8px;font-size:12.5px;line-height:1.35}
+.pl .vi.on{background:rgba(52,152,219,.4);outline:2px solid #3498db}
+.pl .th{width:68px;height:40px;border-radius:4px;flex:none;display:grid;place-items:center;color:#fff;font-size:16px}
+.pl .main{flex:1;background:#f9f9f9;padding:18px;display:flex;flex-direction:column;gap:12px}
+.pl .vt{font-size:18px;font-weight:700;color:#202124}
+.pl .scrn{flex:1;background:#000;border-radius:10px;position:relative;overflow:hidden;display:grid;place-items:center;color:#fff}
+.pl .bar2{position:absolute;left:14px;right:14px;bottom:14px;height:5px;background:rgba(255,255,255,.3);border-radius:3px}
+.pl .bar2 i{display:block;height:100%;width:0;background:#ff0000;border-radius:3px}
+/* 開場與架構 */
+.intro{position:absolute;inset:0;background:linear-gradient(160deg,#2b2f36,#1b1d22);color:#f3f1ec;padding:46px 56px;display:flex;flex-direction:column;gap:22px}
+.intro h1{font-family:"Huninn","Noto Sans TC",sans-serif;font-weight:400;font-size:38px;line-height:1.3;margin:0}
+.intro h1 em{font-style:normal;color:#ff4e45}
+.feat{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.feat div{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:14px;font-size:14.5px;line-height:1.5}
+.feat b{display:block;font-family:"Huninn",sans-serif;font-weight:400;font-size:28px;color:#ff4e45;line-height:1.1;margin-bottom:6px}
+.arch{position:absolute;inset:0;background:#f6f4ef;color:#202124}
+.node{position:absolute;width:190px;background:#fff;border:2px solid #d0ccc2;border-radius:14px;padding:14px;text-align:center;transition:border-color .3s,box-shadow .3s}
+.node.on{border-color:#d93025;box-shadow:0 0 0 5px rgba(217,48,37,.15)}
+.node .ic{font-size:34px;line-height:1.1}
+.node b{display:block;font-size:16px;margin-top:4px}
+.node small{display:block;color:#5f6368;font-size:12.5px;line-height:1.45;margin-top:4px}
+.pkt{position:absolute;width:16px;height:16px;border-radius:50%;background:#d93025;margin:-8px 0 0 -8px;z-index:3;box-shadow:0 0 0 4px rgba(217,48,37,.2)}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">教學動畫 · Google Cloud × Google 試算表 × Apps Script</div>
+    <h1>借用 YouTube 建置學校活動影片播放清單管理器</h1>
+    <p>跟著游標一步一步做：申請 API 金鑰、建立播放清單試算表、貼上程式碼、部署成網頁。</p>
+  </header>
+
+  <div class="stage-box" id="box"><div id="stage"></div></div>
+
+  <div class="prog" aria-hidden="true"><i id="bar"></i></div>
+  <div class="caption" aria-live="polite"><span class="step" id="stepNo">開場</span><div id="cap">按「播放」開始</div></div>
+
+  <div class="controls">
+    <button id="prev" type="button">◀ 上一段</button>
+    <button id="play" type="button" class="primary">▶ 播放</button>
+    <button id="next" type="button">下一段 ▶</button>
+    <button id="replay" type="button">↻ 重播本段</button>
+    <span class="spacer"></span>
+    <label for="spd" style="font-size:14px;color:var(--muted)">速度</label>
+    <select id="spd"><option value="0.75">0.75×</option><option value="1" selected>1×</option><option value="1.5">1.5×</option><option value="2">2×</option></select>
+    <button id="tts" type="button" aria-pressed="false">🔊 語音旁白</button>
+  </div>
+
+  <ol class="chapters" id="chap"></ol>
+
+  <div class="tips">
+    <strong>常見卡關提醒</strong>
+    <ul>
+      <li>播放清單要設為「公開」或「不公開」；設成「私人」的清單，API 金鑰讀不到。</li>
+      <li>HTML 檔要命名為 <code>Index</code>，因為 Code.gs 用 <code>createHtmlOutputFromFile('Index')</code> 載入它。</li>
+      <li>工作表名稱要叫「播放清單」；找不到時程式會改讀第一個工作表。</li>
+      <li>API 金鑰只貼在 Code.gs 第 9 行，不要放進網頁或傳給別人。</li>
+      <li>修改程式後要「管理部署作業 → 編輯 → 新版本」，網址才會用到新程式。</li>
+    </ul>
+  </div>
+
+  <p style="margin:0">範例網頁：<a href="https://script.google.com/macros/s/AKfycbx6Bo71W4CZsU53XPesaGXsIKkrm2iD4SVri9QNrLTaZNtrJBNBOcail9IyM1hq2mkxPQ/exec" target="_blank" rel="noopener">YouTube 播放清單播放器（開新分頁）</a></p>
+
+  <h2>完整程式碼</h2>
+  <details>
+    <summary><span>Code.gs（貼到 Apps Script 的程式碼.gs）</span><button class="copy" type="button" data-for="c1">複製</button></summary>
+    <pre class="code" id="c1">// ========== Code.gs (YouTube Data API v3 版本) ==========
+// 使用 API Key 來取得播放清單影片，沒有數量限制
+
+/**
+ * 設定你的 YouTube Data API Key
+ * 取得方式：https://console.cloud.google.com/apis/credentials
+ * 需要啟用 YouTube Data API v3
+ */
+var YOUTUBE_API_KEY = &#x27;請貼上你自己申請的YouTube Data API Key&#x27;;
+
+/**
+ * 網頁應用程式進入點
+ */
+function doGet(e) {
+  return HtmlService.createHtmlOutputFromFile(&#x27;Index&#x27;)
+    .setTitle(&#x27;YouTube 播放清單播放器&#x27;)
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+}
+
+/**
+ * 從 Google Sheets 讀取所有播放清單
+ */
+function getPlaylistsFromSheet() {
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheet = ss.getSheetByName(&#x27;播放清單&#x27;);
+    
+    if (!sheet) {
+      sheet = ss.getSheets()[0];
+    }
+    
+    var data = sheet.getDataRange().getValues();
+    
+    if (data.length &lt;= 1) {
+      return { 
+        ok: true, 
+        playlists: [], 
+        count: 0,
+        message: &#x27;工作表中沒有播放清單資料&#x27;
+      };
+    }
+    
+    var playlists = [];
+    for (var i = 1; i &lt; data.length; i++) {
+      var row = data[i];
+      if (row[0] &amp;&amp; row[1] &amp;&amp; String(row[0]).trim() !== &#x27;&#x27; &amp;&amp; String(row[1]).trim() !== &#x27;&#x27;) {
+        playlists.push({
+          name: String(row[0]).trim(),
+          playlistId: String(row[1]).trim(),
+          description: row[2] ? String(row[2]).trim() : &#x27;&#x27;
+        });
+      }
+    }
+    
+    return { 
+      ok: true, 
+      playlists: playlists, 
+      count: playlists.length 
+    };
+    
+  } catch (err) {
+    return { 
+      ok: false, 
+      error: err.message, 
+      playlists: [],
+      count: 0
+    };
+  }
+}
+
+/**
+ * 使用 YouTube Data API v3 取得播放清單所有影片
+ * 支援分頁，可以取得完整播放清單
+ */
+function getPlaylistVideos(playlistId) {
+  try {
+    if (!playlistId) {
+      return { 
+        ok: false, 
+        playlistId: &#x27;&#x27;, 
+        count: 0, 
+        videos: [], 
+        error: &#x27;播放清單 ID 不能為空&#x27; 
+      };
+    }
+
+    // 檢查 API Key
+    if (!YOUTUBE_API_KEY || YOUTUBE_API_KEY === &#x27;請在這裡填入你的 API Key&#x27;) {
+      return { 
+        ok: false, 
+        playlistId: &#x27;&#x27;, 
+        count: 0, 
+        videos: [], 
+        error: &#x27;請先在 Code.gs 中設定 YouTube API Key&#x27; 
+      };
+    }
+
+    var pid = extractPlaylistId(playlistId);
+    if (!pid) {
+      return { 
+        ok: false, 
+        playlistId: &#x27;&#x27;, 
+        count: 0, 
+        videos: [], 
+        error: &#x27;無法解析播放清單 ID&#x27; 
+      };
+    }
+
+    // 使用快取來避免重複請求
+    var cache = CacheService.getScriptCache();
+    var cacheKey = &#x27;ytapi:&#x27; + pid;
+    var cached = cache.get(cacheKey);
+    
+    if (cached) {
+      return JSON.parse(cached);
+    }
+
+    // 取得所有影片（處理分頁）
+    var videos = [];
+    var nextPageToken = &#x27;&#x27;;
+    var maxResults = 50; // 每次請求最多 50 筆
+    var totalFetched = 0;
+    var maxPages = 20; // 最多取 20 頁（1000 支影片），避免超時
+    var pageCount = 0;
+
+    do {
+      var url = &#x27;https://www.googleapis.com/youtube/v3/playlistItems?&#x27; +
+                &#x27;part=snippet&amp;playlistId=&#x27; + pid +
+                &#x27;&amp;maxResults=&#x27; + maxResults +
+                &#x27;&amp;key=&#x27; + YOUTUBE_API_KEY;
+      
+      if (nextPageToken) {
+        url += &#x27;&amp;pageToken=&#x27; + nextPageToken;
+      }
+
+      var response = UrlFetchApp.fetch(url, {
+        muteHttpExceptions: true,
+        headers: {
+          &#x27;Accept&#x27;: &#x27;application/json&#x27;
+        }
+      });
+
+      if (response.getResponseCode() !== 200) {
+        var errorText = response.getContentText();
+        var errorMsg = &#x27;API 請求失敗：HTTP &#x27; + response.getResponseCode();
+        
+        try {
+          var errorJson = JSON.parse(errorText);
+          if (errorJson.error &amp;&amp; errorJson.error.message) {
+            errorMsg = errorJson.error.message;
+          }
+        } catch (e) {
+          // 無法解析錯誤訊息，使用預設訊息
+        }
+        
+        return { 
+          ok: false, 
+          playlistId: pid, 
+          count: 0, 
+          videos: [], 
+          error: errorMsg
+        };
+      }
+
+      var data = JSON.parse(response.getContentText());
+      
+      if (data.items &amp;&amp; data.items.length &gt; 0) {
+        data.items.forEach(function(item) {
+          if (item.snippet &amp;&amp; item.snippet.resourceId &amp;&amp; item.snippet.resourceId.videoId) {
+            var videoId = item.snippet.resourceId.videoId;
+            var title = item.snippet.title || &#x27;(無標題)&#x27;;
+            var author = item.snippet.videoOwnerChannelTitle || item.snippet.channelTitle || &#x27;&#x27;;
+            
+            // 取得最佳品質的縮圖
+            var thumbnail = &#x27;&#x27;;
+            if (item.snippet.thumbnails) {
+              if (item.snippet.thumbnails.medium) {
+                thumbnail = item.snippet.thumbnails.medium.url;
+              } else if (item.snippet.thumbnails.default) {
+                thumbnail = item.snippet.thumbnails.default.url;
+              } else if (item.snippet.thumbnails.high) {
+                thumbnail = item.snippet.thumbnails.high.url;
+              }
+            }
+            
+            if (!thumbnail) {
+              thumbnail = &#x27;https://i.ytimg.com/vi/&#x27; + videoId + &#x27;/mqdefault.jpg&#x27;;
+            }
+
+            videos.push({
+              videoId: videoId,
+              title: title,
+              author: author,
+              thumbnail: thumbnail
+            });
+          }
+        });
+        
+        totalFetched += data.items.length;
+      }
+
+      nextPageToken = data.nextPageToken || &#x27;&#x27;;
+      pageCount++;
+
+      // 避免無限迴圈和超時
+      if (pageCount &gt;= maxPages) {
+        Logger.log(&#x27;已達到最大頁數限制：&#x27; + maxPages);
+        break;
+      }
+
+    } while (nextPageToken);
+
+    var result = { 
+      ok: true, 
+      playlistId: pid, 
+      count: videos.length, 
+      videos: videos,
+      apiUsed: true,
+      totalFetched: totalFetched
+    };
+
+    // 快取 10 分鐘
+    cache.put(cacheKey, JSON.stringify(result), 600);
+    
+    return result;
+
+  } catch (err) {
+    Logger.log(&#x27;錯誤: &#x27; + err.message);
+    return { 
+      ok: false, 
+      playlistId: &#x27;&#x27;, 
+      count: 0, 
+      videos: [], 
+      error: String(err.message || err) 
+    };
+  }
+}
+
+/**
+ * 從輸入字串中提取播放清單 ID
+ */
+function extractPlaylistId(input) {
+  if (!input) return &#x27;&#x27;;
+  var s = String(input).trim();
+
+  // 直接是 PL 開頭的 ID
+  if (s.match(/^PL[a-zA-Z0-9_-]+$/)) {
+    return s;
+  }
+
+  // 從 URL 中提取 list 參數
+  var match = s.match(/[?&amp;]list=([a-zA-Z0-9_-]+)/);
+  if (match &amp;&amp; match[1]) {
+    return match[1];
+  }
+  
+  // 如果都不符合，嘗試找出 PL 開頭的部分
+  var plMatch = s.match(/(PL[a-zA-Z0-9_-]+)/);
+  if (plMatch &amp;&amp; plMatch[1]) {
+    return plMatch[1];
+  }
+  
+  return &#x27;&#x27;;
+}
+
+/**
+ * 測試函數 - 測試讀取播放清單
+ */
+function testGetPlaylists() {
+  var result = getPlaylistsFromSheet();
+  Logger.log(&#x27;播放清單測試結果：&#x27;);
+  Logger.log(JSON.stringify(result, null, 2));
+  return result;
+}
+
+/**
+ * 測試函數 - 測試讀取影片（使用 YouTube Data API）
+ */
+function testGetVideos() {
+  var result = getPlaylistVideos(&#x27;PLrAXtmErZgOeiKm4sgNOknGvNjby9efdf&#x27;);
+  Logger.log(&#x27;影片測試結果：&#x27;);
+  Logger.log(JSON.stringify(result, null, 2));
+  return result;
+}
+
+/**
+ * 測試 API Key 是否有效
+ */
+function testAPIKey() {
+  if (!YOUTUBE_API_KEY || YOUTUBE_API_KEY === &#x27;請在這裡填入你的 API Key&#x27;) {
+    Logger.log(&#x27;❌ 請先設定 API Key&#x27;);
+    return false;
+  }
+  
+  var url = &#x27;https://www.googleapis.com/youtube/v3/playlistItems?&#x27; +
+            &#x27;part=snippet&amp;playlistId=PLrAXtmErZgOeiKm4sgNOknGvNjby9efdf&amp;maxResults=1&amp;key=&#x27; + YOUTUBE_API_KEY;
+  
+  try {
+    var response = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
+    
+    if (response.getResponseCode() === 200) {
+      Logger.log(&#x27;✅ API Key 有效&#x27;);
+      return true;
+    } else {
+      Logger.log(&#x27;❌ API Key 無效或有問題&#x27;);
+      Logger.log(&#x27;回應碼: &#x27; + response.getResponseCode());
+      Logger.log(&#x27;回應內容: &#x27; + response.getContentText());
+      return false;
+    }
+  } catch (err) {
+    Logger.log(&#x27;❌ 測試 API Key 時發生錯誤: &#x27; + err.message);
+    return false;
+  }
+}</pre>
+  </details>
+  <details>
+    <summary><span>Index.html（新增 HTML 檔，命名為 Index）</span><button class="copy" type="button" data-for="c2">複製</button></summary>
+    <pre class="code" id="c2">&lt;!doctype html&gt;
+&lt;html lang=&quot;zh-TW&quot;&gt;
+&lt;head&gt;
+  &lt;meta charset=&quot;UTF-8&quot; /&gt;
+  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;/&gt;
+  &lt;title&gt;YouTube 播放清單播放器&lt;/title&gt;
+  &lt;style&gt;
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Arial, sans-serif; background: #f9f9f9; }
+    
+    #container { display: flex; min-height: 100vh; }
+    
+    #sidebar {
+      width: 300px;
+      background: #2c3e50;
+      color: #ecf0f1;
+      padding: 20px;
+      overflow-y: auto;
+    }
+    
+    #sidebar h2 { margin: 0 0 15px 0; font-size: 20px; }
+    #sidebar h3 { margin: 20px 0 10px 0; font-size: 16px; color: #3498db; }
+    
+    .playlist-selector {
+      background: rgba(255,255,255,0.1);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 15px;
+    }
+    
+    select {
+      width: 100%;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #34495e;
+      background: #34495e;
+      color: #ecf0f1;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    
+    select:focus { outline: 2px solid #3498db; }
+    
+    button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 8px;
+      border-radius: 6px;
+      border: 0;
+      background: #3498db;
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    
+    button:hover { background: #2980b9; }
+    button:disabled { background: #7f8c8d; cursor: not-allowed; }
+    
+    #status {
+      font-size: 12px;
+      color: #95a5a6;
+      margin: 10px 0;
+      padding: 8px;
+      background: rgba(0,0,0,0.2);
+      border-radius: 6px;
+      min-height: 20px;
+    }
+    
+    #videoList {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    
+    #videoList li {
+      margin: 8px 0;
+      padding: 10px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.08);
+      cursor: pointer;
+      user-select: none;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      transition: background 0.2s;
+    }
+    
+    #videoList li:hover { background: rgba(255,255,255,0.15); }
+    #videoList li.active {
+      background: rgba(52, 152, 219, 0.4);
+      outline: 2px solid #3498db;
+    }
+    
+    #videoList li img {
+      width: 80px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+    
+    #videoList li .video-info {
+      flex: 1;
+      min-width: 0;
+    }
+    
+    #videoList li .video-title {
+      font-weight: 600;
+      font-size: 13px;
+      margin-bottom: 4px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+    
+    #videoList li .video-author {
+      font-size: 11px;
+      opacity: 0.8;
+    }
+    
+    #main-content {
+      flex: 1;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    #video-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      max-width: 100%;
+    }
+    
+    #videoTitle {
+      font-size: 22px;
+      font-weight: 700;
+      color: #2c3e50;
+      margin: 0 0 15px 0;
+    }
+    
+    #actions {
+      display: none;
+      gap: 10px;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+    }
+    
+    #actions a {
+      display: inline-block;
+      padding: 10px 16px;
+      border-radius: 8px;
+      background: #34495e;
+      color: #fff;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    
+    #actions a:hover { background: #2c3e50; }
+    
+    #embedError {
+      display: none;
+      background: #fff3cd;
+      border: 2px solid #ffc107;
+      color: #856404;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 15px;
+      text-align: center;
+    }
+    
+    #embedError.show { display: block; }
+    #embedError strong { display: block; margin-bottom: 10px; font-size: 16px; }
+    #embedError a {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 10px 20px;
+      background: #ffc107;
+      color: #000;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: 600;
+    }
+    #embedError a:hover { background: #ffcd38; }
+    
+    #ytPlayer {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      border: 0;
+      border-radius: 12px;
+      background: #000;
+      max-height: calc(100vh - 200px);
+    }
+    
+    .info-box {
+      background: rgba(52, 152, 219, 0.1);
+      border-left: 4px solid #3498db;
+      padding: 12px;
+      border-radius: 6px;
+      margin-top: 15px;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+    
+    .info-box.success {
+      background: rgba(46, 204, 113, 0.1);
+      border-left-color: #2ecc71;
+    }
+    
+    @media (max-width: 980px) {
+      #container { flex-direction: column; }
+      #sidebar { width: 100%; max-height: 50vh; }
+      #ytPlayer { max-height: 50vh; }
+    }
+    a {  text-decoration: none;  
+        color:white;
+      } 
+    a:hover {  color: red;}
+  &lt;/style&gt;
+&lt;/head&gt;
+
+&lt;body&gt;
+  &lt;div id=&quot;container&quot;&gt;
+    &lt;div id=&quot;sidebar&quot;&gt;
+      &lt;h2&gt;📺 播放清單管理器&lt;/h2&gt;
+      
+      &lt;div class=&quot;playlist-selector&quot;&gt;
+        &lt;label style=&quot;display:block; margin-bottom:8px; font-size:13px; font-weight:600;&quot;&gt;選擇播放清單&lt;/label&gt;
+        &lt;select id=&quot;playlistSelect&quot;&gt;
+          &lt;option value=&quot;&quot;&gt;載入中...&lt;/option&gt;
+        &lt;/select&gt;
+        &lt;button id=&quot;loadBtn&quot;&gt;載入影片&lt;/button&gt;
+      &lt;/div&gt;
+      
+      &lt;div id=&quot;status&quot;&gt;準備就緒&lt;/div&gt;
+      
+      &lt;h3&gt;影片列表&lt;/h3&gt;
+      &lt;ul id=&quot;videoList&quot;&gt;&lt;/ul&gt;
+      
+      &lt;div class=&quot;info-box success&quot;&gt;
+        &lt;strong&gt;✅ YouTube Data API v3 版本&lt;/strong&gt;&lt;br&gt;
+        🚀 支援完整播放清單（無數量限制）&lt;br&gt;
+        ⚡ 使用官方 API，更穩定可靠&lt;br&gt;
+        📊 自動處理分頁，最多支援 1000+ 影片
+      &lt;/div&gt;
+      
+      &lt;div class=&quot;info-box&quot;&gt;
+        &lt;strong&gt;&lt;a href=&quot;https://docs.google.com/spreadsheets/d/1vSa32wme5LGf2AB5JANtjCyVmwHKhiNwwOMo4glPQZA/edit?gid=0#gid=0&quot; target=&quot;_blank&quot;&gt; ✍️ 設計者：Vincent Wang&lt;/a&gt;&lt;/strong&gt;&lt;br&gt;
+        ⚠️ 部分影片可能因版權限制無法嵌入播放&lt;br&gt;
+        🔑 需要設定 YouTube Data API Key&lt;br&gt;
+        📝 API Key 設定位置：Code.gs 第 8 行
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div id=&quot;main-content&quot;&gt;
+      &lt;div id=&quot;videoTitle&quot;&gt;請選擇播放清單&lt;/div&gt;
+
+      &lt;div id=&quot;actions&quot;&gt;
+        &lt;a id=&quot;openYT&quot; href=&quot;#&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;🔗 在 YouTube 開啟&lt;/a&gt;
+        
+      &lt;/div&gt;
+
+      &lt;div id=&quot;embedError&quot;&gt;
+        &lt;strong&gt;⚠️ 此影片無法嵌入播放&lt;/strong&gt;
+        &lt;p&gt;影片版權所有者不允許在外部網站播放此影片。&lt;br&gt;請點擊下方按鈕前往 YouTube 觀看。&lt;/p&gt;
+        &lt;a id=&quot;errorOpenYT&quot; href=&quot;#&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;前往 YouTube 觀看 →&lt;/a&gt;
+      &lt;/div&gt;
+
+      &lt;div id=&quot;video-container&quot;&gt;
+        &lt;iframe id=&quot;ytPlayer&quot; allow=&quot;accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share&quot; allowfullscreen&gt;&lt;/iframe&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;script&gt;
+    const playlistSelect = document.getElementById(&#x27;playlistSelect&#x27;);
+    const loadBtn = document.getElementById(&#x27;loadBtn&#x27;);
+    const statusEl = document.getElementById(&#x27;status&#x27;);
+    const videoListEl = document.getElementById(&#x27;videoList&#x27;);
+    const videoTitleEl = document.getElementById(&#x27;videoTitle&#x27;);
+    const ytPlayerEl = document.getElementById(&#x27;ytPlayer&#x27;);
+    const actionsEl = document.getElementById(&#x27;actions&#x27;);
+    const openYtEl = document.getElementById(&#x27;openYT&#x27;);
+    const openPlaylistEl = document.getElementById(&#x27;openPlaylist&#x27;);
+    const embedErrorEl = document.getElementById(&#x27;embedError&#x27;);
+    const errorOpenYtEl = document.getElementById(&#x27;errorOpenYT&#x27;);
+
+    let playlists = [];
+    let videos = [];
+    let currentIndex = -1;
+    let currentPlaylistId = &#x27;&#x27;;
+
+    // 頁面載入時取得播放清單
+    window.addEventListener(&#x27;DOMContentLoaded&#x27;, loadPlaylists);
+
+    function loadPlaylists() {
+      statusEl.textContent = &#x27;正在載入播放清單...&#x27;;
+      playlistSelect.innerHTML = &#x27;&lt;option value=&quot;&quot;&gt;載入中...&lt;/option&gt;&#x27;;
+      
+      google.script.run
+        .withSuccessHandler(onPlaylistsLoaded)
+        .withFailureHandler(onError)
+        .getPlaylistsFromSheet();
+    }
+
+    function onPlaylistsLoaded(result) {
+      if (!result.ok) {
+        statusEl.textContent = &#x27;❌ 載入播放清單失敗: &#x27; + result.error;
+        playlistSelect.innerHTML = &#x27;&lt;option value=&quot;&quot;&gt;載入失敗&lt;/option&gt;&#x27;;
+        return;
+      }
+
+      playlists = result.playlists;
+      
+      if (playlists.length === 0) {
+        statusEl.textContent = &#x27;⚠️ 尚無播放清單，請在 Google Sheets 中新增&#x27;;
+        playlistSelect.innerHTML = &#x27;&lt;option value=&quot;&quot;&gt;無播放清單&lt;/option&gt;&#x27;;
+        return;
+      }
+
+      // 填充下拉選單
+      playlistSelect.innerHTML = &#x27;&lt;option value=&quot;&quot;&gt;-- 選擇播放清單 --&lt;/option&gt;&#x27;;
+      playlists.forEach((pl, idx) =&gt; {
+        const option = document.createElement(&#x27;option&#x27;);
+        option.value = idx;
+        option.textContent = pl.name + (pl.description ? ` (${pl.description})` : &#x27;&#x27;);
+        playlistSelect.appendChild(option);
+      });
+
+      statusEl.textContent = `✓ 已載入 ${playlists.length} 個播放清單`;
+    }
+
+    function onError(error) {
+      statusEl.textContent = &#x27;❌ 錯誤: &#x27; + error.message;
+      console.error(&#x27;Error:&#x27;, error);
+    }
+
+    loadBtn.onclick = function() {
+      const selectedIndex = playlistSelect.value;
+      
+      if (!selectedIndex) {
+        statusEl.textContent = &#x27;⚠️ 請先選擇播放清單&#x27;;
+        return;
+      }
+
+      const playlist = playlists[selectedIndex];
+      currentPlaylistId = playlist.playlistId;
+      
+      statusEl.textContent = `載入中: ${playlist.name}...`;
+      videoListEl.innerHTML = &#x27;&#x27;;
+      videoTitleEl.textContent = &#x27;載入中...&#x27;;
+      ytPlayerEl.src = &#x27;&#x27;;
+      actionsEl.style.display = &#x27;none&#x27;;
+      embedErrorEl.classList.remove(&#x27;show&#x27;);
+      loadBtn.disabled = true;
+
+      google.script.run
+        .withSuccessHandler(onVideosLoaded)
+        .withFailureHandler(onError)
+        .getPlaylistVideos(playlist.playlistId);
+    };
+
+    function onVideosLoaded(result) {
+      loadBtn.disabled = false;
+
+      if (!result.ok) {
+        statusEl.textContent = &#x27;❌ 載入影片失敗: &#x27; + result.error;
+        videoTitleEl.textContent = &#x27;載入失敗&#x27;;
+        
+        // 如果是 API Key 問題，顯示特別提示
+        if (result.error.includes(&#x27;API Key&#x27;)) {
+          statusEl.innerHTML = &#x27;❌ &#x27; + escapeHtml(result.error) + &#x27;&lt;br&gt;&lt;small&gt;請在 Code.gs 第 8 行設定你的 YouTube Data API Key&lt;/small&gt;&#x27;;
+        }
+        return;
+      }
+
+      videos = result.videos;
+
+      if (videos.length === 0) {
+        statusEl.textContent = &#x27;⚠️ 此播放清單沒有影片&#x27;;
+        videoTitleEl.textContent = &#x27;無影片&#x27;;
+        return;
+      }
+
+      // 顯示載入成功訊息
+      let statusText = `✅ 已載入 ${videos.length} 支影片`;
+      if (result.apiUsed) {
+        statusText += &#x27; (使用 API)&#x27;;
+      }
+      statusEl.textContent = statusText;
+      
+      renderVideoList();
+      playVideo(0);
+    }
+
+    function renderVideoList() {
+      videoListEl.innerHTML = &#x27;&#x27;;
+      
+      videos.forEach((video, idx) =&gt; {
+        const li = document.createElement(&#x27;li&#x27;);
+        
+        const img = document.createElement(&#x27;img&#x27;);
+        img.src = video.thumbnail;
+        img.alt = &#x27;縮圖&#x27;;
+        img.onerror = function() {
+          this.src = &#x27;data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2280%22 height=%2260%22%3E%3Crect fill=%22%23333%22 width=%22100%25%22 height=%22100%25%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 fill=%22%23999%22 font-size=%2214%22%3E無圖%3C/text%3E%3C/svg%3E&#x27;;
+        };
+        
+        const infoDiv = document.createElement(&#x27;div&#x27;);
+        infoDiv.className = &#x27;video-info&#x27;;
+        
+        const titleDiv = document.createElement(&#x27;div&#x27;);
+        titleDiv.className = &#x27;video-title&#x27;;
+        titleDiv.textContent = (idx + 1) + &#x27;. &#x27; + video.title;
+        
+        const authorDiv = document.createElement(&#x27;div&#x27;);
+        authorDiv.className = &#x27;video-author&#x27;;
+        authorDiv.textContent = video.author;
+        
+        infoDiv.appendChild(titleDiv);
+        infoDiv.appendChild(authorDiv);
+        
+        li.appendChild(img);
+        li.appendChild(infoDiv);
+        li.onclick = () =&gt; playVideo(idx);
+        
+        if (idx === currentIndex) li.classList.add(&#x27;active&#x27;);
+        
+        videoListEl.appendChild(li);
+      });
+    }
+
+    function playVideo(index) {
+      currentIndex = index;
+      const video = videos[index];
+      
+      videoTitleEl.textContent = (index + 1) + &#x27;. &#x27; + video.title;
+      embedErrorEl.classList.remove(&#x27;show&#x27;);
+      
+      const embedUrl = &#x27;https://www.youtube.com/embed/&#x27; + video.videoId + &#x27;?autoplay=1&amp;rel=0&amp;playsinline=1&#x27;;
+      ytPlayerEl.src = embedUrl;
+      
+      // 更新列表中的 active 狀態
+      const listItems = videoListEl.children;
+      for (let i = 0; i &lt; listItems.length; i++) {
+        if (i === index) {
+          listItems[i].classList.add(&#x27;active&#x27;);
+        } else {
+          listItems[i].classList.remove(&#x27;active&#x27;);
+        }
+      }
+      
+      actionsEl.style.display = &#x27;flex&#x27;;
+      
+      const videoUrl = &#x27;https://www.youtube.com/watch?v=&#x27; + video.videoId;
+      const playlistUrl = &#x27;https://www.youtube.com/playlist?list=&#x27; + currentPlaylistId;
+      
+      openYtEl.href = videoUrl;
+      openPlaylistEl.href = playlistUrl;
+      errorOpenYtEl.href = videoUrl;
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement(&#x27;div&#x27;);
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // 按下 Enter 也能載入
+    playlistSelect.addEventListener(&#x27;keypress&#x27;, (e) =&gt; {
+      if (e.key === &#x27;Enter&#x27;) loadBtn.click();
+    });
+  &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</pre>
+  </details>
+</div>
+
+<script>
+(()=>{
+const box=document.getElementById('box'), stage=document.getElementById('stage');
+const capEl=document.getElementById('cap'), stepEl=document.getElementById('stepNo'), bar=document.getElementById('bar');
+const playBtn=document.getElementById('play');
+let run=0, paused=true, speed=1, idx=0, tts=false, started=false;
+
+function fit(){const s=box.clientWidth/960;stage.style.transform=`scale(${s})`;return s}
+new ResizeObserver(fit).observe(box);
+
+class Abort extends Error{}
+function sleep(ms){const id=run;return new Promise((res,rej)=>{let el=0;const t=setInterval(()=>{if(id!==run){clearInterval(t);rej(new Abort());return}if(!paused)el+=50*speed;if(el>=ms){clearInterval(t);res()}},50)})}
+const $=q=>typeof q==='string'?stage.querySelector(q):q;
+function show(q){const e=$(q);e.hidden=false;e.classList.remove('fade');void e.offsetWidth;e.classList.add('fade');return e}
+function hide(q){$(q).hidden=true}
+function center(q){const e=$(q),r=e.getBoundingClientRect(),s=stage.getBoundingClientRect(),k=fit();return{x:(r.left+r.width/2-s.left)/k,y:(r.top+r.height/2-s.top)/k}}
+let cur;
+async function move(q,dx=0,dy=0){const p=center(q);cur.style.transitionDuration=(0.7/speed)+'s';cur.style.left=(p.x+dx)+'px';cur.style.top=(p.y+dy)+'px';await sleep(800)}
+async function click(q){await move(q);const p=center(q);const r=document.createElement('div');r.className='ripple';r.style.left=p.x+'px';r.style.top=p.y+'px';stage.append(r);setTimeout(()=>r.remove(),700);cur.classList.add('down');const e=$(q);e.classList.add('pressed');await sleep(220);cur.classList.remove('down');e.classList.remove('pressed');await sleep(250)}
+async function type(q,text,cps=16){const e=$(q);e.classList.add('focus');for(const ch of text){e.textContent+=ch;await sleep(1000/cps)}await sleep(300);e.classList.remove('focus')}
+function speaking(){return tts&&'speechSynthesis' in window&&(speechSynthesis.speaking||speechSynthesis.pending)}
+async function say(t,hold=0){while(speaking())await sleep(150);capEl.textContent=t;capEl.classList.remove('fade');void capEl.offsetWidth;capEl.classList.add('fade');
+  if(tts&&'speechSynthesis' in window){try{const u=new SpeechSynthesisUtterance(t.replace(/[「」]/g,''));u.lang='zh-TW';u.rate=Math.min(2,1.05*speed);speechSynthesis.speak(u)}catch(e){}}
+  await sleep(hold||Math.max(1400,t.length*120))}
+const browser=(url,inner)=>`<div class="bw"><div class="bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">${url}</span></div><div class="body">${inner}</div></div>`;
+const gcpTop=(proj='選取專案 ▾')=>`<div class="top"><span class="hamb" id="hamb">☰</span><span class="logo"><span>Google</span> Cloud</span><span class="pp" id="pp">${proj}</span><span style="flex:1"></span><span class="pp" style="width:260px;color:#80868b">🔍 搜尋資源、說明文件、產品</span></div>`;
+const CURSOR='<svg viewBox="0 0 24 24"><path d="M4 2l15 11-6.5 1.2L16 21l-3 1.4-3.4-6.8L4 20z" fill="#fff" stroke="#111" stroke-width="1.5" stroke-linejoin="round"/></svg>';
+
+const scenes=[
+{t:'功能介紹',html:()=>`<div class="intro"><div style="font-size:14px;letter-spacing:.14em;color:#ff4e45;font-weight:700">免伺服器・免網頁空間</div>
+ <h1>用 <em>YouTube</em> 播放清單<br>做一個學校活動影片播放器</h1>
+ <div class="feat">
+ <div id="f1"><b>1</b>免架伺服器、免 web 空間，影片都放在 YouTube</div>
+ <div id="f2"><b>2</b>建立活動影片的播放清單，就能加入播放器</div>
+ <div id="f3"><b>3</b>可做學校活動影片清單，也可做宣導影片清單</div>
+ <div id="f4"><b>4</b>也能建立自己想聽的音樂播放清單</div>
+ <div id="f5"><b>5</b>只要給播放清單，自動產出影片列表與縮圖</div></div></div>`,
+ async run(){for(let i=1;i<=5;i++)hide('#f'+i);
+  await say('這個工具借用 YouTube，做出學校活動影片的播放清單管理器。',2200);
+  const L=['不用架伺服器，也不用網頁空間，影片全都放在 YouTube。','只要建立活動影片的播放清單，就能加入播放器。','可以放學校活動影片，也可以放宣導影片。','也可以建立自己想聽的音樂播放清單。','只要提供播放清單，就會自動產生影片列表和縮圖。'];
+  for(let i=1;i<=5;i++){show('#f'+i);await say(L[i-1])}}},
+
+{t:'系統架構',html:()=>`<div class="arch">
+ <div style="position:absolute;left:40px;top:28px;font-family:Huninn,sans-serif;font-size:26px">資料怎麼流動？</div>
+ <svg width="960" height="540" style="position:absolute;inset:0"><g stroke="#b9b3a6" stroke-width="3" fill="none" stroke-dasharray="8 6"><path d="M235 300H330"/><path d="M520 300H615"/><path d="M425 230V150"/><path d="M710 300H760"/></g></svg>
+ <div class="node" id="n1" style="left:45px;top:230px"><div class="ic">📊</div><b>Google 試算表</b><small>「播放清單」工作表<br>名稱｜播放清單ID｜描述</small></div>
+ <div class="node" id="n2" style="left:330px;top:230px"><div class="ic">⚙️</div><b>Apps Script</b><small>Code.gs<br>讀試算表、呼叫 API</small></div>
+ <div class="node" id="n3" style="left:330px;top:40px"><div class="ic">▶️</div><b>YouTube Data API v3</b><small>用 API 金鑰取得<br>清單內的影片與縮圖</small></div>
+ <div class="node" id="n4" style="left:615px;top:230px;width:150px"><div class="ic">🖥️</div><b>Index.html</b><small>播放器網頁</small></div>
+ <div class="node" id="n5" style="left:770px;top:230px;width:150px"><div class="ic">👩‍🏫</div><b>師生瀏覽</b><small>部署後的網址</small></div>
+ <div class="pkt" id="pk" hidden style="left:235px;top:300px"></div></div>`,
+ async run(){const on=n=>{stage.querySelectorAll('.node').forEach(x=>x.classList.remove('on'));if(n)$(n).classList.add('on')};
+  const pk=$('#pk');const fly=async(x,y)=>{pk.style.transition=`left ${.8/speed}s,top ${.8/speed}s`;pk.style.left=x+'px';pk.style.top=y+'px';await sleep(850)};
+  await say('先看整體架構，一共只用到 Google 的免費服務。',2000);
+  on('#n1');await say('試算表負責記錄：有哪些播放清單。');
+  pk.hidden=false;await fly(330,300);on('#n2');await say('Apps Script 讀出播放清單 ID。');
+  await fly(425,150);on('#n3');await say('再用 API 金鑰，向 YouTube Data API 要影片列表和縮圖。');
+  await fly(425,300);await fly(615,300);on('#n4');await say('結果交給 Index.html，畫出播放器。');
+  await fly(770,300);on('#n5');pk.hidden=true;await say('部署成網頁後，師生打開網址就能看。');
+  await say('所以要準備三樣東西：API 金鑰、試算表、兩段程式碼。',2200)}},
+
+{t:'1. 登入 GCP 建立專案',html:()=>browser('https://console.cloud.google.com',
+ `<div id="login" style="position:absolute;inset:0;display:grid;place-items:center;background:#fff"><div class="card" style="width:400px;display:grid;gap:12px;padding:28px"><div class="logo" style="font-size:22px"><span>Google</span></div><div style="font-size:20px">登入</div><div class="lbl">使用學校的 Google 帳號</div><div class="inp mono" id="em"></div><div style="text-align:right"><span class="btn" id="nx">繼續</span></div></div></div>
+ ${gcpTop()}<div style="padding:30px 40px"><div style="font-size:22px">歡迎使用 Google Cloud</div><div style="color:#5f6368;margin-top:6px">先建立一個專案，才能啟用 API。</div><div class="card" style="margin-top:20px;width:380px">📁 目前沒有選取專案</div></div>
+ <div class="modal" id="m1" hidden><div class="dlg"><div style="display:flex;justify-content:space-between;align-items:center"><h3>選取專案</h3><span class="btn ghost" id="np">新增專案</span></div><div class="inp" style="color:#80868b">搜尋專案和資料夾</div><div class="lbl">沒有任何專案</div></div></div>
+ <div class="modal" id="m2" hidden><div class="dlg"><h3>新增專案</h3><div class="lbl">專案名稱 *</div><div class="inp" id="pn"></div><div class="lbl">位置：學校網域</div><div><span class="btn" id="cr">建立</span></div></div></div>
+ <div class="toast" id="ts" hidden>✓ 已建立專案「get the id of youtube」</div>`),
+ async run(){await say('第一步，用學校的 Google 帳號登入 Google Cloud 控制台。');
+  await click('#em');await type('#em','teacher@school.edu.tw',20);await click('#nx');hide('#login');
+  await say('登入後點左上方的「選取專案」。',1000);await click('#pp');show('#m1');
+  await say('按「新增專案」。',900);await click('#np');hide('#m1');show('#m2');
+  await say('專案名稱可以取「get the id of youtube」。',600);await click('#pn');await type('#pn','get the id of youtube');
+  await click('#cr');hide('#m2');$('#pp').textContent='get the id of youtube ▾';show('#ts');$('#pp').classList.add('hl');
+  await say('專案建立好了，畫面上方會顯示目前的專案。',2200)}},
+
+{t:'2. 啟用 YouTube Data API',html:()=>browser('https://console.cloud.google.com/apis',
+ `${gcpTop('get the id of youtube ▾')}
+ <div id="home" style="padding:28px 40px"><div style="font-size:20px">API 和服務</div><div style="margin-top:16px"><span class="btn ghost" id="en">＋ 啟用 API 和服務</span></div><div class="card" style="margin-top:16px;width:460px;color:#5f6368">尚未啟用任何 API</div></div>
+ <div class="side" id="sd" hidden><div>☁ Cloud 總覽</div><div>⭐ 已固定的產品</div><div id="api">⚙ API 和服務</div><div>💳 帳單</div><div>🔐 IAM 與管理</div><div>🖥 Compute Engine</div></div>
+ <div id="lib" hidden style="position:absolute;inset:50px 0 0 0;background:#fff;padding:24px 40px"><div style="font-size:20px">API 程式庫</div><div class="inp" id="q" style="margin-top:12px;width:520px"></div>
+  <div id="res" hidden style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:18px"><div class="card" id="yt"><b>▶ YouTube Data API v3</b><div class="lbl">Google Enterprise API</div></div><div class="card"><b>YouTube Analytics API</b><div class="lbl">Google Enterprise API</div></div><div class="card"><b>YouTube Reporting API</b><div class="lbl">Google Enterprise API</div></div></div></div>
+ <div id="det" hidden style="position:absolute;inset:50px 0 0 0;background:#fff;padding:30px 40px;display:grid;gap:12px;align-content:start"><div style="font-size:26px">▶ YouTube Data API v3</div><div style="color:#5f6368">The YouTube Data API v3 is an API that provides access to YouTube data.</div><div><span class="btn" id="on">啟用</span> <span id="ok" hidden style="color:#1e8e3e;font-weight:700;margin-left:10px">✓ API 已啟用</span></div></div>`),
+ async run(){await say('第二步，點左上角三條線的選單。',800);await click('#hamb');show('#sd');
+  await click('#api');hide('#sd');await say('進入「API 和服務」，按「啟用 API 和服務」。',800);await click('#en');show('#lib');
+  await say('用搜尋的方式，找 YouTube Data API。',500);await click('#q');await type('#q','YouTube Data API');show('#res');
+  await click('#yt');show('#det');await say('選「YouTube Data API v3」，按下「啟用」。',600);await click('#on');show('#ok');
+  await say('看到已啟用，就可以去申請金鑰了。',1800)}},
+
+{t:'3. 建立 API 金鑰',html:()=>browser('https://console.cloud.google.com/apis/credentials',
+ `${gcpTop('get the id of youtube ▾')}<div class="side" style="width:210px"><div>已啟用的 API 和服務</div><div>程式庫</div><div id="cred">憑證</div><div>OAuth 同意畫面</div></div>
+ <div style="position:absolute;left:230px;top:70px;right:20px"><div style="display:flex;gap:14px;align-items:center"><span style="font-size:20px" id="hd">已啟用的 API 和服務</span><span class="btn ghost" id="mk" hidden>＋ 建立憑證</span></div>
+ <div class="card" style="margin-top:16px" id="tbl">API 金鑰<div class="lbl">沒有可顯示的 API 金鑰</div></div></div>
+ <div class="menu" id="mn" hidden style="left:420px;top:112px"><div id="ak">API 金鑰<br><span class="lbl">使用 API 金鑰識別專案</span></div><div>OAuth 用戶端 ID</div><div>服務帳戶</div></div>
+ <div class="modal" id="dk" hidden><div class="dlg"><h3>已建立 API 金鑰</h3><div class="lbl">您的 API 金鑰</div><div class="inp mono">AIzaSy••••••••••••••••••••••••••</div><div class="lbl">⚠ 建議立即限制這把金鑰，避免被濫用。</div><div style="text-align:right"><span class="btn" id="cl">關閉</span></div></div></div>`),
+ async run(){await say('第三步，點左側的「憑證」。',800);await click('#cred');$('#cred').classList.add('on');$('#hd').textContent='憑證';show('#mk');
+  await say('按「建立憑證」，選擇「API 金鑰」。',700);await click('#mk');show('#mn');await move('#ak');$('#ak').classList.add('hov');await click('#ak');hide('#mn');show('#dk');
+  await say('金鑰就產生了。先關閉視窗，馬上幫它加上限制。',800);await click('#cl');hide('#dk');
+  $('#tbl').innerHTML='API 金鑰<div style="margin-top:6px;color:#1a73e8;font-weight:600">🔑 API key 1</div>';await sleep(900)}},
+
+{t:'4. 限制金鑰只用 YouTube',html:()=>browser('https://console.cloud.google.com/apis/credentials/key',
+ `${gcpTop('get the id of youtube ▾')}<div id="list" style="padding:24px 40px"><div style="font-size:20px">憑證</div><div class="card" style="margin-top:14px;display:flex;gap:30px"><span>名稱</span><span id="k1" style="color:#1a73e8;font-weight:600">🔑 API key 1</span><span style="color:#5f6368">無限制</span></div></div>
+ <div id="edit" hidden style="position:absolute;inset:50px 0 0 0;background:#fff;padding:20px 40px;display:grid;gap:12px;align-content:start">
+  <div style="font-size:20px">← 編輯 API 金鑰</div>
+  <div class="card"><b>API 限制</b><div style="margin-top:8px;display:grid;gap:6px"><span id="r0">◉ 不限制金鑰</span><span id="r1">○ 限制金鑰</span></div>
+   <div id="pick" hidden style="margin-top:10px"><div class="inp" id="dd" style="width:360px">選取 API ▾</div>
+    <div id="opts" hidden class="card" style="margin-top:6px;width:360px;display:grid;gap:6px;padding:10px 14px"><span>☐ Cloud Storage API</span><span id="ytc">☐ YouTube Data API v3</span><span>☐ Maps JavaScript API</span><span style="text-align:right"><span class="btn" id="okb">確定</span></span></div></div></div>
+  <div><span class="btn" id="sv">儲存</span></div></div>
+ <div class="toast" id="ts" hidden>✓ 已儲存：這把金鑰只能用於 YouTube Data API v3</div>`),
+ async run(){await say('第四步，點剛才建立的「API key 1」，限制它的用途。',700);await click('#k1');hide('#list');show('#edit');
+  await say('在「API 限制」選「限制金鑰」。',700);await click('#r1');$('#r1').textContent='◉ 限制金鑰';$('#r0').textContent='○ 不限制金鑰';show('#pick');
+  await click('#dd');show('#opts');await say('只勾選 YouTube Data API v3。',600);await click('#ytc');$('#ytc').textContent='☑ YouTube Data API v3';$('#ytc').style.fontWeight='700';
+  await click('#okb');hide('#opts');$('#dd').textContent='已選取 1 個 API：YouTube Data API v3';await click('#sv');show('#ts');
+  await say('這樣就算金鑰外流，也不能拿去用別的服務。',2000)}},
+
+{t:'5. 顯示並複製金鑰',html:()=>browser('https://console.cloud.google.com/apis/credentials',
+ `${gcpTop('get the id of youtube ▾')}<div style="padding:24px 40px"><div style="font-size:20px">憑證</div><div class="card" style="margin-top:14px;display:flex;gap:30px;align-items:center"><span style="color:#1a73e8;font-weight:600">🔑 API key 1</span><span style="color:#5f6368">YouTube Data API v3</span><span style="flex:1"></span><span class="btn ghost" id="sh">顯示金鑰</span></div></div>
+ <div class="modal" id="dk" hidden><div class="dlg"><h3>API 金鑰</h3><div style="display:flex;gap:8px;align-items:center"><div class="inp mono" style="flex:1">AIzaSyD-範例金鑰-請用你自己的</div><span class="btn ghost" id="cp">⧉</span></div><div class="lbl" id="cpd" hidden style="color:#1e8e3e;font-weight:700">✓ 已複製到剪貼簿</div></div></div>
+ <div class="callout" id="warn" hidden style="right:40px;bottom:40px;background:#fdecea;border-color:#d93025;color:#8a1c14">🔒 金鑰要保存好，不要外流！<br><span style="font-weight:500">只貼在 Code.gs 裡，不要貼到群組或網頁上。</span></div>`),
+ async run(){await say('第五步，按「顯示金鑰」。',800);await click('#sh');show('#dk');
+  await say('按旁邊的複製按鈕，把金鑰複製下來備用。',700);await click('#cp');show('#cpd');show('#warn');
+  await say('金鑰要好好保存，不要外流。',2200)}},
+
+{t:'6. 雲端硬碟建立試算表',html:()=>browser('https://drive.google.com',
+ `<div class="top"><span class="logo">雲端硬碟</span><span style="flex:1"></span><span class="pp" style="width:300px;color:#80868b">🔍 在雲端硬碟中搜尋</span></div>
+ <div style="position:absolute;left:0;top:50px;bottom:0;width:200px;padding:14px"><span class="btn ghost" id="nw" style="border-radius:14px;padding:12px 20px;box-shadow:0 1px 3px rgba(0,0,0,.25)">＋ 新增</span><div style="margin-top:18px;color:#3c4043;display:grid;gap:8px;font-size:13.5px"><span>🏠 我的雲端硬碟</span><span>👥 與我共用</span><span>🕘 近期存取</span></div></div>
+ <div style="position:absolute;left:210px;top:66px;right:20px"><div id="path" style="font-size:20px">我的雲端硬碟</div><div id="files" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:16px"></div></div>
+ <div class="menu" id="mn" hidden style="left:30px;top:110px"><div id="nf">📁 新資料夾</div><div>⬆ 上傳檔案</div><div id="gs">🟩 Google 試算表</div><div>📄 Google 文件</div></div>
+ <div class="modal" id="nm" hidden><div class="dlg"><h3>新資料夾</h3><div class="inp" id="fn"></div><div style="text-align:right"><span class="btn" id="ok">建立</span></div></div></div>`),
+ async run(){await say('第六步，到雲端硬碟，按「新增」建立資料夾。',600);await click('#nw');show('#mn');await click('#nf');hide('#mn');show('#nm');
+  await click('#fn');await type('#fn','youtube播放清單');await click('#ok');hide('#nm');
+  $('#files').innerHTML='<div class="card" id="fd">📁 youtube播放清單</div>';show('#fd');
+  await say('進入這個資料夾，再新增一個 Google 試算表。',400);await click('#fd');await click('#fd');$('#path').textContent='我的雲端硬碟 › youtube播放清單';$('#files').innerHTML='<div class="lbl">這個資料夾是空的</div>';
+  await click('#nw');show('#mn');await click('#gs');hide('#mn');$('#files').innerHTML='<div class="card" id="sh">🟩 YouTube 播放清單</div>';show('#sh');
+  await say('試算表建立好了，接著來填資料。',1600)}},
+
+{t:'7. 填寫「播放清單」工作表',html:()=>browser('https://docs.google.com/spreadsheets',
+ `<div class="top" style="height:44px"><span style="font-size:22px">🟩</span><span style="font-size:16px">YouTube 播放清單</span></div><div class="mbar"><span>檔案</span><span>編輯</span><span>查看</span><span>插入</span><span>格式</span><span>資料</span><span>工具</span><span>擴充功能</span><span>說明</span></div>
+ <div class="grid"><table><tr><th style="width:40px"></th><th style="width:170px">A</th><th style="width:330px">B</th><th style="width:250px">C</th></tr>
+ ${[1,2,3,4,5,6,7,8].map(r=>`<tr><th>${r}</th><td id="a${r}"></td><td id="b${r}" class="mono" style="font-size:12px"></td><td id="c${r}"></td></tr>`).join('')}</table></div>
+ <div class="tabs"><span id="tab">工作表1</span></div>
+ <div class="callout" id="co" hidden style="right:30px;top:300px">三個欄位：<br>名稱｜播放清單ID｜描述（可空白）</div>`),
+ async run(){await say('第七步，先把工作表改名為「播放清單」。在下方分頁連按兩下。',500);await click('#tab');await click('#tab');$('#tab').textContent='';await type('#tab','播放清單');
+  await say('第一列建立三個欄位：名稱、播放清單 ID、描述。',300);
+  const put=async(id,t,c=18)=>{stage.querySelectorAll('td.sel').forEach(x=>x.classList.remove('sel'));await click('#'+id);$('#'+id).classList.add('sel');await type('#'+id,t,c)};
+  await put('a1','名稱');await put('b1','播放清單ID');await put('c1','描述');['a1','b1','c1'].forEach(i=>$('#'+i).style.fontWeight='700');show('#co');
+  await say('接著一列放一個播放清單。描述可以空白。',300);
+  await put('a2','畢業典禮');await put('b2','PLxxxxxxxxxxxxxxxxxxxxxxxx1',40);await put('c2','113 學年度');
+  await put('a3','校慶運動會');await put('b3','PLxxxxxxxxxxxxxxxxxxxxxxxx2',40);
+  await put('a4','交通安全宣導');await put('b4','PLxxxxxxxxxxxxxxxxxxxxxxxx3',40);await put('c4','宣導影片');
+  await say('播放清單 ID 要到 YouTube 複製，下一段說明怎麼找。',1800)}},
+
+{t:'備註：播放清單 ID 在哪？',html:()=>browser('https://www.youtube.com/playlist?list=PLrAXtmErZgOeiKm4sgNOknGvNjby9efdf',
+ `<div class="top"><span style="font-weight:700;font-size:17px"><span style="color:#ff0000">▶</span> YouTube</span></div>
+ <div style="display:flex;gap:24px;padding:24px 34px"><div style="width:300px;border-radius:14px;background:linear-gradient(160deg,#7b4397,#dc2430);color:#fff;padding:20px;display:grid;gap:10px"><div style="height:150px;border-radius:10px;background:rgba(0,0,0,.25);display:grid;place-items:center;font-size:40px">▶</div><b style="font-size:20px">校慶運動會</b><span style="font-size:13px">學校頻道 · 12 部影片</span><span id="vis" style="font-size:13px;background:rgba(0,0,0,.25);border-radius:6px;padding:3px 8px;justify-self:start">🌐 公開</span><span id="sh" style="background:#fff;color:#202124;border-radius:16px;padding:6px 14px;justify-self:start;font-weight:600;font-size:13px">↗ 分享</span></div>
+ <div style="flex:1;display:grid;gap:10px;align-content:start">${[1,2,3,4].map(i=>`<div style="display:flex;gap:12px;align-items:center"><span style="width:120px;height:68px;border-radius:8px;background:hsl(${i*70},55%,60%)"></span><span>第 ${i} 支影片</span></div>`).join('')}</div></div>
+ <div id="big" hidden style="position:absolute;left:30px;right:30px;top:120px;background:#fff;border:2px solid #202124;border-radius:12px;padding:18px 20px;font:15px 'JetBrains Mono',monospace;z-index:6;box-shadow:0 10px 30px rgba(0,0,0,.25)">https://www.youtube.com/playlist?<span id="lp">list=</span><span id="pid" style="background:#fff3c4">PLrAXtmErZgOeiKm4sgNOknGvNjby9efdf</span></div>
+ <div class="callout" id="c1" hidden style="left:300px;top:220px">「list=」後面這一串，就是播放清單 ID</div>
+ <div class="callout" id="c2" hidden style="left:300px;top:300px;max-width:420px">程式也會自動從整段網址抓出 ID，<br>所以直接貼網址也可以。</div>
+ <div class="callout" id="c3" hidden style="left:40px;top:400px;max-width:520px;background:#fdecea;border-color:#d93025;color:#8a1c14">清單要設為「公開」或「不公開」，<br>設成「私人」的清單讀不到。</div>`),
+ async run(){await say('在 YouTube 打開播放清單頁面，看網址列。',900);await move('.bw .url');show('#big');
+  await say('網址裡「list 等號」後面的那一串，就是播放清單 ID。',300);await move('#pid');$('#pid').classList.add('hl');show('#c1');
+  await say('程式會自動從網址抓出 ID，所以直接貼整段網址也行。',300);show('#c2');
+  hide('#big');hide('#c1');hide('#c2');await move('#vis');$('#vis').classList.add('hl');show('#c3');
+  await say('注意：清單要設為公開或不公開，私人的清單讀不到。',2000)}},
+
+{t:'8. 開啟 Apps Script',html:()=>browser('https://docs.google.com/spreadsheets',
+ `<div class="top" style="height:44px"><span style="font-size:22px">🟩</span><span style="font-size:16px">YouTube 播放清單</span></div><div class="mbar"><span>檔案</span><span>編輯</span><span>查看</span><span>插入</span><span>格式</span><span>資料</span><span>工具</span><span id="ext">擴充功能</span><span>說明</span></div>
+ <div class="grid"><table><tr><th style="width:40px"></th><th style="width:170px">A</th><th style="width:330px">B</th><th style="width:250px">C</th></tr>
+ <tr><th>1</th><td><b>名稱</b></td><td><b>播放清單ID</b></td><td><b>描述</b></td></tr><tr><th>2</th><td>畢業典禮</td><td class="mono" style="font-size:12px">PLxxxxxxxxxxxxxxxxxxxxxxxx1</td><td>113 學年度</td></tr><tr><th>3</th><td>校慶運動會</td><td class="mono" style="font-size:12px">PLxxxxxxxxxxxxxxxxxxxxxxxx2</td><td></td></tr><tr><th>4</th><td>交通安全宣導</td><td class="mono" style="font-size:12px">PLxxxxxxxxxxxxxxxxxxxxxxxx3</td><td>宣導影片</td></tr></table></div>
+ <div class="tabs"><span>播放清單</span></div>
+ <div class="menu" id="mn" hidden style="left:470px;top:84px"><div>🧩 外掛程式</div><div id="as">📜 Apps Script</div><div>⚡ AppSheet</div></div>`),
+ async run(){await say('第八步，在試算表上方選單點「擴充功能」。',700);await click('#ext');show('#mn');
+  await move('#as');$('#as').classList.add('hov');await say('選「Apps Script」，就會開啟程式編輯器。',300);await click('#as');await sleep(600)}},
+
+{t:'9. 貼上兩段程式碼',html:()=>browser('https://script.google.com/home/projects/…/edit',
+ `<div class="top"><span style="font-size:20px">📜</span><span style="font-size:16px">未命名的專案</span><span style="flex:1"></span><span class="pp" id="sv">💾 儲存</span><span class="pp" id="fsel">doGet ▾</span><span class="btn ghost" id="runb">▶ 執行</span><span class="btn" id="dep">部署 ▾</span></div>
+ <div class="ed"><div class="files"><div style="display:flex;justify-content:space-between;font-weight:600;color:#3c4043"><span>檔案</span><span id="plus" style="padding:0 6px">＋</span></div><div class="on" id="fgs">程式碼.gs</div><div id="fhtml" hidden>Index.html</div></div><div class="code" id="code"><span class="c">function myFunction() {\n\n}</span></div></div>
+ <div class="menu" id="mn" hidden style="left:120px;top:110px"><div>指令碼</div><div id="mh">HTML</div></div>
+ <div class="callout" id="co" hidden style="right:30px;top:120px">把剛才複製的 API 金鑰<br>貼在第 9 行的引號裡</div>
+ <div class="callout" id="co2" hidden style="right:30px;top:260px">檔名一定要打 <span class="mono">Index</span><br>（大小寫要一樣）</div>
+ <div class="menu" id="fm" hidden style="left:690px;top:62px"><div>doGet</div><div>getPlaylistsFromSheet</div><div id="tk">testAPIKey</div></div>
+ <div class="log" id="log" hidden><b style="font-family:'Noto Sans TC'">執行記錄</b><br><span id="lg"></span></div>`),
+ async run(){const code=$('#code');
+  await say('第九步，把原本的範例程式全部刪掉，貼上 Code.gs 的程式碼。',500);await click('#code');
+  code.innerHTML=`<span class="c">// ========== Code.gs (YouTube Data API v3 版本) ==========\n// 使用 API Key 來取得播放清單影片，沒有數量限制\n\n/**\n * 設定你的 YouTube Data API Key\n */</span>\n<span id="kl"><span class="k">var</span> YOUTUBE_API_KEY = <span class="s" id="kv">'請貼上你自己申請的YouTube Data API Key'</span>;</span>\n\n<span class="k">function</span> doGet(e) {\n  <span class="k">return</span> HtmlService.createHtmlOutputFromFile(<span class="s">'Index'</span>)\n    .setTitle(<span class="s">'YouTube 播放清單播放器'</span>)\n    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);\n}\n\n<span class="k">function</span> getPlaylistsFromSheet() { … }\n<span class="k">function</span> getPlaylistVideos(playlistId) { … }\n<span class="k">function</span> extractPlaylistId(input) { … }\n<span class="k">function</span> testAPIKey() { … }`;
+  code.classList.add('fade');await sleep(900);
+  $('#kl').classList.add('hl');show('#co');await say('然後把 API 金鑰貼到 YOUTUBE_API_KEY 這一行。',300);
+  await click('#kv');$('#kv').textContent="'";await type('#kv','AIzaSyD-範例金鑰-請用你自己的',26);$('#kv').textContent+="'";$('#kl').classList.remove('hl');hide('#co');
+  await say('接著按檔案旁的加號，新增一個 HTML 檔。',300);await click('#plus');show('#mn');await click('#mh');hide('#mn');
+  show('#fhtml');$('#fgs').classList.remove('on');$('#fhtml').classList.add('on');$('#fhtml').textContent='';show('#co2');await type('#fhtml','Index',8);$('#fhtml').textContent='Index.html';
+  await say('檔名打 Index，再貼上 Index.html 的程式碼。',300);
+  code.innerHTML=`<span class="k">&lt;!doctype html&gt;</span>\n&lt;html lang=<span class="s">"zh-TW"</span>&gt;\n&lt;head&gt;\n  &lt;title&gt;YouTube 播放清單播放器&lt;/title&gt;\n  &lt;style&gt; … &lt;/style&gt;\n&lt;/head&gt;\n&lt;body&gt;\n  &lt;div id=<span class="s">"sidebar"</span>&gt;\n    &lt;h2&gt;📺 播放清單管理器&lt;/h2&gt;\n    &lt;select id=<span class="s">"playlistSelect"</span>&gt;…&lt;/select&gt;\n    &lt;button id=<span class="s">"loadBtn"</span>&gt;載入影片&lt;/button&gt;\n  …\n  &lt;script&gt;\n    google.script.run\n      .withSuccessHandler(onPlaylistsLoaded)\n      .getPlaylistsFromSheet();\n  &lt;/script&gt;`;
+  code.classList.remove('fade');void code.offsetWidth;code.classList.add('fade');hide('#co2');await sleep(800);
+  await click('#sv');await say('記得按儲存。也可以先選 testAPIKey 按「執行」，測試金鑰能不能用。',300);
+  await click('#fsel');show('#fm');await click('#tk');hide('#fm');$('#fsel').textContent='testAPIKey ▾';await click('#runb');show('#log');
+  await sleep(600);$('#lg').textContent='下午 2:30:12  資訊  ✅ API Key 有效';await say('第一次執行會要求授權，同意後看到「API Key 有效」就成功了。',2200)}},
+
+{t:'10. 部署為網路應用程式',html:()=>browser('https://script.google.com/home/projects/…/edit',
+ `<div class="top"><span style="font-size:20px">📜</span><span style="font-size:16px">YouTube 播放清單</span><span style="flex:1"></span><span class="pp">💾 儲存</span><span class="btn" id="dep">部署 ▾</span></div>
+ <div class="ed"><div class="files"><div>程式碼.gs</div><div class="on">Index.html</div></div><div class="code"><span class="c">&lt;!doctype html&gt; …</span></div></div>
+ <div class="menu" id="mn" hidden style="right:20px;top:62px"><div id="nd">新增部署作業</div><div>管理部署作業</div><div>測試部署作業</div></div>
+ <div class="modal" id="m1" hidden><div class="dlg" style="width:520px"><h3>新增部署作業</h3>
+  <div style="display:flex;gap:10px;align-items:center"><span class="lbl">選取類型</span><span class="pp" id="gear">⚙</span><span id="typ" style="font-weight:600"></span></div>
+  <div class="menu" id="tm" hidden style="position:relative;box-shadow:0 2px 10px rgba(0,0,0,.18)"><div id="web">網頁應用程式</div><div>API 執行檔</div><div>程式庫</div></div>
+  <div id="cfg" hidden style="display:grid;grid-template-columns:80px 1fr;gap:8px;align-items:center"><div class="lbl">說明</div><div class="inp">學校活動影片播放器</div><div class="lbl">執行身分</div><div class="inp">我（teacher@school.edu.tw）</div><div class="lbl">誰可以存取</div><div class="inp" id="who">只有我自己 ▾</div></div>
+  <div style="text-align:right"><span class="btn" id="go">部署</span></div></div></div>
+ <div class="modal" id="m2" hidden><div class="dlg" style="width:560px"><h3>✓ 部署作業已更新</h3><div class="lbl">網頁應用程式網址</div><div style="display:flex;gap:8px"><div class="inp mono" style="flex:1;font-size:11.5px;overflow:hidden;white-space:nowrap">https://script.google.com/macros/s/AKfycb…/exec</div><span class="btn ghost" id="cp">複製</span></div><div class="lbl" id="cpd" hidden style="color:#1e8e3e;font-weight:700">✓ 已複製，把網址分享給師生或嵌入學校網站</div></div></div>`),
+ async run(){await say('最後一步，按右上角「部署」，選「新增部署作業」。',600);await click('#dep');show('#mn');await click('#nd');hide('#mn');show('#m1');
+  await say('點齒輪選類型：網頁應用程式。',500);await click('#gear');show('#tm');await click('#web');hide('#tm');$('#typ').textContent='網頁應用程式';show('#cfg');
+  await say('執行身分選「我」，誰可以存取選「所有人」，大家才看得到。',500);await click('#who');$('#who').textContent='所有人 ▾';$('#who').classList.add('hl');await sleep(700);
+  await click('#go');hide('#m1');show('#m2');await say('部署完成後會得到一個網址，複製起來分享出去。',400);await click('#cp');show('#cpd');await sleep(1600)}},
+
+{t:'完成！播放器成果',html:()=>browser('https://script.google.com/macros/s/AKfycb…/exec',
+ `<div class="pl"><div class="sb"><h4>📺 播放清單管理器</h4><div style="font-size:12px;font-weight:600">選擇播放清單</div><div class="sel2" id="ps">畢業典禮 ▾</div>
+ <div class="menu" id="pm" hidden style="position:relative;min-width:0;color:#202124"><div>畢業典禮</div><div id="o2">校慶運動會</div><div>交通安全宣導</div></div>
+ <div class="lb" id="lb">載入影片</div><div class="st" id="st">準備就緒</div><div style="color:#3498db;font-weight:700;font-size:14px">影片列表</div><div id="vl" style="display:grid;gap:8px"></div></div>
+ <div class="main"><div class="vt" id="vt">請選擇播放清單</div><div class="scrn" id="sc"><span style="opacity:.5">選一支影片開始播放</span><div class="bar2"><i id="pb"></i></div></div></div></div>`),
+ async run(){await say('完成了！打開網址，左邊選播放清單。',600);await click('#ps');show('#pm');await click('#o2');hide('#pm');$('#ps').textContent='校慶運動會 ▾';
+  await click('#lb');$('#st').textContent='載入中…';await sleep(700);$('#st').textContent='✓ 已載入 4 部影片';
+  const V=[['開幕進場',200],['大隊接力',20],['趣味競賽',140],['閉幕頒獎',280]];
+  $('#vl').innerHTML=V.map((v,i)=>`<div class="vi" id="v${i}"><span class="th" style="background:hsl(${v[1]},60%,50%)">▶</span><span><b>${v[0]}</b><br><span style="opacity:.8">學校頻道</span></span></div>`).join('');$('#vl').classList.add('fade');
+  await say('影片列表和縮圖是自動產生的。點一支影片就開始播放。',400);await click('#v1');$('#v1').classList.add('on');$('#vt').textContent='大隊接力';
+  $('#sc').innerHTML='<span style="font-size:60px">▶</span><div class="bar2"><i id="pb"></i></div>';$('#sc').style.background='linear-gradient(135deg,hsl(20,60%,35%),#111)';
+  const pb=$('#pb');pb.style.transition=`width ${6/speed}s linear`;requestAnimationFrame(()=>pb.style.width='70%');
+  await say('之後只要在試算表多加一列播放清單，播放器就會自動多一個選項，不用改程式。',2600)}}
+];
+
+/* 章節列表 */
+const tag=i=>{const m=scenes[i].t.match(/^(\d+)\./);return m?'步驟 '+m[1]:i===0?'開場':i===1?'架構':i===scenes.length-1?'完成':'備註'};
+const chap=document.getElementById('chap');
+scenes.forEach((s,i)=>{const li=document.createElement('li');li.innerHTML=`<button type="button" data-i="${i}"><b>${tag(i)}</b><span>${s.t.replace(/^\d+\.\s*/,'')}</span></button>`;chap.append(li)});
+chap.addEventListener('click',e=>{const b=e.target.closest('button');if(b){started=true;paused=false;load(+b.dataset.i)}});
+
+function ui(){chap.querySelectorAll('button').forEach((b,i)=>b.classList.toggle('on',i===idx));stepEl.textContent=tag(idx);
+  bar.style.width=(idx/(scenes.length-1)*100)+'%';playBtn.textContent=paused?'▶ 播放':'⏸ 暫停'}
+async function load(i){run++;const id=run;idx=i;if('speechSynthesis' in window)speechSynthesis.cancel();
+  stage.innerHTML=`<div class="scr">${scenes[i].html()}</div><div class="cursor">${CURSOR}</div>`;cur=stage.querySelector('.cursor');ui();fit();
+  capEl.textContent=scenes[i].t;
+  try{await sleep(400);await scenes[i].run();while(speaking())await sleep(150);await sleep(1500);
+    if(id===run&&i<scenes.length-1)load(i+1);else if(id===run){paused=true;ui();capEl.textContent='教學結束。可以點下方章節重看任何一段，或展開完整程式碼複製使用。'}}
+  catch(e){if(!(e instanceof Abort))console.error(e)}}
+
+playBtn.onclick=()=>{paused=!paused;if(!started){started=true;load(idx)}
+  if('speechSynthesis' in window){paused?speechSynthesis.pause():speechSynthesis.resume()}ui()};
+document.getElementById('prev').onclick=()=>{started=true;load(Math.max(0,idx-1))};
+document.getElementById('next').onclick=()=>{started=true;load(Math.min(scenes.length-1,idx+1))};
+document.getElementById('replay').onclick=()=>{started=true;load(idx)};
+document.getElementById('spd').onchange=e=>{speed=+e.target.value};
+const ttsBtn=document.getElementById('tts');
+ttsBtn.onclick=()=>{tts=!tts;ttsBtn.setAttribute('aria-pressed',tts);if(!tts&&'speechSynthesis' in window)speechSynthesis.cancel()};
+if(!('speechSynthesis' in window))ttsBtn.hidden=true;
+document.addEventListener('keydown',e=>{if(e.target.closest('select'))return;if(e.key===' '&&e.target===document.body){e.preventDefault();playBtn.click()}if(e.key==='ArrowRight')document.getElementById('next').click();if(e.key==='ArrowLeft')document.getElementById('prev').click()});
+
+/* 複製程式碼 */
+document.querySelectorAll('.copy').forEach(b=>b.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();const pre=document.getElementById(b.dataset.for);const t=pre.textContent;
+  const done=()=>{b.textContent='已複製';setTimeout(()=>b.textContent='複製',1500)};
+  const fallback=()=>{const d=pre.closest('details');d.open=true;const r=document.createRange();r.selectNodeContents(pre);const s=getSelection();s.removeAllRanges();s.addRange(r);b.textContent='已選取，請按 Ctrl+C'};
+  try{navigator.clipboard.writeText(t).then(done,fallback)}catch(err){fallback()}}));
+
+/* 初始畫面：先顯示開場（靜止），1 秒後自動播放 */
+stage.innerHTML=`<div class="scr">${scenes[0].html()}</div><div class="cursor">${CURSOR}</div>`;cur=stage.querySelector('.cursor');ui();fit();
+setTimeout(()=>{if(!started){started=true;paused=false;load(0)}},1000);
+})();
+</script>
+
+</body>
+</html>
