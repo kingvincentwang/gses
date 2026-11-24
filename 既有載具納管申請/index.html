@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<base target="_top">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>既有載具納管申請</title>
+<style>
+  :root{--pri:#1a5aa6;--pri2:#e8f0fb;--bd:#d5dce6;--txt:#1f2933;--mut:#66788a;--err:#c0392b;--ok:#1e8e3e}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif;background:#f3f6fa;color:var(--txt);font-size:16px}
+  header{background:var(--pri);color:#fff;padding:22px 16px;text-align:center}
+  header h1{margin:0;font-size:24px}
+  header p{margin:6px 0 0;opacity:.85;font-size:14px}
+  main{max-width:760px;margin:20px auto;padding:0 16px 40px}
+  .card{background:#fff;border:1px solid var(--bd);border-radius:12px;padding:20px;margin-bottom:16px}
+  .card h2{margin:0 0 14px;font-size:18px;color:var(--pri)}
+  label{display:block;font-weight:600;margin:12px 0 6px;font-size:15px}
+  .req{color:var(--err)}
+  .hint{color:var(--mut);font-size:13px;font-weight:400}
+  input,select,textarea{width:100%;padding:10px 12px;border:1px solid var(--bd);border-radius:8px;font-size:16px;font-family:inherit;background:#fff}
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--pri);border-color:var(--pri)}
+  textarea{min-height:120px;font-family:Consolas,monospace;resize:vertical}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:560px){.row{grid-template-columns:1fr}}
+  .radio-group{display:flex;gap:10px}
+  .radio-group label{flex:1;margin:0;border:2px solid var(--bd);border-radius:10px;padding:12px;text-align:center;cursor:pointer;font-weight:600}
+  .radio-group input{display:none}
+  .radio-group label.on{border-color:var(--pri);background:var(--pri2);color:var(--pri)}
+  .item{border:1px dashed var(--pri);border-radius:10px;padding:14px 16px;margin-bottom:14px;position:relative;background:#fbfdff}
+  .item-title{font-weight:700;color:var(--pri)}
+  .del{position:absolute;top:10px;right:10px;background:none;border:none;color:var(--err);cursor:pointer;font-size:14px}
+  .counter{font-size:13px;margin-top:4px}
+  .counter.bad{color:var(--err)} .counter.good{color:var(--ok)}
+  button.btn{border:none;border-radius:8px;padding:12px 18px;font-size:16px;cursor:pointer;font-family:inherit}
+  .btn-sec{background:var(--pri2);color:var(--pri);width:100%}
+  .btn-pri{background:var(--pri);color:#fff;width:100%;font-weight:700;font-size:17px}
+  .btn-pri:disabled{opacity:.6;cursor:wait}
+  .msg{padding:12px 14px;border-radius:8px;margin-top:14px;display:none}
+  .msg.err{display:block;background:#fdecea;color:var(--err)}
+  .msg.ok{display:block;background:#e6f4ea;color:var(--ok)}
+  .hidden{display:none}
+  footer{text-align:center;color:var(--mut);font-size:13px}
+  footer a{color:var(--mut)}
+</style>
+</head>
+<body>
+<header>
+  <h1>📱 既有載具納管申請</h1>
+  <p>學校既有 iPad／Chromebook 申請納入 MDM 管理</p>
+</header>
+<main>
+  <form id="form" novalidate>
+    <div class="card">
+      <h2>一、申請單位</h2>
+      <label>申請學校 <span class="req">*</span></label>
+      <input id="school" placeholder="例：新竹縣關西鎮關西國小" required>
+      <div class="row">
+        <div>
+          <label>聯絡人 <span class="hint">（選填）</span></label>
+          <input id="contact" placeholder="姓名／職稱">
+        </div>
+        <div>
+          <label>聯絡電話或 Email <span class="hint">（選填）</span></label>
+          <input id="phone" placeholder="分機或 Email">
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>二、納管載具</h2>
+      <div id="items"></div>
+      <button type="button" class="btn btn-sec" id="addItem">＋ 新增另一類載具</button>
+    </div>
+
+    <div class="card">
+      <label style="margin-top:0">備註 <span class="hint">（選填）</span></label>
+      <textarea id="note" style="min-height:70px;font-family:inherit" placeholder="其他需要說明的事項"></textarea>
+      <button type="submit" class="btn btn-pri" id="submitBtn" style="margin-top:16px">送出申請</button>
+      <div id="msg" class="msg"></div>
+    </div>
+  </form>
+
+  <div id="done" class="card hidden" style="text-align:center">
+    <h2 style="font-size:22px">✅ 申請已送出</h2>
+    <p id="doneText"></p>
+    <button class="btn btn-sec" onclick="location.reload()">再填一筆</button>
+  </div>
+  <footer><a href="<?= ScriptApp.getService().getUrl() ?>?page=admin" target="_blank">管理後台</a></footer>
+</main>
+
+<template id="itemTpl">
+  <div class="item">
+    <button type="button" class="del">✕ 移除</button>
+    <div class="item-title">載具 #<span class="no"></span></div>
+    <label>納管載具 <span class="req">*</span></label>
+    <div class="radio-group">
+      <label><input type="radio" value="iPad">🍎 iPad</label>
+      <label><input type="radio" value="Chromebook">💻 Chromebook</label>
+    </div>
+    <div class="gen-box hidden">
+      <label>iPad 為第幾代 <span class="req">*</span></label>
+      <select class="gen">
+        <option value="">— 請選擇 —</option>
+      </select>
+      <input class="gen-other hidden" placeholder="請輸入型號，例：iPad Air 第 5 代" style="margin-top:8px">
+    </div>
+    <label>數量 <span class="req">*</span></label>
+    <input class="qty" type="number" min="1" step="1" inputmode="numeric" placeholder="台數">
+    <label>載具序號 <span class="req">*</span> <span class="hint">每行一筆，可直接由 Excel 整欄貼上</span></label>
+    <textarea class="serials" placeholder="DMPXXXXXXXXX&#10;DMPYYYYYYYYY"></textarea>
+    <div class="counter"></div>
+  </div>
+</template>
+
+<script>
+const GENS = ['第 6 代','第 7 代','第 8 代','第 9 代','第 10 代','第 11 代（A16）'];
+let seq = 0;
+
+function parseSerials(txt){
+  return txt.split(/[\n,，;；\t]+/).map(s=>s.trim()).filter(Boolean);
+}
+
+function addItem(){
+  const node = document.getElementById('itemTpl').content.firstElementChild.cloneNode(true);
+  const name = 'dev' + (seq++);
+  node.querySelectorAll('input[type=radio]').forEach(r=>{
+    r.name = name;
+    r.addEventListener('change', ()=>{
+      node.querySelectorAll('.radio-group label').forEach(l=>l.classList.toggle('on', l.contains(r) && r.checked));
+      node.querySelector('.gen-box').classList.toggle('hidden', r.value !== 'iPad');
+    });
+  });
+  const sel = node.querySelector('.gen');
+  GENS.concat(['其他（自行輸入）']).forEach(g=>{ const o=document.createElement('option'); o.value=o.textContent=g; sel.appendChild(o); });
+  sel.addEventListener('change', ()=> node.querySelector('.gen-other').classList.toggle('hidden', sel.value !== '其他（自行輸入）'));
+  const qty = node.querySelector('.qty'), ser = node.querySelector('.serials'), cnt = node.querySelector('.counter');
+  const upd = ()=>{
+    const n = parseSerials(ser.value).length, q = parseInt(qty.value,10)||0;
+    cnt.textContent = '已輸入 ' + n + ' 筆序號' + (q ? '／數量 ' + q : '');
+    cnt.className = 'counter ' + (q && n === q ? 'good' : (n || q ? 'bad' : ''));
+  };
+  qty.addEventListener('input', upd); ser.addEventListener('input', upd);
+  node.querySelector('.del').addEventListener('click', ()=>{
+    if (document.querySelectorAll('#items .item').length <= 1) return;
+    node.remove(); renumber();
+  });
+  document.getElementById('items').appendChild(node);
+  renumber();
+}
+function renumber(){
+  const list = document.querySelectorAll('#items .item');
+  list.forEach((n,i)=>{ n.querySelector('.no').textContent = i+1; n.querySelector('.del').style.display = list.length>1?'':'none'; });
+}
+
+function showMsg(t, ok){ const m=document.getElementById('msg'); m.textContent=t; m.className='msg '+(ok?'ok':'err'); }
+
+function collect(){
+  const school = document.getElementById('school').value.trim();
+  if (!school) throw '請填寫申請學校';
+  const items = [];
+  document.querySelectorAll('#items .item').forEach((n,i)=>{
+    const p = '載具 #' + (i+1) + '：';
+    const r = n.querySelector('input[type=radio]:checked');
+    if (!r) throw p + '請選擇 iPad 或 Chromebook';
+    let gen = '';
+    if (r.value === 'iPad'){
+      gen = n.querySelector('.gen').value;
+      if (gen === '其他（自行輸入）') gen = n.querySelector('.gen-other').value.trim();
+      if (!gen) throw p + '請選擇／輸入 iPad 為第幾代';
+    }
+    const qty = parseInt(n.querySelector('.qty').value, 10);
+    if (!(qty > 0)) throw p + '請輸入正確數量';
+    const serials = parseSerials(n.querySelector('.serials').value);
+    if (serials.length !== qty) throw p + '序號筆數（' + serials.length + '）與數量（' + qty + '）不符';
+    const dup = serials.filter((s,k)=>serials.indexOf(s)!==k);
+    if (dup.length) throw p + '序號重複：' + dup.join(', ');
+    items.push({ device:r.value, generation:gen, qty:qty, serials:serials });
+  });
+  return { school, contact:document.getElementById('contact').value, phone:document.getElementById('phone').value,
+           note:document.getElementById('note').value, items };
+}
+
+document.getElementById('addItem').addEventListener('click', addItem);
+document.getElementById('form').addEventListener('submit', e=>{
+  e.preventDefault();
+  let data;
+  try { data = collect(); } catch(err){ showMsg(err, false); return; }
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true; btn.textContent = '送出中…';
+  google.script.run
+    .withSuccessHandler(res=>{
+      btn.disabled = false; btn.textContent = '送出申請';
+      if (!res.ok){ showMsg(res.msg, false); return; }
+      document.getElementById('form').classList.add('hidden');
+      document.getElementById('done').classList.remove('hidden');
+      document.getElementById('doneText').textContent =
+        '申請編號：' + res.appId + '，共 ' + res.count + ' 類載具、' + res.total + ' 台。';
+      window.scrollTo(0,0);
+    })
+    .withFailureHandler(err=>{ btn.disabled=false; btn.textContent='送出申請'; showMsg('送出失敗：' + err.message, false); })
+    .submitApplication(data);
+});
+addItem();
+</script>
+</body>
+</html>

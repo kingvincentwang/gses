@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<base target="_top">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>既有載具納管申請｜管理後台</title>
+<style>
+  body{margin:0;font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif;background:#f3f6fa;color:#1f2933}
+  header{background:#1a5aa6;color:#fff;padding:16px;text-align:center}
+  header h1{margin:0;font-size:20px}
+  main{max-width:1200px;margin:16px auto;padding:0 16px}
+  .card{background:#fff;border:1px solid #d5dce6;border-radius:12px;padding:16px;margin-bottom:16px}
+  input,select{padding:8px 10px;border:1px solid #d5dce6;border-radius:8px;font-size:15px}
+  button{background:#1a5aa6;color:#fff;border:none;border-radius:8px;padding:9px 16px;font-size:15px;cursor:pointer}
+  .stats{display:flex;gap:12px;flex-wrap:wrap}
+  .stat{flex:1;min-width:140px;background:#e8f0fb;border-radius:10px;padding:12px;text-align:center}
+  .stat b{display:block;font-size:24px;color:#1a5aa6}
+  .wrap{overflow-x:auto}
+  table{border-collapse:collapse;width:100%;font-size:14px}
+  th,td{border:1px solid #d5dce6;padding:6px 8px;vertical-align:top;text-align:left}
+  th{background:#1a5aa6;color:#fff;position:sticky;top:0;white-space:nowrap}
+  td.ser{white-space:pre-line;font-family:Consolas,monospace;font-size:12px;max-width:240px}
+  .hidden{display:none}
+  #err{color:#c0392b;margin-left:8px}
+</style>
+</head>
+<body>
+<header><h1>🔐 既有載具納管申請｜管理後台</h1></header>
+<main>
+  <div class="card" id="login">
+    <input type="password" id="pw" placeholder="管理密碼">
+    <button onclick="load()">登入</button><span id="err"></span>
+  </div>
+  <div id="panel" class="hidden">
+    <div class="card stats" id="stats"></div>
+    <div class="card">
+      <input id="q" placeholder="搜尋學校／序號…" oninput="render()" style="width:260px">
+      <select id="f" onchange="render()"><option value="">全部載具</option><option>iPad</option><option>Chromebook</option></select>
+      <button onclick="load()">重新整理</button>
+      <button onclick="csv()">匯出 CSV</button>
+    </div>
+    <div class="card wrap"><table id="tbl"></table></div>
+  </div>
+</main>
+<script>
+let H=[], R=[], PW='';
+function load(){
+  PW = document.getElementById('pw').value;
+  google.script.run.withSuccessHandler(res=>{
+    if(!res.ok){ document.getElementById('err').textContent=res.msg; return; }
+    H=res.headers; R=res.rows;
+    document.getElementById('login').classList.add('hidden');
+    document.getElementById('panel').classList.remove('hidden');
+    render();
+  }).withFailureHandler(e=>document.getElementById('err').textContent=e.message).getAllData(PW);
+}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function rows(){
+  const q=document.getElementById('q').value.trim().toLowerCase(), f=document.getElementById('f').value;
+  return R.filter(r=>(!f||r[5]===f)&&(!q||r.join(' ').toLowerCase().includes(q)));
+}
+function render(){
+  const list=rows();
+  const sum=(fn)=>list.filter(fn).reduce((s,r)=>s+(+r[7]||0),0);
+  const schools=new Set(list.map(r=>r[2])).size;
+  document.getElementById('stats').innerHTML=
+    `<div class="stat"><b>${schools}</b>申請學校</div><div class="stat"><b>${sum(r=>r[5]==='iPad')}</b>iPad 台數</div>`+
+    `<div class="stat"><b>${sum(r=>r[5]==='Chromebook')}</b>Chromebook 台數</div><div class="stat"><b>${list.length}</b>申請筆數</div>`;
+  const st=['待處理','處理中','已完成','退件'];
+  document.getElementById('tbl').innerHTML='<tr>'+H.map(h=>`<th>${esc(h)}</th>`).join('')+'</tr>'+
+    list.map(r=>'<tr>'+r.map((v,i)=> i===8?`<td class="ser">${esc(v)}</td>`:
+      i===10?`<td><select onchange="setSt('${esc(r[0])}',this.value)">${st.map(s=>`<option${s===v?' selected':''}>${s}</option>`).join('')}</select></td>`:
+      `<td>${esc(v)}</td>`).join('')+'</tr>').join('');
+}
+function setSt(id,v){
+  google.script.run.withSuccessHandler(res=>{
+    if(!res.ok) return alert(res.msg);
+    const r=R.find(x=>x[0]===id); if(r) r[10]=v;
+  }).updateStatus(PW,id,v);
+}
+function csv(){
+  const q=v=>'"'+String(v).replace(/"/g,'""')+'"';
+  const txt='﻿'+[H].concat(rows()).map(r=>r.map(q).join(',')).join('\r\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([txt],{type:'text/csv'}));
+  a.download='既有載具納管申請.csv'; a.click();
+}
+document.getElementById('pw').addEventListener('keydown',e=>{if(e.key==='Enter')load();});
+</script>
+</body>
+</html>
